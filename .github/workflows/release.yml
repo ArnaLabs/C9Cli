@@ -21,3 +21,4 @@ jobs:
         binary_name: "C9Cli"
         extra_files: LICENSE README.md
         goversion: 1.15.8
+        pre_command: get gopkg.in/yaml.v2
