@@ -2,7 +2,7 @@ package main
 
 import "C"
 import (
-	"encoding/json"
+	//"encoding/json"
 	"flag"
 	"fmt"
 	"gopkg.in/yaml.v2"
