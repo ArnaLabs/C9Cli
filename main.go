@@ -1144,10 +1144,10 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 								}
 							}
 
-							LDAPSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
+							LDAPSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
 
 							for k := 0; k < LDAPSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
@@ -1158,10 +1158,10 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 								}
 							}
 
-							LDAPSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
+							LDAPSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
 
 							for k := 0; k < LDAPSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
@@ -1192,7 +1192,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							UAASpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
 
 							for k := 0; k < UAASpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
@@ -1206,7 +1206,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							UAASpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
 
 							for k := 0; k < UAASpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
@@ -1236,7 +1236,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							SSOSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
 
 							for k := 0; k < SSOSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
@@ -1250,7 +1250,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							SSOSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
 
 							for k := 0; k < SSOSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout)
