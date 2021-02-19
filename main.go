@@ -1,7 +1,9 @@
 package main
 
+import "C"
 import (
-	//"encoding/json"
+	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"gopkg.in/yaml.v2"
@@ -15,6 +17,57 @@ import (
 	"time"
 )
 
+type SpaceListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID          string    `json:"guid"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		Name          string    `json:"name"`
+		Relationships struct {
+			Organization struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"organization"`
+			Quota struct {
+				Data interface{} `json:"data"`
+			} `json:"quota"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+			Organization struct {
+				Href string `json:"href"`
+			} `json:"organization"`
+			Features struct {
+				Href string `json:"href"`
+			} `json:"features"`
+			ApplyManifest struct {
+				Href   string `json:"href"`
+				Method string `json:"method"`
+			} `json:"apply_manifest"`
+		} `json:"links"`
+		Metadata struct {
+			Labels struct {
+			} `json:"labels"`
+			Annotations struct {
+			} `json:"annotations"`
+		} `json:"metadata"`
+	} `json:"resources"`
+}
 type OrgListJson struct {
 	Pagination struct {
 		TotalResults int `json:"total_results"`
@@ -63,8 +116,197 @@ type OrgListJson struct {
 		} `json:"metadata"`
 	} `json:"resources"`
 }
+type QuotaListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID      string    `json:"guid"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+		Name      string    `json:"name"`
+		Apps      struct {
+			TotalMemoryInMb      int         `json:"total_memory_in_mb"`
+			PerProcessMemoryInMb interface{} `json:"per_process_memory_in_mb"`
+			TotalInstances       int         `json:"total_instances"`
+			PerAppTasks          interface{} `json:"per_app_tasks"`
+		} `json:"apps"`
+		Services struct {
+			PaidServicesAllowed   bool        `json:"paid_services_allowed"`
+			TotalServiceInstances int         `json:"total_service_instances"`
+			TotalServiceKeys      interface{} `json:"total_service_keys"`
+		} `json:"services"`
+		Routes struct {
+			TotalRoutes        interface{} `json:"total_routes"`
+			TotalReservedPorts int         `json:"total_reserved_ports"`
+		} `json:"routes"`
+		Domains struct {
+			TotalDomains interface{} `json:"total_domains"`
+		} `json:"domains"`
+		Relationships struct {
+			Organizations struct {
+				Data []struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"organizations"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+		} `json:"links"`
+	} `json:"resources"`
+}
+type OrgUsersListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next struct {
+			Href string `json:"href"`
+		} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID          string    `json:"guid"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		Type          string    `json:"type"`
+		Relationships struct {
+			User struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"user"`
+			Organization struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"organization"`
+			Space struct {
+				Data interface{} `json:"data"`
+			} `json:"space"`
+		} `json:"relationships"`
+	} `json:"resources"`
+}
+type SpaceUsersListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID          string    `json:"guid"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		Type          string    `json:"type"`
+		Relationships struct {
+			User struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"user"`
+			Space struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"space"`
+			Organization struct {
+				Data interface{} `json:"data"`
+			} `json:"organization"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+			User struct {
+				Href string `json:"href"`
+			} `json:"user"`
+			Space struct {
+				Href string `json:"href"`
+			} `json:"space"`
+		} `json:"links"`
+	} `json:"resources"`
+}
+type ASGListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID      string    `json:"guid"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+		Name      string    `json:"name"`
+		Rules     []struct {
+			Destination string `json:"destination"`
+			Protocol    string `json:"protocol"`
+		} `json:"rules"`
+		GloballyEnabled struct {
+			Running bool `json:"running"`
+			Staging bool `json:"staging"`
+		} `json:"globally_enabled"`
+		Relationships struct {
+			RunningSpaces struct {
+				Data []struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"running_spaces"`
+			StagingSpaces struct {
+				Data []struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"staging_spaces"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+		} `json:"links"`
+	} `json:"resources"`
+}
+type Quotalist struct {
+	Quota []struct {
+		Name        string `yaml:"Name"`
+		MemoryLimit string `yaml:"memory_limit"`
+		AllowPaidPlans       bool `yaml:"allow_paid_plans"`
+		AppInstanceLimit     string `yaml:"app_instance_limit"`
+		ServiceInstanceLimit string `yaml:"service_instance_limit"`
+	} `yaml:"quota"`
+	Audit string `yaml:"Audit"`
+}
 type List struct {
 	OrgList []string `yaml:"OrgList"`
+	Audit string `yaml:"Audit"`
 }
 type Orglist struct {
 	Org struct {
@@ -106,15 +348,9 @@ type Orglist struct {
 			} `yaml:"SpaceUsers"`
 		} `yaml:"Spaces"`
 	} `yaml:"Org"`
-}
-type Quotalist struct {
-	Quota []struct {
-		Name        string `yaml:"Name"`
-		MemoryLimit string `yaml:"memory_limit"`
-		AllowPaidPlans       bool `yaml:"allow_paid_plans"`
-		AppInstanceLimit     string `yaml:"app_instance_limit"`
-		ServiceInstanceLimit string `yaml:"service_instance_limit"`
-	} `yaml:"quota"`
+	SpaceAudit string `yaml:"SpaceAudit"`
+	UserAudit string `yaml:"UserAudit"`
+	ASGAudit string `yaml:"ASGAudit"`
 }
 type ProtectedList struct {
 	Org   []string `yaml:"Org"`
@@ -153,14 +389,12 @@ func main()  {
 	if _, err := oscmd.Output(); err != nil{
 		fmt.Println("Checking OS")
 		fmt.Println("command: ", oscmd)
-		fmt.Println("command: ", oscmd.Stdout)
-		fmt.Println("Err Code: ", err)
+		fmt.Println(oscmd.Stdout, err)
 		oscmd = exec.Command("sh", "-c", "echo","$HOME")
 		if _, err := oscmd.Output(); err != nil{
 			fmt.Println("Checking OS failed - Can't find Underlying OS")
 			fmt.Println("command: ", oscmd)
-			fmt.Println("command: ", oscmd.Stdout)
-			fmt.Println("Err Code: ", err)
+			fmt.Println(oscmd.Stdout, err)
 			panic(err)
 		} else {
 			fmt.Println("command: ", oscmd)
@@ -175,7 +409,6 @@ func main()  {
 		fmt.Println("PATH: ", ospath)
 		fmt.Println("Checking OS - Setting up for Windows")
 		ostype = "windows"
-		//panic(err)
 	}
 
 	if operation == "init" {
@@ -194,6 +427,42 @@ func main()  {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		OrgsInit(ClusterName, cpath)
+
+	} else if operation == "audit-quota"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteOrAuditQuotas (ClusterName, cpath)
+
+	} else if operation == "audit-org"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteorAuditOrgs (ClusterName, cpath)
+
+	} else if operation == "audit-space"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteorAuditSpaces (ClusterName, cpath, ostype)
+
+	}  else if operation == "audit-org-user"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteorAuditOrgUsers (ClusterName, cpath, ostype)
+
+	} else if operation == "audit-space-user"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteOrAuditSpaceUsers (ClusterName, cpath, ostype)
+
+	} else if operation == "audit-asg"{
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
+		DeleteOrAuditSpacesASGs (ClusterName, cpath, ostype)
 
 	} else if operation == "create-org"{
 
@@ -250,109 +519,6 @@ func main()  {
 		fmt.Println("Provide Valid input operation")
 	}
 }
-func CreateOrUpdateProtOrgAsg(clustername string, cpath string, ostype string) {
-
-	var ProtectedOrgs ProtectedList
-	var ASGpath string
-	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
-	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
-
-	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
-	if err != nil {
-		panic(err)
-	}
-
-	if ostype == "windows" {
-		ASGpath = cpath+"\\"+clustername+"\\ProtectedOrgsASGs\\"
-	} else {
-		ASGpath = cpath+"/"+clustername+"/ProtectedOrgsASGs/"
-	}
-
-	LenProtectedOrgs := len(ProtectedOrgs.Org)
-	var check *exec.Cmd
-	ASGfile := ASGpath+ProtectedOrgs.DefaultRunningSecurityGroup+".json"
-	if InitClusterConfigVals.ClusterDetails.EnableASG == true {
-		fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-
-		if ostype == "windows" {
-			check = exec.Command("powershell", "-command","Get-Content", ASGfile)
-		} else {
-			check = exec.Command("cat", ASGfile)
-		}
-
-		if _, err := check.Output(); err != nil {
-			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
-			fmt.Println("command: ", check)
-			fmt.Println("Err: ", check.Stdout)
-			fmt.Println("Err Code: ", err)
-			fmt.Println("No Default ASG file provided in path for Protected Orgs")
-		} else {
-			fmt.Println("command: ", check)
-			fmt.Println(check.Stdout)
-			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
-			checkdasg := exec.Command("cf", "security-group", ProtectedOrgs.DefaultRunningSecurityGroup)
-			if _, err := checkdasg.Output(); err != nil {
-				fmt.Println("command: ", checkdasg)
-				fmt.Println("Err: ", checkdasg.Stdout)
-				fmt.Println("Err Code: ", err)
-				fmt.Println("Default ASG doesn't exist, Creating default ASG")
-				createdasg := exec.Command("cf", "create-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ASGfile)
-				if _, err := createdasg.Output(); err != nil {
-					fmt.Println("command: ", createdasg)
-					fmt.Println("Err: ", createdasg.Stdout)
-					fmt.Println("Err Code: ", err)
-					fmt.Println("Creating default ASG failed")
-				} else {
-					fmt.Println("command: ", createdasg)
-					fmt.Println(createdasg.Stdout)
-				}
-			} else {
-				fmt.Println("Default ASG exist, Updating default ASG")
-				updatedefasg := exec.Command("cf", "update-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ASGfile)
-				if _, err := updatedefasg.Output(); err != nil {
-					fmt.Println("command: ", updatedefasg)
-					fmt.Println("Err: ", updatedefasg.Stdout)
-					fmt.Println("Err Code: ", err)
-					fmt.Println("Default ASG not updated")
-				} else {
-					fmt.Println("command: ", updatedefasg)
-					fmt.Println(updatedefasg.Stdout)
-				}
-			}
-		}
-
-		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
-			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
-			bindasg := exec.Command("cf", "bind-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ProtectedOrgs.Org[p], "--lifecycle", "running")
-			if _, err := bindasg.Output(); err != nil{
-				fmt.Println("command: ", bindasg)
-				fmt.Println("Err: ", bindasg.Stdout)
-				fmt.Println("Err Code: ", err)
-				fmt.Println("Failed to bind to protected Org")
-			} else {
-				fmt.Println("command: ", bindasg)
-				fmt.Println(bindasg.Stdout)
-			}
-		}
-	} else {
-		fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-		fmt.Println("ASGs not enabled")
-	}
-}
 func SetupConnection(clustername string, pwd string, cpath string) error {
 
 	var InitClusterConfigVals InitClusterConfigVals
@@ -378,8 +544,7 @@ func SetupConnection(clustername string, pwd string, cpath string) error {
 	if _, err := cmd.Output(); err != nil{
 		fmt.Println("Connection failed")
 		fmt.Println("command: ", cmd)
-		fmt.Println("Err: ", cmd.Stdout)
-		fmt.Println("Err Code: ", err)
+		fmt.Println(cmd.Stdout, err)
 		panic(err)
 	} else {
 		fmt.Println("Connection Passed")
@@ -387,6 +552,1845 @@ func SetupConnection(clustername string, pwd string, cpath string) error {
 		fmt.Println(cmd.Stdout)
 	}
 	return err
+}
+func DeleteOrAuditQuotas(clustername string, cpath string) error {
+
+	var Quotas Quotalist
+	var ProtectedQuota ProtectedList
+
+	QuotaYml := cpath+"/"+clustername+"/Quota.yml"
+	fileQuotaYml, err := ioutil.ReadFile(QuotaYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = yaml.Unmarshal([]byte(fileQuotaYml), &Quotas)
+	if err != nil {
+		panic(err)
+	}
+
+	ProtectedQuotasYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedQYml, err := ioutil.ReadFile(ProtectedQuotasYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = yaml.Unmarshal([]byte(fileProtectedQYml), &ProtectedQuota)
+	if err != nil {
+		panic(err)
+	}
+
+
+	LenQuota := len(Quotas.Quota)
+	LenProtectedQuota := len(ProtectedQuota.Quota)
+	Audit := Quotas.Audit
+
+	getquotas := exec.Command("cf", "curl", "/v3/organization_quotas", "--output", "listquotas.json")
+
+	if _, err := getquotas.Output(); err == nil {
+		fmt.Println("command: ", getquotas)
+
+		var body QuotaListJson
+
+		fileOrgJson, err := ioutil.ReadFile("listquotas.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if err := json.Unmarshal(fileOrgJson, &body); err != nil {
+			panic(err)
+		}
+
+		QuotaLen := len(body.Resources)
+
+		fmt.Println("No of Quotas: ", QuotaLen)
+
+		if QuotaLen != 0 {
+
+			for i := 0; i < QuotaLen; i++ {
+
+				var count, totalcount int
+				fmt.Println("Quota: ", body.Resources[i].Name)
+
+				for p := 0; p < LenProtectedQuota; p++ {
+					fmt.Println("Protected Org: ", ProtectedQuota.Quota[p], ",", body.Resources[i].Name)
+					if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(body.Resources[i].Name, "") {
+						count = 1
+					} else {
+						count = 0
+					}
+					totalcount = totalcount + count
+				}
+
+				if totalcount == 0 {
+
+					fmt.Println("This is not Protected Quota")
+
+					var quotascount, quotastotalcount int
+
+					for q := 0; q < LenQuota; q++ {
+
+						fmt.Println("Quota: ", Quotas.Quota[q].Name,",", body.Resources[i].Name)
+						if Quotas.Quota[q].Name == body.Resources[i].Name {
+							quotascount = 1
+						} else {
+							quotastotalcount = 0
+						}
+						quotastotalcount = quotastotalcount + quotascount
+					}
+
+					if quotastotalcount == 0 {
+						fmt.Println("Quota has not be listed in Quota.yml: ")
+						fmt.Println("Auditing Quota: ", body.Resources[i].Name)
+						if Audit == "Delete" {
+							delete := exec.Command("cf", "delete-quota", body.Resources[i].Name)
+							if _, err := delete.Output(); err == nil {
+								fmt.Println("command: ", delete)
+								fmt.Println(delete.Stdout)
+							} else {
+								fmt.Println("command: ", delete)
+								fmt.Println("Err: ", delete.Stdout, delete.Stderr)
+							}
+						} else if Audit == "Rename" {
+							rename := exec.Command("cf", "update-quota", body.Resources[i].Name, "-n", body.Resources[i].Name+"tobedeleted")
+							if _, err := rename.Output(); err == nil {
+								fmt.Println("command: ", rename)
+								fmt.Println(rename.Stdout)
+							} else {
+								fmt.Println("command: ", rename)
+								fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+							}
+						} else if Audit == "List" {
+							fmt.Println("Quota to be deleted: ", body.Resources[i].Name)
+						} else {
+							fmt.Println("Provide Valid Input")
+						}
+					} else {
+						fmt.Println("Quota exists in Quota.yml: ", body.Resources[i].Name)
+					}
+				} else {
+					fmt.Println("This is a protected Quota:", body.Resources[i].Name)
+				}
+			}
+		} else {
+			fmt.Println("No Quota exist")
+		}
+
+	} else {
+		fmt.Println("command: ", getquotas)
+		fmt.Println("Err: ", getquotas.Stderr)
+	}
+	return err
+}
+func DeleteorAuditOrgs(clustername string, cpath string) error {
+
+	var list List
+	var ProtectedOrgs ProtectedList
+
+	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
+	fileOrgYml, err := ioutil.ReadFile(ListYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+	if err != nil {
+		panic(err)
+	}
+	LenList := len(list.OrgList)
+	Audit := list.Audit
+
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
+	getorgs := exec.Command("cf", "curl", "/v3/organizations", "--output", "listorgs.json")
+
+	if _, err := getorgs.Output(); err == nil {
+		fmt.Println("command: ", getorgs)
+
+		var body OrgListJson
+
+		fileOrgJson, err := ioutil.ReadFile("listorgs.json")
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		if err := json.Unmarshal(fileOrgJson, &body); err != nil {
+			panic(err)
+		}
+
+		OrgsLen := len(body.Resources)
+
+		fmt.Println("No of Orgs: ", OrgsLen)
+
+		if OrgsLen != 0 {
+
+			for i := 0; i < OrgsLen; i++ {
+
+				var count, totalcount int
+				fmt.Println("Org: ", body.Resources[i].Name)
+
+				for p := 0; p < LenProtectedOrgs; p++ {
+					fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", body.Resources[i].Name)
+					if strings.Trim(ProtectedOrgs.Org[p], "") == strings.Trim(body.Resources[i].Name, "") {
+						count = 1
+					} else {
+						count = 0
+					}
+					totalcount = totalcount + count
+				}
+
+				if totalcount == 0 {
+
+					fmt.Println("This is not Protected Org")
+
+					var orgscount, orgstotalcount int
+
+					for q := 0; q < LenList; q++ {
+
+						fmt.Println("Org: ", list.OrgList[q], ",", body.Resources[i].Name)
+						if list.OrgList[q] == body.Resources[i].Name {
+							orgscount = 1
+						} else {
+							orgscount = 0
+						}
+						orgstotalcount = orgstotalcount + orgscount
+					}
+
+					if orgstotalcount == 0 {
+						fmt.Println("Org has not be listed in Orglist.yml: ")
+						fmt.Println("Auditing Org: ", body.Resources[i].Name)
+						if Audit == "Delete" {
+							delete := exec.Command("cf", "delete-org", body.Resources[i].Name)
+							if _, err := delete.Output(); err == nil {
+								fmt.Println("command: ", delete)
+								fmt.Println(delete.Stdout)
+							} else {
+								fmt.Println("command: ", delete)
+								fmt.Println("Err: ", delete.Stdout, delete.Stderr)
+							}
+						} else if Audit == "Rename" {
+							rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"tobedeleted")
+							if _, err := rename.Output(); err == nil {
+								fmt.Println("command: ", rename)
+								fmt.Println(rename.Stdout)
+							} else {
+								fmt.Println("command: ", rename)
+								fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+							}
+						} else if Audit == "List" {
+							fmt.Println("Org to be deleted: ", body.Resources[i].Name)
+						} else {
+							fmt.Println("Provide Valid Input")
+						}
+					} else {
+						fmt.Println("Org exists in Orgslist.yml: ", body.Resources[i].Name)
+					}
+				} else {
+					fmt.Println("This is a protected Org:", body.Resources[i].Name)
+				}
+			}
+		} else {
+			fmt.Println("No Orgs exist")
+		}
+
+	} else {
+		fmt.Println("command: ", getorgs)
+		fmt.Println("Err: ", getorgs.Stderr)
+	}
+	return err
+}
+func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error {
+
+	var Orgs Orglist
+	var ProtectedOrgs ProtectedList
+	var list List
+	var spacelistjson SpaceListJson
+
+	// Org List
+
+	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
+	fileOrgYml, err := ioutil.ReadFile(ListYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+	if err != nil {
+		panic(err)
+	}
+
+	var InitClusterConfigVals InitClusterConfigVals
+
+	//Config File
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+	var OrgsYml string
+
+	//Protected Orgs
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	LenList := len(list.OrgList)
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
+	for i := 0; i < LenList; i++ {
+
+		var count, totalcount int
+		fmt.Println("Org: ", list.OrgList[i])
+		for p := 0; p < LenProtectedOrgs; p++ {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+				count = 1
+			} else {
+				count = 0
+			}
+			totalcount = totalcount + count
+		}
+
+		if totalcount == 0 {
+
+			fmt.Println("This is not Protected Org")
+
+			if ostype == "windows" {
+				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+			} else {
+				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			}
+
+			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+			if err != nil {
+				fmt.Println(err)
+			}
+			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			if err != nil {
+				panic(err)
+			}
+
+			Audit := Orgs.SpaceAudit
+
+			if list.OrgList[i] == Orgs.Org.Name {
+
+				var out bytes.Buffer
+				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+				guid.Stdout = &out
+
+				err := guid.Run()
+
+				if err == nil {
+
+					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
+					path := "/v3/spaces/?organization_guids="+out.String()
+					spacelist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spacelist.json")
+
+					var out bytes.Buffer
+					spacelist.Stdout = &out
+					err := spacelist.Run()
+					if err == nil {
+						fmt.Println(spacelist, spacelist.Stdout, spacelist.Stderr)
+					} else {
+						fmt.Println("err", spacelist, spacelist.Stdout, spacelist.Stderr)
+
+					}
+
+					fileSpaceJson, err := ioutil.ReadFile("spacelist.json")
+					if err != nil {
+						fmt.Println(err)
+					}
+					if err := json.Unmarshal(fileSpaceJson, &spacelistjson); err != nil {
+						panic(err)
+					}
+
+					SpaceLen := len(spacelistjson.Resources)
+					fmt.Println("No of Spaces for Org",Orgs.Org.Name,":", SpaceLen)
+
+					if SpaceLen != 0 {
+
+						for i := 0; i < SpaceLen; i++ {
+
+							SpaceLen := len(Orgs.Org.Spaces)
+							var Spacescount, Spacestotalcount int
+
+							for q := 0; q < SpaceLen; q++ {
+
+								fmt.Println("Space: ", Orgs.Org.Spaces[q].Name, ",", spacelistjson.Resources[i].Name)
+								if Orgs.Org.Spaces[q].Name == spacelistjson.Resources[i].Name {
+									Spacescount = 1
+								} else {
+									Spacescount = 0
+								}
+								Spacestotalcount = Spacestotalcount + Spacescount
+							}
+
+							if Spacestotalcount == 0 {
+//								fmt.Println("Space has not be listed in Orgs.yml")
+//								fmt.Println("Delete Space: ", spacelistjson.Resources[i].Name)
+								fmt.Println("Space has not be listed in Org.yml: ")
+								fmt.Println("Auditing Space: ", spacelistjson.Resources[i].Name)
+								if Audit == "Delete" {
+									delete := exec.Command("cf", "delete-space", spacelistjson.Resources[i].Name, "-o", Orgs.Org.Name)
+									if _, err := delete.Output(); err == nil {
+										fmt.Println("command: ", delete)
+										fmt.Println(delete.Stdout)
+									} else {
+										fmt.Println("command: ", delete)
+										fmt.Println("Err: ", delete.Stdout, delete.Stderr)
+									}
+								} else if Audit == "Rename" {
+									rename := exec.Command("cf", "rename", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"tobedeleted")
+									if _, err := rename.Output(); err == nil {
+										fmt.Println("command: ", rename)
+										fmt.Println(rename.Stdout)
+									} else {
+										fmt.Println("command: ", rename)
+										fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+									}
+								} else if Audit == "List" {
+									fmt.Println("Space to be deleted: ", spacelistjson.Resources[i].Name)
+								} else {
+									fmt.Println("Provide Valid Input")
+								}
+							} else {
+								fmt.Println("Space exists in Orgs.yml: ", spacelistjson.Resources[i].Name)
+							}
+						}
+					} else {
+						fmt.Println("No Spaces Exist")
+					}
+				} else {
+					fmt.Println("command: ", guid )
+					fmt.Println("Err: ", guid.Stdout)
+					fmt.Println("Err Code: ", err)
+					fmt.Println("Org doesn't exist")
+				}
+			} else {
+				fmt.Println("Org Name doesn't match with folder name")
+			}
+		} else {
+			fmt.Println("This is a protected Org")
+		}
+	}
+	return err
+}
+func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) error {
+
+	var Orgs Orglist
+	var ProtectedOrgs ProtectedList
+	var list List
+	var orgusrslist OrgUsersListJson
+
+	// Org List
+	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
+	fileOrgYml, err := ioutil.ReadFile(ListYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+	if err != nil {
+		panic(err)
+	}
+
+	var InitClusterConfigVals InitClusterConfigVals
+
+	//Config File
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+	var OrgsYml string
+
+	//Protected Orgs
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	LenList := len(list.OrgList)
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
+	for i := 0; i < LenList; i++ {
+
+		var count, totalcount int
+		fmt.Println("Org: ", list.OrgList[i])
+		for p := 0; p < LenProtectedOrgs; p++ {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+				count = 1
+			} else {
+				count = 0
+			}
+			totalcount = totalcount + count
+		}
+
+		if totalcount == 0 {
+
+			fmt.Println("This is not Protected Org")
+
+			if ostype == "windows" {
+				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+			} else {
+				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			}
+
+			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+			if err != nil {
+				fmt.Println(err)
+			}
+			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			if err != nil {
+				panic(err)
+			}
+
+			Audit := Orgs.UserAudit
+
+			if list.OrgList[i] == Orgs.Org.Name {
+
+				var out bytes.Buffer
+
+				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+				guid.Stdout = &out
+
+				err := guid.Run()
+
+				if err == nil {
+
+					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
+
+					path := "/v3/roles/?organization_guids="+out.String()
+					orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "orgusrslist.json")
+
+					var out bytes.Buffer
+					orguserslist.Stdout = &out
+					err := orguserslist.Run()
+					if err == nil {
+						fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
+					} else {
+						fmt.Println("err", orguserslist, orguserslist.Stdout, orguserslist.Stderr)
+					}
+
+					fileSpaceJson, err := ioutil.ReadFile("orgusrslist.json")
+					if err != nil {
+						fmt.Println(err)
+					}
+					if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+						panic(err)
+					}
+
+					OrgUsrLen := len(orgusrslist.Resources)
+					fmt.Println("No of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
+
+					if OrgUsrLen != 0 {
+
+						for i := 0; i < OrgUsrLen; i++ {
+
+							//SSO
+							OrgUsLenSSOAuditor := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
+
+							var orgusrssoauditscount, aorusrssoaudittotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_auditor"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenSSOAuditor; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusrssoaudittotalcount = 2
+										} else {
+											fmt.Println("SSO Audit Usr: ", Orgs.Org.OrgUsers.SSO.OrgAuditors[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusrssoauditscount = 1
+											} else {
+												orgusrssoauditscount = 0
+											}
+											aorusrssoaudittotalcount = aorusrssoaudittotalcount + orgusrssoauditscount
+										}
+									}
+
+									if aorusrssoaudittotalcount == 0 {
+
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("SSO OrgAuditor User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgAuditor")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+									} else if aorusrssoaudittotalcount ==2 {
+										fmt.Println("Admin set as SSO Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as SSO Org Audit User: ", strings.TrimSpace(out.String()))
+									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+
+							OrgUsLenSSOManagers := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
+
+							var orgusrssomangscount, aorusrssomangtotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_managers"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenSSOManagers; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusrssomangtotalcount = 2
+										} else {
+
+											fmt.Println("SSO Org Managers Usr: ", Orgs.Org.OrgUsers.SSO.OrgManagers[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusrssomangscount = 1
+											} else {
+												orgusrssomangscount = 0
+											}
+											aorusrssomangtotalcount = aorusrssomangtotalcount + orgusrssomangscount
+										}
+									}
+									if aorusrssomangtotalcount == 0 {
+
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("SSO OrgManager User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgManager")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+									} else if aorusrssomangtotalcount ==2 {
+										fmt.Println("Admin set as SSO Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as SSO Org Manager User: ", strings.TrimSpace(out.String()))
+									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+
+							//UAA
+							OrgUsLenUAAAuditor := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
+
+							var orgusruaaauditscount, aorusruaaaudittotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_auditor"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenUAAAuditor; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusruaaaudittotalcount = 2
+										} else {
+											fmt.Println("UAA Audit Usr: ", Orgs.Org.OrgUsers.UAA.OrgAuditors[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusruaaauditscount = 1
+											} else {
+												orgusruaaauditscount = 0
+											}
+											aorusruaaaudittotalcount = aorusruaaaudittotalcount + orgusruaaauditscount
+										}
+									}
+
+									if aorusruaaaudittotalcount == 0 {
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("UAA OrgAuditor User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgAuditor")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+									} else if aorusruaaaudittotalcount ==2 {
+										fmt.Println("Admin set as UAA Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as UAA Org Audit User: ", strings.TrimSpace(out.String()))
+									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+
+
+							OrgUsLenUAAManagers := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
+
+							var orgusruaamangscount, aorusruaamangtotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_managers"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenUAAManagers; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusruaamangtotalcount = 2
+										} else {
+
+											fmt.Println("UAA Org Managers Usr: ", Orgs.Org.OrgUsers.UAA.OrgManagers[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusruaamangscount = 1
+											} else {
+												orgusruaamangscount = 0
+											}
+											aorusruaamangtotalcount = aorusruaamangtotalcount + orgusruaamangscount
+										}
+									}
+									if aorusruaamangtotalcount == 0 {
+
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("UAA OrgManager User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgManager")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+
+									} else if aorusruaamangtotalcount ==2 {
+										fmt.Println("Admin set as UAA Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as UAA Org Manager User: ", strings.TrimSpace(out.String()))
+									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+
+							//LDAP
+
+							OrgUsLenLDAPAuditor := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
+							var orgusrldapauditscount, aorusrldapaudittotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_auditor"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenLDAPAuditor; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusrldapaudittotalcount = 2
+										} else {
+											fmt.Println("LDAP Audit Usr: ", Orgs.Org.OrgUsers.LDAP.OrgAuditors[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusrldapauditscount = 1
+											} else {
+												orgusrldapauditscount = 0
+											}
+											aorusrldapaudittotalcount = aorusrldapaudittotalcount + orgusrldapauditscount
+
+										}
+									}
+
+									if aorusrldapaudittotalcount == 0 {
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("LDAP OrgAuditor User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgAuditor")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+									} else if aorusrldapaudittotalcount ==2 {
+										fmt.Println("Admin set as LDAP Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as LDAP Org Audit User: ", strings.TrimSpace(out.String()))
+ 									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+
+
+							OrgUsLenLDAPManagers := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
+
+							var orgusrldapmangscount, aorusrldapmangtotalcount int
+
+							if orgusrslist.Resources[i].Type == "organization_managers"{
+
+								userguid := orgusrslist.Resources[i].GUID
+								path := "/v3/users/?guids="+userguid
+								var out bytes.Buffer
+								username := exec.Command("cf", "curl", strings.TrimSpace(path))
+								username.Stdout = &out
+								err := username.Run()
+
+								if err == nil {
+									for q := 0; q < OrgUsLenLDAPManagers; q++ {
+
+										if out.String() == "admin" {
+											fmt.Println("Admin user skipping Validation")
+											aorusrldapmangtotalcount = 2
+										} else {
+
+											fmt.Println("LDAP Org Managers Usr: ", Orgs.Org.OrgUsers.LDAP.OrgManagers[q], ",", username)
+											if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+												orgusrldapmangscount = 1
+											} else {
+												orgusrldapmangscount = 0
+											}
+											aorusrldapmangtotalcount = aorusrldapmangtotalcount + orgusrldapmangscount
+										}
+									}
+									if aorusrldapmangtotalcount == 0 {
+										fmt.Println("User has not be listed in Org.yml: ")
+										fmt.Println("LDAP OrgManager User: ", strings.TrimSpace(out.String()))
+
+										if Audit == "unset" {
+											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+											if _, err := unset.Output(); err == nil {
+												fmt.Println("command: ", unset)
+												fmt.Println(unset.Stdout)
+											} else {
+												fmt.Println("command: ", unset)
+												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+											}
+										} else if Audit == "List" {
+											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgManager")
+										} else {
+											fmt.Println("Provide Valid Input")
+										}
+									} else if aorusrldapmangtotalcount ==2 {
+										fmt.Println("Admin set as LDAP Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+									} else {
+										fmt.Println("User is listed in Org.yml as LDAP Org Manager User: ", strings.TrimSpace(out.String()))
+									}
+								} else {
+									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+							}
+						}
+					} else {
+						fmt.Println("No users exist")
+					}
+				} else {
+					fmt.Println("command: ", guid )
+					fmt.Println("Err: ", guid.Stdout)
+					fmt.Println("Err Code: ", err)
+					fmt.Println("Org doesn't exist")
+				}
+			} else {
+				fmt.Println("Org Name doesn't match with folder name")
+			}
+		} else {
+			fmt.Println("This is a protected Org")
+		}
+	}
+	return err
+}
+func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) error {
+
+	var Orgs Orglist
+	var ProtectedOrgs ProtectedList
+	var list List
+	var spaceusrslist SpaceUsersListJson
+
+	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
+	fileOrgYml, err := ioutil.ReadFile(ListYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+	if err != nil {
+		panic(err)
+	}
+
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
+	LenList := len(list.OrgList)
+
+	for i := 0; i < LenList; i++ {
+
+		var count, totalcount int
+		fmt.Println("Org: ", list.OrgList[i])
+		for p := 0; p < LenProtectedOrgs; p++ {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+				count = 1
+			} else {
+				count = 0
+			}
+			totalcount = totalcount + count
+		}
+
+		if totalcount == 0 {
+
+
+			var OrgsYml string
+			if ostype == "windows" {
+				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+			} else {
+				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			}
+
+			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			if err != nil {
+				panic(err)
+			}
+
+			Audit := Orgs.SpaceAudit
+
+			if list.OrgList[i] == Orgs.Org.Name {
+				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+
+				if _, err := guid.Output(); err == nil {
+
+					fmt.Println("command: ", guid)
+					fmt.Println("Org exists: ", guid.Stdout)
+					targetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+					if _, err := targetOrg.Output(); err == nil {
+						fmt.Println("command: ", targetOrg)
+						fmt.Println("Targeted Org: ", targetOrg.Stdout)
+					} else {
+						fmt.Println("command: ", targetOrg)
+						fmt.Println("Err: ", targetOrg.Stdout)
+						fmt.Println("Err Code: ", targetOrg.Stderr)
+					}
+
+					SpaceLen := len(Orgs.Org.Spaces)
+
+					for j := 0; j < SpaceLen; j++ {
+
+						var out bytes.Buffer
+						guid.Stdout = &out
+						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
+						err := guid.Run()
+
+						if err == nil {
+
+							fmt.Println("Space exists: ", Orgs.Org.Spaces[j].Name,",", out.String())
+
+							path := "/v3/roles/?space_guids="+out.String()
+							spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spaceusrslist.json")
+
+							var out bytes.Buffer
+							spaceuserslist.Stdout = &out
+							err := spaceuserslist.Run()
+							if err == nil {
+								fmt.Println("no err",spaceuserslist, spaceuserslist.Stdout)
+							} else {
+								fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
+							}
+
+							fileSpaceJson, err := ioutil.ReadFile("spaceuserslist.json")
+							if err != nil {
+								fmt.Println(err)
+							}
+							if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+								panic(err)
+							}
+
+							SpaceUsrLen := len(spaceusrslist.Resources)
+							fmt.Println("No of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
+
+							if SpaceUsrLen != 0 {
+
+								for i := 0; i < SpaceUsrLen; i++ {
+
+									//SSO Audit
+
+									SpaceUsLenSSOAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
+
+									var spaceusrssoauditscount, spaceusrssoaudittotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenSSOAuditor; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrssoaudittotalcount = 2
+												} else {
+													fmt.Println("SSO Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q], ",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														spaceusrssoauditscount = 1
+													} else {
+														spaceusrssoauditscount = 0
+													}
+													spaceusrssoaudittotalcount = spaceusrssoaudittotalcount + spaceusrssoauditscount
+												}
+											}
+
+											if spaceusrssoaudittotalcount == 0 {
+
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("SSO SpaceAuditor User: ", strings.TrimSpace(out.String()))
+
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceAuditor")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+
+											} else if spaceusrssoaudittotalcount == 2 {
+												fmt.Println("Admin set as SSO Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as SSO Space Audit User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									SpaceUsLenSSODeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
+
+									var spaceusrssodevscount, spaceusrssodevtotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_developer" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenSSODeveloper; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrssodevtotalcount = 2
+												} else {
+													fmt.Println("SSO Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q], ",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														spaceusrssodevscount = 1
+													} else {
+														spaceusrssodevscount = 0
+													}
+													spaceusrssodevtotalcount = spaceusrssodevtotalcount + spaceusrssodevscount
+												}
+											}
+
+											//SSO Developer
+
+											if spaceusrssodevtotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("SSO Space Dev User: ", strings.TrimSpace(out.String()))
+
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceDeveloper")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+
+											} else if spaceusrssodevtotalcount == 2 {
+												fmt.Println("Admin set as SSO Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as SSO Space Dev User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//SSO Manager
+
+									SpaceUsLenSSOMan := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
+
+									var spaceusrssomanscount, spaceusrssomantotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_manager" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenSSOMan; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrssomantotalcount = 2
+												} else {
+													fmt.Println("SSO Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q],",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														spaceusrssomanscount = 1
+													} else {
+														spaceusrssomanscount = 0
+													}
+													spaceusrssomantotalcount = spaceusrssomantotalcount + spaceusrssomanscount
+												}
+											}
+
+											if spaceusrssomantotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("SSO Space Manager User: ", strings.TrimSpace(out.String()))
+
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name,Orgs.Org.Spaces[j].Name, "SpaceManager")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceManager")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusrssomantotalcount == 2 {
+												fmt.Println("Admin set as SSO Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as SSO Space Manager User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//UAA Audit
+									SpaceUsLenUAAAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
+
+									var spaceusruaaauditscount, spaceusruaaaudittotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenUAAAuditor; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusruaaaudittotalcount = 2
+												} else {
+													fmt.Println("UAA Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q],",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														spaceusruaaauditscount = 1
+													} else {
+														spaceusruaaauditscount = 0
+													}
+													spaceusruaaaudittotalcount = spaceusruaaaudittotalcount + spaceusruaaauditscount
+												}
+											}
+
+											if spaceusruaaaudittotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("UAA SpaceAuditor User: ", strings.TrimSpace(out.String()))
+
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceAuditor")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceAuditor")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusruaaaudittotalcount == 2 {
+												fmt.Println("Admin set as UAA Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as UAA Space Audit User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//UAA Developer
+
+									SpaceUsLenUAADeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
+
+									var spaceusruaadevscount, spaceusruaadevtotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_developer" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenUAADeveloper; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusruaadevtotalcount = 2
+												} else {
+													fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q],",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														spaceusruaadevscount = 1
+													} else {
+														spaceusruaadevscount = 0
+													}
+													spaceusruaadevtotalcount = spaceusruaadevtotalcount + spaceusruaadevscount
+												}
+											}
+
+											if spaceusruaadevtotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("UAA SpaceDeveloper User: ", strings.TrimSpace(out.String()))
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceDeveloper")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusruaadevtotalcount == 2 {
+												fmt.Println("Admin set as UAA Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as UAA Space Dev User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//UAA Manager
+
+									SpaceUsLenUAAMan := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
+
+									var spaceusruaamanscount, spaceusruaamantotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_manager" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids="+userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenUAAMan; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusruaamantotalcount = 2
+												} else {
+													fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q],",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														spaceusruaamanscount = 1
+													} else {
+														spaceusruaamanscount = 0
+													}
+													spaceusruaamantotalcount = spaceusruaamantotalcount + spaceusruaamanscount
+												}
+											}
+
+											if spaceusruaamantotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("UAA SpaceManager User: ", strings.TrimSpace(out.String()))
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceManager")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceManager")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusruaamantotalcount == 2 {
+												fmt.Println("Admin set as UAA Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as UAA Space Manager User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//LDAP Audit
+									SpaceUsLenLDAPAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
+
+									var spaceusrldapauditscount, spaceusrldapaudittotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+
+											for q := 0; q < SpaceUsLenLDAPAuditor; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrldapaudittotalcount = 2
+												} else {
+													fmt.Println("LDAP Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q],",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														spaceusrldapauditscount = 1
+													} else {
+														spaceusrldapauditscount = 0
+													}
+													spaceusrldapaudittotalcount = spaceusrldapaudittotalcount + spaceusrldapauditscount
+												}
+											}
+
+											if spaceusrldapaudittotalcount == 0 {
+												fmt.Println("User has not be listed in Org.yml: ")
+												fmt.Println("LDAP SpaceAuditor User: ", strings.TrimSpace(out.String()))
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceAuditor")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceAuditor")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusrldapaudittotalcount == 2 {
+												fmt.Println("Admin set as LDAP Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as LDAP Space Audit User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//LDAP Developer
+
+									SpaceUsLenLDAPDeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
+
+									var spaceusrldapdevscount, spaceusrldapdevtotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_developer" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenLDAPDeveloper; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrldapdevtotalcount = 2
+												} else {
+													fmt.Println("LDAP Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q], ",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														spaceusrldapdevscount = 1
+													} else {
+														spaceusrldapdevscount = 0
+													}
+													spaceusrldapdevtotalcount = spaceusrldapdevtotalcount + spaceusrldapdevscount
+												}
+											}
+
+											if spaceusrldapdevtotalcount == 0 {
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceDeveloper")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceDeveloper")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusrldapdevtotalcount == 2 {
+												fmt.Println("Admin set as LDAP Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as LDAP Space Dev User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+
+									//LDAP Manager
+
+									SpaceUsLenLDAPMan := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
+
+									var spaceusrldapmanscount, spaceusrldapmantotalcount int
+
+									if spaceusrslist.Resources[i].Type == "space_manager" {
+
+										userguid := spaceusrslist.Resources[i].GUID
+										path := "/v3/users/?guids=" + userguid
+										var out bytes.Buffer
+										username := exec.Command("cf", "curl", strings.TrimSpace(path))
+										username.Stdout = &out
+										err := username.Run()
+
+										if err == nil {
+											for q := 0; q < SpaceUsLenLDAPMan; q++ {
+
+												if out.String() == "admin" {
+													fmt.Println("Admin user skipping Validation")
+													spaceusrldapmantotalcount = 2
+												} else {
+													fmt.Println("LDAP Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q], ",", username)
+													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														spaceusrldapmanscount = 1
+													} else {
+														spaceusrldapmanscount = 0
+													}
+													spaceusrldapmantotalcount = spaceusrldapmantotalcount + spaceusrldapmanscount
+												}
+											}
+
+											if spaceusrldapmantotalcount == 0 {
+												if Audit == "unset" {
+													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+													if _, err := unset.Output(); err == nil {
+														fmt.Println("command: ", unset)
+														fmt.Println(unset.Stdout)
+													} else {
+														fmt.Println("command: ", unset)
+														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+													}
+												} else if Audit == "List" {
+													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceManager")
+												} else {
+													fmt.Println("Provide Valid Input")
+												}
+											} else if spaceusrldapmantotalcount == 2 {
+												fmt.Println("Admin set as LDAP Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+											} else {
+												fmt.Println("User is listed in Org.yml as LDAP Space Manager User: ", strings.TrimSpace(out.String()))
+											}
+										} else {
+											fmt.Println("err", username, username.Stdout, username.Stderr)
+										}
+									}
+								}
+							} else {
+								fmt.Println("No space users exist")
+							}
+						} else {
+							fmt.Println("command: ",guid)
+							fmt.Println("Err: ", guid.Stdout, err)
+							fmt.Println("Space doesn't exists")
+						}
+					}
+				} else {
+					fmt.Println("command: ", guid)
+					fmt.Println("Err: ", guid.Stdout, err)
+					fmt.Println("Org doesn't exists")
+				}
+			} else {
+				fmt.Println("Org Name does't match with folder name")
+			}
+		}  else {
+			fmt.Println("This is a protected Org")
+		}
+	}
+	return err
+}
+func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) error {
+
+	var Orgs Orglist
+	var ProtectedOrgs ProtectedList
+	var list List
+
+	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
+	fileOrgYml, err := ioutil.ReadFile(ListYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+	if err != nil {
+		panic(err)
+	}
+
+	var InitClusterConfigVals InitClusterConfigVals
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+	var ASGPath, OrgsYml string
+
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	LenList := len(list.OrgList)
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
+
+	for i := 0; i < LenList; i++ {
+
+		var count, totalcount int
+		fmt.Println("Org: ", list.OrgList[i])
+		for p := 0; p < LenProtectedOrgs; p++ {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+				count = 1
+			} else {
+				count = 0
+			}
+			totalcount = totalcount + count
+		}
+
+		if totalcount == 0 {
+
+			fmt.Println("This is not Protected Org")
+
+			if ostype == "windows" {
+				ASGPath = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\ASGs\\"
+				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+			} else {
+				ASGPath = cpath+"/"+clustername+"/"+list.OrgList[i]+"/ASGs/"
+				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			}
+
+
+			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			if err != nil {
+				panic(err)
+			}
+
+			Audit := Orgs.ASGAudit
+
+			if list.OrgList[i] == Orgs.Org.Name {
+				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+
+				if _, err := guid.Output(); err == nil {
+
+					fmt.Println("command: ", guid)
+					fmt.Println("Org exists: ", guid.Stdout)
+					SpaceLen := len(Orgs.Org.Spaces)
+
+					TargetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+					if _, err := TargetOrg.Output(); err == nil {
+						fmt.Println("command: ", TargetOrg)
+						fmt.Println("Targeting: ", TargetOrg.Stdout)
+					} else {
+						fmt.Println("command: ", TargetOrg)
+						fmt.Println("Err: ", TargetOrg.Stdout, err)
+					}
+
+					for j := 0; j < SpaceLen; j++ {
+
+						fmt.Println("Auditing Spaces ASGs")
+						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
+
+						if _, err := guid.Output(); err == nil{
+
+							fmt.Println("command: ", guid)
+							fmt.Println("Space exists: ", guid.Stdout)
+
+							
+							fmt.Println("Deleting or Auditing ASGs")
+							if InitClusterConfigVals.ClusterDetails.EnableASG == true {
+								fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+								DeleteOrAuditASGs(Orgs.Org.Name, Orgs.Org.Spaces[j].Name, ASGPath, ostype, Audit)
+							} else {
+								fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+								fmt.Println("ASGs not enabled")
+							}
+						} else {
+							fmt.Println("command: ", guid)
+							fmt.Println("Pulling Space Guid ID: ", guid.Stdout )
+							fmt.Println("Space doesn't exist, please create space")
+						}
+					}
+				} else {
+					fmt.Println("command: ", guid )
+					fmt.Println("Err: ", guid.Stdout, err)
+					fmt.Println("Org doesn't exists, Please create Org")
+				}
+			} else {
+				fmt.Println("Org Name does't match with folder name")
+			}
+		} else {
+			fmt.Println("This is a protected Org")
+		}
+	}
+	return err
+}
+func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, audit string) {
+
+	ASGPath := asgpath
+	ASGName := Org+"_"+Space+".json"
+	path := ASGPath+ASGName
+
+	var asglist ASGListJson
+
+	var check *exec.Cmd
+
+	if ostype == "windows" {
+		check = exec.Command("powershell", "-command","Get-Content", path)
+	} else {
+		check = exec.Command("cat", path)
+	}
+
+	if _, err := check.Output(); err != nil {
+		fmt.Println("command: ", check)
+		fmt.Println("Err: ", check.Stdout, err)
+		fmt.Println("No ASG defined for Org and Space combination")
+
+		path := "/v3/security_groups?="+ASGName
+		checkasg := exec.Command("cf", "curl", path, "--output", "asg.json")
+		if _, err := checkasg.Output(); err != nil {
+			fmt.Println("command: ", checkasg)
+			fmt.Println("Err: ", checkasg.Stdout, err)
+		} else {
+			fileAsgJson, err := ioutil.ReadFile("asg.json")
+			if err != nil {
+				fmt.Println(err)
+			}
+			if err := json.Unmarshal(fileAsgJson, &asglist); err != nil {
+				panic(err)
+			}
+
+			if len(asglist.Resources) == 0 {
+				fmt.Println("No running ASG exist with name",ASGName,"for deleting")
+			} else {
+
+				if audit == "Delete" {
+					fmt.Println("Unbinding running ASG: ", ASGName)
+					unbind := exec.Command("cf", "unbind-running-security-group", ASGName, Org, Space, "--lifecycle", "running")
+					if _, err := unbind.Output(); err != nil {
+						fmt.Println("command: ", unbind)
+						fmt.Println("Err: ", unbind.Stdout, err)
+					} else {
+						fmt.Println("Deleting running ASG: ", ASGName)
+						delete := exec.Command("cf", "delete-security-group", ASGName)
+						if _, err := delete.Output(); err != nil {
+							fmt.Println("command: ", delete)
+							fmt.Println("Err: ", delete.Stdout, err)
+						} else {
+							fmt.Println("command: ", delete)
+							fmt.Println(delete.Stdout)
+						}
+					}
+				} else if audit == "List" {
+					fmt.Println("ASG to be deleted, Org, Space: ",ASGName, Org, Space)
+				} else {
+					fmt.Println("Provide Valid Input")
+				}
+			}
+		}
+	} else {
+		fmt.Println("command: ", check)
+		fmt.Println(check.Stdout)
+		fmt.Println("Running ASG defined for Org, Space combination", ASGName)
+	}
+	return 
 }
 func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
@@ -558,23 +2562,18 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 				count = 0
 			}
 			totalcount = totalcount + count
-
 		}
 
 		if totalcount == 0 {
 			fmt.Println("This is not Protected Org")
 
 			if ostype == "windows" {
-				//ASGPath = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\ASGs\\"
 				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
 			} else {
-				//ASGPath = cpath+"/"+clustername+"/"+list.OrgList[i]+"/ASGs/"
 				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
 			}
 
-
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
-
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -583,16 +2582,19 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 			if err != nil {
 				panic(err)
 			}
+
 			if list.OrgList[i] == Orgs.Org.Name {
+
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
 				if _, err := guid.Output(); err == nil {
 
 					fmt.Println("command: ", guid)
 					fmt.Println("Org exists: ", guid.Stdout)
-					SpaceLen := len(Orgs.Org.Spaces)
 
+					SpaceLen := len(Orgs.Org.Spaces)
 					TargetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+
 					if _, err := TargetOrg.Output(); err == nil {
 						fmt.Println("command: ", TargetOrg)
 						fmt.Println("Targeting: ", TargetOrg.Stdout)
@@ -614,8 +2616,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							fmt.Println("Space exists: ", guid.Stdout)
 
 							fmt.Println("Enabling Space Isolation Segment")
-							fmt.Println(Orgs.Org)
-							fmt.Println(Orgs.Org.Spaces[j].Name)
+							fmt.Println("Org, Space: ", Orgs.Org.Name,",",Orgs.Org.Spaces[j].Name)
 							fmt.Println("SegName: ", Orgs.Org.Spaces[j].IsolationSeg)
 							if Orgs.Org.Spaces[j].IsolationSeg != "" {
 								iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
@@ -1496,6 +3497,109 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 	}
 	return
 }
+func CreateOrUpdateProtOrgAsg(clustername string, cpath string, ostype string) {
+
+	var ProtectedOrgs ProtectedList
+	var ASGpath string
+	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+
+	var InitClusterConfigVals InitClusterConfigVals
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	if ostype == "windows" {
+		ASGpath = cpath+"\\"+clustername+"\\ProtectedOrgsASGs\\"
+	} else {
+		ASGpath = cpath+"/"+clustername+"/ProtectedOrgsASGs/"
+	}
+
+	LenProtectedOrgs := len(ProtectedOrgs.Org)
+	var check *exec.Cmd
+	ASGfile := ASGpath+ProtectedOrgs.DefaultRunningSecurityGroup+".json"
+	if InitClusterConfigVals.ClusterDetails.EnableASG == true {
+		fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+
+		if ostype == "windows" {
+			check = exec.Command("powershell", "-command","Get-Content", ASGfile)
+		} else {
+			check = exec.Command("cat", ASGfile)
+		}
+
+		if _, err := check.Output(); err != nil {
+			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
+			fmt.Println("command: ", check)
+			fmt.Println("Err: ", check.Stdout)
+			fmt.Println("Err Code: ", err)
+			fmt.Println("No Default ASG file provided in path for Protected Orgs")
+		} else {
+			fmt.Println("command: ", check)
+			fmt.Println(check.Stdout)
+			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
+			checkdasg := exec.Command("cf", "security-group", ProtectedOrgs.DefaultRunningSecurityGroup)
+			if _, err := checkdasg.Output(); err != nil {
+				fmt.Println("command: ", checkdasg)
+				fmt.Println("Err: ", checkdasg.Stdout)
+				fmt.Println("Err Code: ", err)
+				fmt.Println("Default ASG doesn't exist, Creating default ASG")
+				createdasg := exec.Command("cf", "create-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ASGfile)
+				if _, err := createdasg.Output(); err != nil {
+					fmt.Println("command: ", createdasg)
+					fmt.Println("Err: ", createdasg.Stdout)
+					fmt.Println("Err Code: ", err)
+					fmt.Println("Creating default ASG failed")
+				} else {
+					fmt.Println("command: ", createdasg)
+					fmt.Println(createdasg.Stdout)
+				}
+			} else {
+				fmt.Println("Default ASG exist, Updating default ASG")
+				updatedefasg := exec.Command("cf", "update-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ASGfile)
+				if _, err := updatedefasg.Output(); err != nil {
+					fmt.Println("command: ", updatedefasg)
+					fmt.Println("Err: ", updatedefasg.Stdout)
+					fmt.Println("Err Code: ", err)
+					fmt.Println("Default ASG not updated")
+				} else {
+					fmt.Println("command: ", updatedefasg)
+					fmt.Println(updatedefasg.Stdout)
+				}
+			}
+		}
+
+		for p := 0; p < LenProtectedOrgs; p++ {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("ASG for Protected Orgs: ", ProtectedOrgs.DefaultRunningSecurityGroup)
+			bindasg := exec.Command("cf", "bind-security-group", ProtectedOrgs.DefaultRunningSecurityGroup, ProtectedOrgs.Org[p], "--lifecycle", "running")
+			if _, err := bindasg.Output(); err != nil{
+				fmt.Println("command: ", bindasg)
+				fmt.Println("Err: ", bindasg.Stdout)
+				fmt.Println("Err Code: ", err)
+				fmt.Println("Failed to bind to protected Org")
+			} else {
+				fmt.Println("command: ", bindasg)
+				fmt.Println(bindasg.Stdout)
+			}
+		}
+	} else {
+		fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+		fmt.Println("ASGs not enabled")
+	}
+}
 func OrgsInit(clustername string, cpath string) error {
 
 	var list List
@@ -1538,7 +3642,6 @@ func OrgsInit(clustername string, cpath string) error {
 				count = 0
 			}
 			totalcount = totalcount + count
-
 		}
 
 		if totalcount == 0 {
@@ -1619,7 +3722,10 @@ Org:
           SpaceAuditors:
             - User1
             - User2
-            - User3`
+            - User3
+SpaceAudit: List #Delete/Rename/List
+UserAudit:  List #Unset/List
+ASGAudit:   List #Delete/List`
 
 				fmt.Println("Creating <cluster>/<Org> sample yaml files")
 				err = ioutil.WriteFile(OrgsYml, []byte(OrgTmp), 0644)
@@ -1739,22 +3845,24 @@ quota:
   - Name: medium_quota
     memory_limit: 2048M
   - Name: large_quota
-    memory_limit: 2048M`
+    memory_limit: 2048M
+Audit:  List`
 
 		var ProtectedListTmp = `---
-  Org:
-    - system
-    - healthwatch
-    - dynatrace
-  quota:
-    - default
-  DefaultRunningSecurityGroup: default_security_group`
+Org:
+  - system
+  - healthwatch
+  - dynatrace
+quota:
+  - default
+DefaultRunningSecurityGroup: default_security_group`
 
 		var ListTmp = `---
 OrgList:
   - Org-1
   - Org-2
-  - Org-3`
+  - Org-3
+Audit: List`
 
 		fmt.Println("Creating <cluster>/ sample yaml files")
 		err = ioutil.WriteFile(QuotasYml, []byte(QuotasTmp), 0644)
