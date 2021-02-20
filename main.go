@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -613,7 +613,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 				fmt.Println("Quota: ", body.Resources[i].Name)
 
 				for p := 0; p < LenProtectedQuota; p++ {
-					fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p], ",", body.Resources[i].Name)
+					fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p],",", body.Resources[i].Name)
 					if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(body.Resources[i].Name, "") {
 						count = 1
 					} else {
@@ -2793,7 +2793,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 		}
 
 		for p := 0; p < LenProtectedQuota; p++ {
-			fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p])
+			fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p],",", Quotas.Quota[i].Name)
 			if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(Quotas.Quota[i].Name, "") {
 				count = 1
 			} else {
