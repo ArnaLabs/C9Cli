@@ -12,6 +12,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -655,14 +656,22 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 						} else if Audit == "Rename" {
 							fmt.Println("DELETE!DELETE!")
 							fmt.Println("Renaming Quota: ", body.Resources[i].Name)
-							rename := exec.Command("cf", "update-quota", body.Resources[i].Name, "-n", body.Resources[i].Name+"tobedeleted")
-							if _, err := rename.Output(); err == nil {
-								fmt.Println("command: ", rename)
-								fmt.Println(rename.Stdout)
+							result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
+							if result == true{
+								fmt.Println("DELETE!DELETE!")
+								fmt.Println("Renaming Quota: ", body.Resources[i].Name)
+								fmt.Println("Quota already renamed")
 							} else {
-								fmt.Println("command: ", rename)
-								fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+								rename := exec.Command("cf", "update-quota", body.Resources[i].Name, "-n", body.Resources[i].Name+"_tobedeleted")
+								if _, err := rename.Output(); err == nil {
+									fmt.Println("command: ", rename)
+									fmt.Println(rename.Stdout)
+								} else {
+									fmt.Println("command: ", rename)
+									fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+								}
 							}
+							
 						} else if Audit == "List" {
 							fmt.Println("DELETE!DELETE!")
 							fmt.Println("Quota to be deleted: ", body.Resources[i].Name)
