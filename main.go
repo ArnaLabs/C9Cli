@@ -660,6 +660,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 								fmt.Println("Err: ", rename.Stdout, rename.Stderr)
 							}
 						} else if Audit == "List" {
+							fmt.Println("DELETE!DELETE!")
 							fmt.Println("Quota to be deleted: ", body.Resources[i].Name)
 						} else {
 							fmt.Println("Provide Valid Input")
