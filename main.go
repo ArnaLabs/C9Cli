@@ -1015,15 +1015,15 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 									if result == true{
 										fmt.Println("Space already renamed")
 									} else {
-										target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", spacelistjson.Resources[i].Name)
-										if _, err := target.Output(); err == nil {
-											fmt.Println("command: ", target)
-											fmt.Println(target.Stdout)
-										} else {
-											fmt.Println("command: ", target)
-											fmt.Println("Err: ", target.Stdout, target.Stderr)
-										}
-										rename := exec.Command("cf", "rename", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"_tobedeleted")
+										//target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", spacelistjson.Resources[i].Name)
+										//if _, err := target.Output(); err == nil {
+										//	fmt.Println("command: ", target)
+										//	fmt.Println(target.Stdout)
+										//} else {
+										//	fmt.Println("command: ", target)
+										//	fmt.Println("Err: ", target.Stdout, target.Stderr)
+										//}
+										rename := exec.Command("cf", "rename-space", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"_tobedeleted")
 										if _, err := rename.Output(); err == nil {
 											fmt.Println("command: ", rename)
 											fmt.Println(rename.Stdout)
