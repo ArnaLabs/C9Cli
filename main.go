@@ -789,39 +789,47 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 					if orgstotalcount == 0 {
 						fmt.Println("Org has not be listed in Orglist.yml: ")
 						fmt.Println("Auditing Org: ", body.Resources[i].Name)
-						if Audit == "delete" {
-							fmt.Println("DELETE!DELETE!")
-							fmt.Println("Deleting Org: ", body.Resources[i].Name)
-							delete := exec.Command("cf", "delete-org", body.Resources[i].Name, "-f")
-							if _, err := delete.Output(); err == nil {
-								fmt.Println("command: ", delete)
-								fmt.Println(delete.Stdout)
-							} else {
-								fmt.Println("command: ", delete)
-								fmt.Println("Err: ", delete.Stdout, delete.Stderr)
-							}
-						} else if Audit == "rename" {
-							fmt.Println("DELETE!DELETE!")
-							fmt.Println("Renaming Org: ", body.Resources[i].Name)
-							result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
-							if result == true{
-								fmt.Println("Org already renamed")
-							} else {
-								rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"_tobedeleted")
-								if _, err := rename.Output(); err == nil {
-									fmt.Println("command: ", rename)
-									fmt.Println(rename.Stdout)
-								} else {
-									fmt.Println("command: ", rename)
-									fmt.Println("Err: ", rename.Stdout, rename.Stderr)
-								}
-							}
 
-						} else if Audit == "list" {
-							fmt.Println("DELETE!DELETE!")
-							fmt.Println("Org to be deleted: ", body.Resources[i].Name)
+						target := exec.Command("cf", "t", "-o", body.Resources[i].Name)
+						if _, err := target.Output(); err == nil {
+							fmt.Println("command: ", target)
+							fmt.Println(target.Stdout)
+							if Audit == "delete" {
+								fmt.Println("DELETE!DELETE!")
+								fmt.Println("Deleting Org: ", body.Resources[i].Name)
+								delete := exec.Command("cf", "delete-org", body.Resources[i].Name, "-f")
+								if _, err := delete.Output(); err == nil {
+									fmt.Println("command: ", delete)
+									fmt.Println(delete.Stdout)
+								} else {
+									fmt.Println("command: ", delete)
+									fmt.Println("Err: ", delete.Stdout, delete.Stderr)
+								}
+							} else if Audit == "rename" {
+								fmt.Println("DELETE!DELETE!")
+								fmt.Println("Renaming Org: ", body.Resources[i].Name)
+								result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
+								if result == true{
+									fmt.Println("Org already renamed")
+								} else {
+									rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"_tobedeleted")
+									if _, err := rename.Output(); err == nil {
+										fmt.Println("command: ", rename)
+										fmt.Println(rename.Stdout)
+									} else {
+										fmt.Println("command: ", rename)
+										fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+									}
+								}
+							} else if Audit == "list" {
+								fmt.Println("DELETE!DELETE!")
+								fmt.Println("Org to be deleted: ", body.Resources[i].Name)
+							} else {
+								fmt.Println("Provide Valid Input")
+							}
 						} else {
-							fmt.Println("Provide Valid Input")
+							fmt.Println("command: ", target)
+							fmt.Println("Err: ", target.Stdout, target.Stderr)
 						}
 					} else {
 						fmt.Println("Org exists in Orgslist.yml: ", body.Resources[i].Name)
@@ -989,54 +997,50 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 							}
 
 							if Spacestotalcount == 0 {
-
+								
 								fmt.Println("Space has not be listed in Org.yml: ")
 								fmt.Println("Auditing Space: ", spacelistjson.Resources[i].Name)
-								if Audit == "delete" {
-									fmt.Println("DELETE!DELETE!")
-									fmt.Println("Deleting Space: ", spacelistjson.Resources[i].Name)
-									//target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", spacelistjson.Resources[i].Name)
-									//if _, err := target.Output(); err == nil {
-									//	fmt.Println("command: ", target)
-									//	fmt.Println(target.Stdout)
-									//}
-									delete := exec.Command("cf", "delete-space", spacelistjson.Resources[i].Name, "-o", Orgs.Org.Name, "-f")
-									if _, err := delete.Output(); err == nil {
-										fmt.Println("command: ", delete)
-										fmt.Println(delete.Stdout)
-									} else {
-										fmt.Println("command: ", delete)
-										fmt.Println("Err: ", delete.Stdout, delete.Stderr)
-									}
-								} else if Audit == "rename" {
-									fmt.Println("DELETE!DELETE!")
-									fmt.Println("Renaming Space: ", spacelistjson.Resources[i].Name)
-									result, _ := regexp.MatchString("_tobedeleted", spacelistjson.Resources[i].Name)
-									if result == true{
-										fmt.Println("Space already renamed")
-									} else {
-										//target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", spacelistjson.Resources[i].Name)
-										//if _, err := target.Output(); err == nil {
-										//	fmt.Println("command: ", target)
-										//	fmt.Println(target.Stdout)
-										//} else {
-										//	fmt.Println("command: ", target)
-										//	fmt.Println("Err: ", target.Stdout, target.Stderr)
-										//}
-										rename := exec.Command("cf", "rename-space", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"_tobedeleted")
-										if _, err := rename.Output(); err == nil {
-											fmt.Println("command: ", rename)
-											fmt.Println(rename.Stdout)
+
+								target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", spacelistjson.Resources[i].Name)
+								if _, err := target.Output(); err == nil {
+									fmt.Println("command: ", target)
+									fmt.Println(target.Stdout)
+									if Audit == "delete" {
+										fmt.Println("DELETE!DELETE!")
+										fmt.Println("Deleting Space: ", spacelistjson.Resources[i].Name)
+										delete := exec.Command("cf", "delete-space", spacelistjson.Resources[i].Name, "-o", Orgs.Org.Name, "-f")
+										if _, err := delete.Output(); err == nil {
+											fmt.Println("command: ", delete)
+											fmt.Println(delete.Stdout)
 										} else {
-											fmt.Println("command: ", rename)
-											fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+											fmt.Println("command: ", delete)
+											fmt.Println("Err: ", delete.Stdout, delete.Stderr)
 										}
+									} else if Audit == "rename" {
+										fmt.Println("DELETE!DELETE!")
+										fmt.Println("Renaming Space: ", spacelistjson.Resources[i].Name)
+										result, _ := regexp.MatchString("_tobedeleted", spacelistjson.Resources[i].Name)
+										if result == true{
+											fmt.Println("Space already renamed")
+										} else {
+											rename := exec.Command("cf", "rename-space", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"_tobedeleted")
+											if _, err := rename.Output(); err == nil {
+												fmt.Println("command: ", rename)
+												fmt.Println(rename.Stdout)
+											} else {
+												fmt.Println("command: ", rename)
+												fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+											}
+										}
+									} else if Audit == "list" {
+										fmt.Println("DELETE!DELETE!")
+										fmt.Println("Space to be deleted: ", spacelistjson.Resources[i].Name)
+									} else {
+										fmt.Println("Provide Valid Input")
 									}
-								} else if Audit == "list" {
-									fmt.Println("DELETE!DELETE!")
-									fmt.Println("Space to be deleted: ", spacelistjson.Resources[i].Name)
 								} else {
-									fmt.Println("Provide Valid Input")
+									fmt.Println("command: ", target)
+									fmt.Println("Err: ", target.Stdout, target.Stderr)
 								}
 							} else {
 								fmt.Println("Space exists in Orgs.yml: ", spacelistjson.Resources[i].Name)
@@ -1161,7 +1165,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 			Audit := Orgs.UserAudit
 
 			if list.OrgList[i] == Orgs.Org.Name {
-
+				
 				var out bytes.Buffer
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -1170,417 +1174,425 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 				err := guid.Run()
 
 				if err == nil {
-
+					
 					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
 
 					path := "/v3/roles/?organization_guids="+out.String()
 					orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "orgusrslist.json")
 
-					var out bytes.Buffer
-					orguserslist.Stdout = &out
-					err := orguserslist.Run()
-					if err == nil {
-						fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
-					} else {
-						fmt.Println("err", orguserslist, orguserslist.Stdout, orguserslist.Stderr)
-					}
+					target := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+					if _, err := target.Output(); err == nil {
+						fmt.Println("command: ", target)
+						fmt.Println(target.Stdout)
+						var out bytes.Buffer
+						orguserslist.Stdout = &out
+						err := orguserslist.Run()
+						if err == nil {
+							fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
+						} else {
+							fmt.Println("err", orguserslist, orguserslist.Stdout, orguserslist.Stderr)
+						}
 
-					fileSpaceJson, err := ioutil.ReadFile("orgusrslist.json")
-					if err != nil {
-						fmt.Println(err)
-					}
-					if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
-						panic(err)
-					}
+						fileSpaceJson, err := ioutil.ReadFile("orgusrslist.json")
+						if err != nil {
+							fmt.Println(err)
+						}
+						if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+							panic(err)
+						}
 
-					OrgUsrLen := len(orgusrslist.Resources)
+						OrgUsrLen := len(orgusrslist.Resources)
 
-					fmt.Println("No of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
+						fmt.Println("No of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
 
-					if OrgUsrLen != 0 {
+						if OrgUsrLen != 0 {
 
-						for i := 0; i < OrgUsrLen; i++ {
+							for i := 0; i < OrgUsrLen; i++ {
 
-							//SSO
-							OrgUsLenSSOAuditor := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
+								//SSO
+								OrgUsLenSSOAuditor := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
 
-							var orgusrssoauditscount, aorusrssoaudittotalcount int
+								var orgusrssoauditscount, aorusrssoaudittotalcount int
 
-							if orgusrslist.Resources[i].Type == "organization_auditor"{
+								if orgusrslist.Resources[i].Type == "organization_auditor"{
 
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
 
-								if err == nil {
-									for q := 0; q < OrgUsLenSSOAuditor; q++ {
+									if err == nil {
+										for q := 0; q < OrgUsLenSSOAuditor; q++ {
 
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusrssoaudittotalcount = 2
-										} else {
-											fmt.Println("SSO Audit Usr: ", Orgs.Org.OrgUsers.SSO.OrgAuditors[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusrssoauditscount = 1
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusrssoaudittotalcount = 2
 											} else {
-												orgusrssoauditscount = 0
+												fmt.Println("SSO Audit Usr: ", Orgs.Org.OrgUsers.SSO.OrgAuditors[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusrssoauditscount = 1
+												} else {
+													orgusrssoauditscount = 0
+												}
+												aorusrssoaudittotalcount = aorusrssoaudittotalcount + orgusrssoauditscount
 											}
-											aorusrssoaudittotalcount = aorusrssoaudittotalcount + orgusrssoauditscount
 										}
-									}
 
-									if aorusrssoaudittotalcount == 0 {
+										if aorusrssoaudittotalcount == 0 {
 
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("SSO OrgAuditor User: ", strings.TrimSpace(out.String()))
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("SSO OrgAuditor User: ", strings.TrimSpace(out.String()))
 
-										if Audit == "unset" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("Unsetting user")
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
-											if _, err := unset.Output(); err == nil {
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-											}
-										} else if Audit == "List" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgAuditor")
-										} else {
-											fmt.Println("Provide Valid Input")
-										}
-									} else if aorusrssoaudittotalcount ==2 {
-										fmt.Println("Admin set as SSO Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-									} else {
-										fmt.Println("User is listed in Org.yml as SSO Org Audit User: ", strings.TrimSpace(out.String()))
-									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
-								}
-							}
-
-							OrgUsLenSSOManagers := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
-
-							var orgusrssomangscount, aorusrssomangtotalcount int
-
-							if orgusrslist.Resources[i].Type == "organization_managers"{
-
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
-
-								if err == nil {
-									for q := 0; q < OrgUsLenSSOManagers; q++ {
-
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusrssomangtotalcount = 2
-										} else {
-
-											fmt.Println("SSO Org Managers Usr: ", Orgs.Org.OrgUsers.SSO.OrgManagers[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusrssomangscount = 1
-											} else {
-												orgusrssomangscount = 0
-											}
-											aorusrssomangtotalcount = aorusrssomangtotalcount + orgusrssomangscount
-										}
-									}
-									if aorusrssomangtotalcount == 0 {
-
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("SSO OrgManager User: ", strings.TrimSpace(out.String()))
-
-										if Audit == "unset" {
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
-											if _, err := unset.Output(); err == nil {
+											if Audit == "unset" {
 												fmt.Println("UNSET!UNSET!")
 												fmt.Println("Unsetting user")
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
 												fmt.Println("UNSET!UNSET!")
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgAuditor")
+											} else {
+												fmt.Println("Provide Valid Input")
 											}
-										} else if Audit == "List" {
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgManager")
+										} else if aorusrssoaudittotalcount ==2 {
+											fmt.Println("Admin set as SSO Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
 										} else {
-											fmt.Println("Provide Valid Input")
+											fmt.Println("User is listed in Org.yml as SSO Org Audit User: ", strings.TrimSpace(out.String()))
 										}
-									} else if aorusrssomangtotalcount ==2 {
-										fmt.Println("Admin set as SSO Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
 									} else {
-										fmt.Println("User is listed in Org.yml as SSO Org Manager User: ", strings.TrimSpace(out.String()))
+										fmt.Println("err", username, username.Stdout, username.Stderr)
 									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
+								}
+
+								OrgUsLenSSOManagers := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
+
+								var orgusrssomangscount, aorusrssomangtotalcount int
+
+								if orgusrslist.Resources[i].Type == "organization_managers"{
+
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
+
+									if err == nil {
+										for q := 0; q < OrgUsLenSSOManagers; q++ {
+
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusrssomangtotalcount = 2
+											} else {
+
+												fmt.Println("SSO Org Managers Usr: ", Orgs.Org.OrgUsers.SSO.OrgManagers[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusrssomangscount = 1
+												} else {
+													orgusrssomangscount = 0
+												}
+												aorusrssomangtotalcount = aorusrssomangtotalcount + orgusrssomangscount
+											}
+										}
+										if aorusrssomangtotalcount == 0 {
+
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("SSO OrgManager User: ", strings.TrimSpace(out.String()))
+
+											if Audit == "unset" {
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("UNSET!UNSET!")
+													fmt.Println("Unsetting user")
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("UNSET!UNSET!")
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgManager")
+											} else {
+												fmt.Println("Provide Valid Input")
+											}
+										} else if aorusrssomangtotalcount ==2 {
+											fmt.Println("Admin set as SSO Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+										} else {
+											fmt.Println("User is listed in Org.yml as SSO Org Manager User: ", strings.TrimSpace(out.String()))
+										}
+									} else {
+										fmt.Println("err", username, username.Stdout, username.Stderr)
+									}
+								}
+
+								//UAA
+								OrgUsLenUAAAuditor := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
+
+								var orgusruaaauditscount, aorusruaaaudittotalcount int
+
+								if orgusrslist.Resources[i].Type == "organization_auditor"{
+
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
+
+									if err == nil {
+										for q := 0; q < OrgUsLenUAAAuditor; q++ {
+
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusruaaaudittotalcount = 2
+											} else {
+												fmt.Println("UAA Audit Usr: ", Orgs.Org.OrgUsers.UAA.OrgAuditors[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusruaaauditscount = 1
+												} else {
+													orgusruaaauditscount = 0
+												}
+												aorusruaaaudittotalcount = aorusruaaaudittotalcount + orgusruaaauditscount
+											}
+										}
+
+										if aorusruaaaudittotalcount == 0 {
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("UAA OrgAuditor User: ", strings.TrimSpace(out.String()))
+
+											if Audit == "unset" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("Unsetting user")
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgAuditor")
+											} else {
+												fmt.Println("Provide Valid Input")
+											}
+										} else if aorusruaaaudittotalcount ==2 {
+											fmt.Println("Admin set as UAA Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+										} else {
+											fmt.Println("User is listed in Org.yml as UAA Org Audit User: ", strings.TrimSpace(out.String()))
+										}
+									} else {
+										fmt.Println("err", username, username.Stdout, username.Stderr)
+									}
+								}
+
+
+								OrgUsLenUAAManagers := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
+
+								var orgusruaamangscount, aorusruaamangtotalcount int
+
+								if orgusrslist.Resources[i].Type == "organization_managers"{
+
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
+
+									if err == nil {
+										for q := 0; q < OrgUsLenUAAManagers; q++ {
+
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusruaamangtotalcount = 2
+											} else {
+
+												fmt.Println("UAA Org Managers Usr: ", Orgs.Org.OrgUsers.UAA.OrgManagers[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusruaamangscount = 1
+												} else {
+													orgusruaamangscount = 0
+												}
+												aorusruaamangtotalcount = aorusruaamangtotalcount + orgusruaamangscount
+											}
+										}
+										if aorusruaamangtotalcount == 0 {
+
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("UAA OrgManager User: ", strings.TrimSpace(out.String()))
+
+											if Audit == "unset" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("Unsetting user")
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgManager")
+											} else {
+												fmt.Println("Provide Valid Input")
+											}
+
+										} else if aorusruaamangtotalcount ==2 {
+											fmt.Println("Admin set as UAA Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+										} else {
+											fmt.Println("User is listed in Org.yml as UAA Org Manager User: ", strings.TrimSpace(out.String()))
+										}
+									} else {
+										fmt.Println("err", username, username.Stdout, username.Stderr)
+									}
+								}
+
+								//LDAP
+
+								OrgUsLenLDAPAuditor := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
+								var orgusrldapauditscount, aorusrldapaudittotalcount int
+
+								if orgusrslist.Resources[i].Type == "organization_auditor"{
+
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
+
+									if err == nil {
+										for q := 0; q < OrgUsLenLDAPAuditor; q++ {
+
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusrldapaudittotalcount = 2
+											} else {
+												fmt.Println("LDAP Audit Usr: ", Orgs.Org.OrgUsers.LDAP.OrgAuditors[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusrldapauditscount = 1
+												} else {
+													orgusrldapauditscount = 0
+												}
+												aorusrldapaudittotalcount = aorusrldapaudittotalcount + orgusrldapauditscount
+
+											}
+										}
+
+										if aorusrldapaudittotalcount == 0 {
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("LDAP OrgAuditor User: ", strings.TrimSpace(out.String()))
+
+											if Audit == "unset" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("Unsetting user")
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgAuditor")
+											} else {
+												fmt.Println("Provide Valid Input")
+											}
+										} else if aorusrldapaudittotalcount ==2 {
+											fmt.Println("Admin set as LDAP Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+										} else {
+											fmt.Println("User is listed in Org.yml as LDAP Org Audit User: ", strings.TrimSpace(out.String()))
+										}
+									} else {
+										fmt.Println("err", username, username.Stdout, username.Stderr)
+									}
+								}
+
+
+								OrgUsLenLDAPManagers := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
+
+								var orgusrldapmangscount, aorusrldapmangtotalcount int
+
+								if orgusrslist.Resources[i].Type == "organization_managers"{
+
+									userguid := orgusrslist.Resources[i].GUID
+									path := "/v3/users/?guids="+userguid
+									var out bytes.Buffer
+									username := exec.Command("cf", "curl", strings.TrimSpace(path))
+									username.Stdout = &out
+									err := username.Run()
+
+									if err == nil {
+										for q := 0; q < OrgUsLenLDAPManagers; q++ {
+
+											if out.String() == "admin" {
+												fmt.Println("Admin user skipping Validation")
+												aorusrldapmangtotalcount = 2
+											} else {
+
+												fmt.Println("LDAP Org Managers Usr: ", Orgs.Org.OrgUsers.LDAP.OrgManagers[q], ",", username)
+												if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
+													orgusrldapmangscount = 1
+												} else {
+													orgusrldapmangscount = 0
+												}
+												aorusrldapmangtotalcount = aorusrldapmangtotalcount + orgusrldapmangscount
+											}
+										}
+										if aorusrldapmangtotalcount == 0 {
+											fmt.Println("User has not be listed in Org.yml: ")
+											fmt.Println("LDAP OrgManager User: ", strings.TrimSpace(out.String()))
+
+											if Audit == "unset" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("Unsetting user")
+												unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
+												if _, err := unset.Output(); err == nil {
+													fmt.Println("command: ", unset)
+													fmt.Println(unset.Stdout)
+												} else {
+													fmt.Println("command: ", unset)
+													fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+												}
+											} else if Audit == "List" {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgManager")
+											} else {
+												fmt.Println("Provide Valid Input")
+											}
+										} else if aorusrldapmangtotalcount ==2 {
+											fmt.Println("Admin set as LDAP Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+										} else {
+											fmt.Println("User is listed in Org.yml as LDAP Org Manager User: ", strings.TrimSpace(out.String()))
+										}
+									} else {
+										fmt.Println("err", username, username.Stdout, username.Stderr)
+									}
 								}
 							}
-
-							//UAA
-							OrgUsLenUAAAuditor := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
-
-							var orgusruaaauditscount, aorusruaaaudittotalcount int
-
-							if orgusrslist.Resources[i].Type == "organization_auditor"{
-
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
-
-								if err == nil {
-									for q := 0; q < OrgUsLenUAAAuditor; q++ {
-
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusruaaaudittotalcount = 2
-										} else {
-											fmt.Println("UAA Audit Usr: ", Orgs.Org.OrgUsers.UAA.OrgAuditors[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusruaaauditscount = 1
-											} else {
-												orgusruaaauditscount = 0
-											}
-											aorusruaaaudittotalcount = aorusruaaaudittotalcount + orgusruaaauditscount
-										}
-									}
-
-									if aorusruaaaudittotalcount == 0 {
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("UAA OrgAuditor User: ", strings.TrimSpace(out.String()))
-
-										if Audit == "unset" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("Unsetting user")
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
-											if _, err := unset.Output(); err == nil {
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-											}
-										} else if Audit == "List" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgAuditor")
-										} else {
-											fmt.Println("Provide Valid Input")
-										}
-									} else if aorusruaaaudittotalcount ==2 {
-										fmt.Println("Admin set as UAA Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-									} else {
-										fmt.Println("User is listed in Org.yml as UAA Org Audit User: ", strings.TrimSpace(out.String()))
-									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
-								}
-							}
-
-
-							OrgUsLenUAAManagers := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
-
-							var orgusruaamangscount, aorusruaamangtotalcount int
-
-							if orgusrslist.Resources[i].Type == "organization_managers"{
-
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
-
-								if err == nil {
-									for q := 0; q < OrgUsLenUAAManagers; q++ {
-
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusruaamangtotalcount = 2
-										} else {
-
-											fmt.Println("UAA Org Managers Usr: ", Orgs.Org.OrgUsers.UAA.OrgManagers[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusruaamangscount = 1
-											} else {
-												orgusruaamangscount = 0
-											}
-											aorusruaamangtotalcount = aorusruaamangtotalcount + orgusruaamangscount
-										}
-									}
-									if aorusruaamangtotalcount == 0 {
-
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("UAA OrgManager User: ", strings.TrimSpace(out.String()))
-
-										if Audit == "unset" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("Unsetting user")
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
-											if _, err := unset.Output(); err == nil {
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-											}
-										} else if Audit == "List" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgManager")
-										} else {
-											fmt.Println("Provide Valid Input")
-										}
-
-									} else if aorusruaamangtotalcount ==2 {
-										fmt.Println("Admin set as UAA Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
-									} else {
-										fmt.Println("User is listed in Org.yml as UAA Org Manager User: ", strings.TrimSpace(out.String()))
-									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
-								}
-							}
-
-							//LDAP
-
-							OrgUsLenLDAPAuditor := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
-							var orgusrldapauditscount, aorusrldapaudittotalcount int
-
-							if orgusrslist.Resources[i].Type == "organization_auditor"{
-
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
-
-								if err == nil {
-									for q := 0; q < OrgUsLenLDAPAuditor; q++ {
-
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusrldapaudittotalcount = 2
-										} else {
-											fmt.Println("LDAP Audit Usr: ", Orgs.Org.OrgUsers.LDAP.OrgAuditors[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusrldapauditscount = 1
-											} else {
-												orgusrldapauditscount = 0
-											}
-											aorusrldapaudittotalcount = aorusrldapaudittotalcount + orgusrldapauditscount
-
-										}
-									}
-
-									if aorusrldapaudittotalcount == 0 {
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("LDAP OrgAuditor User: ", strings.TrimSpace(out.String()))
-
-										if Audit == "unset" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("Unsetting user")
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
-											if _, err := unset.Output(); err == nil {
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-											}
-										} else if Audit == "List" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgAuditor")
-										} else {
-											fmt.Println("Provide Valid Input")
-										}
-									} else if aorusrldapaudittotalcount ==2 {
-										fmt.Println("Admin set as LDAP Org Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-									} else {
-										fmt.Println("User is listed in Org.yml as LDAP Org Audit User: ", strings.TrimSpace(out.String()))
- 									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
-								}
-							}
-
-
-							OrgUsLenLDAPManagers := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
-
-							var orgusrldapmangscount, aorusrldapmangtotalcount int
-
-							if orgusrslist.Resources[i].Type == "organization_managers"{
-
-								userguid := orgusrslist.Resources[i].GUID
-								path := "/v3/users/?guids="+userguid
-								var out bytes.Buffer
-								username := exec.Command("cf", "curl", strings.TrimSpace(path))
-								username.Stdout = &out
-								err := username.Run()
-
-								if err == nil {
-									for q := 0; q < OrgUsLenLDAPManagers; q++ {
-
-										if out.String() == "admin" {
-											fmt.Println("Admin user skipping Validation")
-											aorusrldapmangtotalcount = 2
-										} else {
-
-											fmt.Println("LDAP Org Managers Usr: ", Orgs.Org.OrgUsers.LDAP.OrgManagers[q], ",", username)
-											if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == strings.TrimSpace(out.String()) {
-												orgusrldapmangscount = 1
-											} else {
-												orgusrldapmangscount = 0
-											}
-											aorusrldapmangtotalcount = aorusrldapmangtotalcount + orgusrldapmangscount
-										}
-									}
-									if aorusrldapmangtotalcount == 0 {
-										fmt.Println("User has not be listed in Org.yml: ")
-										fmt.Println("LDAP OrgManager User: ", strings.TrimSpace(out.String()))
-
-										if Audit == "unset" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("Unsetting user")
-											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
-											if _, err := unset.Output(); err == nil {
-												fmt.Println("command: ", unset)
-												fmt.Println(unset.Stdout)
-											} else {
-												fmt.Println("command: ", unset)
-												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-											}
-										} else if Audit == "List" {
-											fmt.Println("UNSET!UNSET!")
-											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgManager")
-										} else {
-											fmt.Println("Provide Valid Input")
-										}
-									} else if aorusrldapmangtotalcount ==2 {
-										fmt.Println("Admin set as LDAP Org Manager User, skipping unset: ", strings.TrimSpace(out.String()))
-									} else {
-										fmt.Println("User is listed in Org.yml as LDAP Org Manager User: ", strings.TrimSpace(out.String()))
-									}
-								} else {
-									fmt.Println("err", username, username.Stdout, username.Stderr)
-								}
-							}
+						} else {
+							fmt.Println("No users exist")
 						}
 					} else {
-						fmt.Println("No users exist")
+						fmt.Println("command: ", target)
+						fmt.Println("Err: ", target.Stdout, target.Stderr)
 					}
-
+					
 					results := exec.Command("cf", "org-users", Orgs.Org.Name)
 					if _, err := results.Output(); err != nil{
 						fmt.Println("command: ", results)
@@ -1695,6 +1707,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 					SpaceLen := len(Orgs.Org.Spaces)
 
 					for j := 0; j < SpaceLen; j++ {
+						
+						
 
 						var out bytes.Buffer
 						guid.Stdout = &out
@@ -1705,605 +1719,617 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 							fmt.Println("Space exists: ", Orgs.Org.Spaces[j].Name,",", out.String())
 
-							path := "/v3/roles/?space_guids="+out.String()
-							spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spaceusrslist.json")
-
-							var out bytes.Buffer
-							spaceuserslist.Stdout = &out
-							err := spaceuserslist.Run()
-							if err == nil {
-								fmt.Println(spaceuserslist, spaceuserslist.Stdout)
-							} else {
-								fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
-							}
-
-							fileSpaceJson, err := ioutil.ReadFile("spaceuserslist.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
-								panic(err)
-							}
-
-							SpaceUsrLen := len(spaceusrslist.Resources)
-							fmt.Println("No of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
-
-							if SpaceUsrLen != 0 {
-
-								for i := 0; i < SpaceUsrLen; i++ {
-
-									//SSO Audit
-
-									SpaceUsLenSSOAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
-
-									var spaceusrssoauditscount, spaceusrssoaudittotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_auditor" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenSSOAuditor; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrssoaudittotalcount = 2
-												} else {
-													fmt.Println("SSO Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q], ",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
-														spaceusrssoauditscount = 1
-													} else {
-														spaceusrssoauditscount = 0
-													}
-													spaceusrssoaudittotalcount = spaceusrssoaudittotalcount + spaceusrssoauditscount
-												}
-											}
-
-											if spaceusrssoaudittotalcount == 0 {
-
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("SSO SpaceAuditor User: ", strings.TrimSpace(out.String()))
-
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "list" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceAuditor")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-
-											} else if spaceusrssoaudittotalcount == 2 {
-												fmt.Println("Admin set as SSO Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as SSO Space Audit User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									SpaceUsLenSSODeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
-
-									var spaceusrssodevscount, spaceusrssodevtotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_developer" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenSSODeveloper; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrssodevtotalcount = 2
-												} else {
-													fmt.Println("SSO Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q], ",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
-														spaceusrssodevscount = 1
-													} else {
-														spaceusrssodevscount = 0
-													}
-													spaceusrssodevtotalcount = spaceusrssodevtotalcount + spaceusrssodevscount
-												}
-											}
-
-											//SSO Developer
-
-											if spaceusrssodevtotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("SSO Space Dev User: ", strings.TrimSpace(out.String()))
-
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "list" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceDeveloper")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-
-											} else if spaceusrssodevtotalcount == 2 {
-												fmt.Println("Admin set as SSO Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as SSO Space Dev User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//SSO Manager
-
-									SpaceUsLenSSOMan := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
-
-									var spaceusrssomanscount, spaceusrssomantotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_manager" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenSSOMan; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrssomantotalcount = 2
-												} else {
-													fmt.Println("SSO Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q],",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
-														spaceusrssomanscount = 1
-													} else {
-														spaceusrssomanscount = 0
-													}
-													spaceusrssomantotalcount = spaceusrssomantotalcount + spaceusrssomanscount
-												}
-											}
-
-											if spaceusrssomantotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("SSO Space Manager User: ", strings.TrimSpace(out.String()))
-
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name,Orgs.Org.Spaces[j].Name, "SpaceManager")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceManager")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusrssomantotalcount == 2 {
-												fmt.Println("Admin set as SSO Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as SSO Space Manager User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//UAA Audit
-									SpaceUsLenUAAAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
-
-									var spaceusruaaauditscount, spaceusruaaaudittotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_auditor" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenUAAAuditor; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusruaaaudittotalcount = 2
-												} else {
-													fmt.Println("UAA Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q],",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
-														spaceusruaaauditscount = 1
-													} else {
-														spaceusruaaauditscount = 0
-													}
-													spaceusruaaaudittotalcount = spaceusruaaaudittotalcount + spaceusruaaauditscount
-												}
-											}
-
-											if spaceusruaaaudittotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("UAA SpaceAuditor User: ", strings.TrimSpace(out.String()))
-
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceAuditor")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceAuditor")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusruaaaudittotalcount == 2 {
-												fmt.Println("Admin set as UAA Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as UAA Space Audit User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//UAA Developer
-
-									SpaceUsLenUAADeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
-
-									var spaceusruaadevscount, spaceusruaadevtotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_developer" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenUAADeveloper; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusruaadevtotalcount = 2
-												} else {
-													fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q],",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
-														spaceusruaadevscount = 1
-													} else {
-														spaceusruaadevscount = 0
-													}
-													spaceusruaadevtotalcount = spaceusruaadevtotalcount + spaceusruaadevscount
-												}
-											}
-
-											if spaceusruaadevtotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("UAA SpaceDeveloper User: ", strings.TrimSpace(out.String()))
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceDeveloper")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusruaadevtotalcount == 2 {
-												fmt.Println("Admin set as UAA Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as UAA Space Dev User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//UAA Manager
-
-									SpaceUsLenUAAMan := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
-
-									var spaceusruaamanscount, spaceusruaamantotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_manager" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids="+userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenUAAMan; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusruaamantotalcount = 2
-												} else {
-													fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q],",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
-														spaceusruaamanscount = 1
-													} else {
-														spaceusruaamanscount = 0
-													}
-													spaceusruaamantotalcount = spaceusruaamantotalcount + spaceusruaamanscount
-												}
-											}
-
-											if spaceusruaamantotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("UAA SpaceManager User: ", strings.TrimSpace(out.String()))
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceManager")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceManager")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusruaamantotalcount == 2 {
-												fmt.Println("Admin set as UAA Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as UAA Space Manager User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//LDAP Audit
-									SpaceUsLenLDAPAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
-
-									var spaceusrldapauditscount, spaceusrldapaudittotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_auditor" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-
-											for q := 0; q < SpaceUsLenLDAPAuditor; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrldapaudittotalcount = 2
-												} else {
-													fmt.Println("LDAP Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q],",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
-														spaceusrldapauditscount = 1
-													} else {
-														spaceusrldapauditscount = 0
-													}
-													spaceusrldapaudittotalcount = spaceusrldapaudittotalcount + spaceusrldapauditscount
-												}
-											}
-
-											if spaceusrldapaudittotalcount == 0 {
-												fmt.Println("User has not be listed in Org.yml: ")
-												fmt.Println("LDAP SpaceAuditor User: ", strings.TrimSpace(out.String()))
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceAuditor")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceAuditor")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusrldapaudittotalcount == 2 {
-												fmt.Println("Admin set as LDAP Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as LDAP Space Audit User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//LDAP Developer
-
-									SpaceUsLenLDAPDeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
-
-									var spaceusrldapdevscount, spaceusrldapdevtotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_developer" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenLDAPDeveloper; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrldapdevtotalcount = 2
-												} else {
-													fmt.Println("LDAP Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q], ",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
-														spaceusrldapdevscount = 1
-													} else {
-														spaceusrldapdevscount = 0
-													}
-													spaceusrldapdevtotalcount = spaceusrldapdevtotalcount + spaceusrldapdevscount
-												}
-											}
-
-											if spaceusrldapdevtotalcount == 0 {
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceDeveloper")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceDeveloper")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusrldapdevtotalcount == 2 {
-												fmt.Println("Admin set as LDAP Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as LDAP Space Dev User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-
-									//LDAP Manager
-
-									SpaceUsLenLDAPMan := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
-
-									var spaceusrldapmanscount, spaceusrldapmantotalcount int
-
-									if spaceusrslist.Resources[i].Type == "space_manager" {
-
-										userguid := spaceusrslist.Resources[i].GUID
-										path := "/v3/users/?guids=" + userguid
-										var out bytes.Buffer
-										username := exec.Command("cf", "curl", strings.TrimSpace(path))
-										username.Stdout = &out
-										err := username.Run()
-
-										if err == nil {
-											for q := 0; q < SpaceUsLenLDAPMan; q++ {
-
-												if out.String() == "admin" {
-													fmt.Println("Admin user skipping Validation")
-													spaceusrldapmantotalcount = 2
-												} else {
-													fmt.Println("LDAP Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q], ",", username)
-													if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
-														spaceusrldapmanscount = 1
-													} else {
-														spaceusrldapmanscount = 0
-													}
-													spaceusrldapmantotalcount = spaceusrldapmantotalcount + spaceusrldapmanscount
-												}
-											}
-
-											if spaceusrldapmantotalcount == 0 {
-												if Audit == "unset" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("Unsetting user")
-													unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
-													if _, err := unset.Output(); err == nil {
-														fmt.Println("command: ", unset)
-														fmt.Println(unset.Stdout)
-													} else {
-														fmt.Println("command: ", unset)
-														fmt.Println("Err: ", unset.Stdout, unset.Stderr)
-													}
-												} else if Audit == "List" {
-													fmt.Println("UNSET!UNSET!")
-													fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceManager")
-												} else {
-													fmt.Println("Provide Valid Input")
-												}
-											} else if spaceusrldapmantotalcount == 2 {
-												fmt.Println("Admin set as LDAP Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
-											} else {
-												fmt.Println("User is listed in Org.yml as LDAP Space Manager User: ", strings.TrimSpace(out.String()))
-											}
-										} else {
-											fmt.Println("err", username, username.Stdout, username.Stderr)
-										}
-									}
-								}
-
-								results := exec.Command("cf", "space-users", Orgs.Org.Name, Orgs.Org.Spaces[j].Name)
-								if _, err := results.Output(); err != nil{
-									fmt.Println("command: ", results)
-									fmt.Println("Err: ", results.Stdout, err)
+							target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", Orgs.Org.Spaces[j].Name)
+							if _, err := target.Output(); err == nil {
+								
+								fmt.Println("command: ", target)
+								fmt.Println(target.Stdout)
+
+								path := "/v3/roles/?space_guids="+out.String()
+								spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spaceusrslist.json")
+
+								var out bytes.Buffer
+								spaceuserslist.Stdout = &out
+								err := spaceuserslist.Run()
+								if err == nil {
+									fmt.Println(spaceuserslist, spaceuserslist.Stdout)
 								} else {
-									fmt.Println("command: ", results)
-									fmt.Println(results.Stdout)
+									fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
 								}
+
+								fileSpaceJson, err := ioutil.ReadFile("spaceuserslist.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+									panic(err)
+								}
+
+								SpaceUsrLen := len(spaceusrslist.Resources)
+								fmt.Println("No of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
+
+								if SpaceUsrLen != 0 {
+
+									for i := 0; i < SpaceUsrLen; i++ {
+
+										//SSO Audit
+
+										SpaceUsLenSSOAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
+
+										var spaceusrssoauditscount, spaceusrssoaudittotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenSSOAuditor; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrssoaudittotalcount = 2
+													} else {
+														fmt.Println("SSO Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q], ",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+															spaceusrssoauditscount = 1
+														} else {
+															spaceusrssoauditscount = 0
+														}
+														spaceusrssoaudittotalcount = spaceusrssoaudittotalcount + spaceusrssoauditscount
+													}
+												}
+
+												if spaceusrssoaudittotalcount == 0 {
+
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("SSO SpaceAuditor User: ", strings.TrimSpace(out.String()))
+
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "list" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceAuditor")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+
+												} else if spaceusrssoaudittotalcount == 2 {
+													fmt.Println("Admin set as SSO Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as SSO Space Audit User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										SpaceUsLenSSODeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
+
+										var spaceusrssodevscount, spaceusrssodevtotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_developer" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenSSODeveloper; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrssodevtotalcount = 2
+													} else {
+														fmt.Println("SSO Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q], ",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+															spaceusrssodevscount = 1
+														} else {
+															spaceusrssodevscount = 0
+														}
+														spaceusrssodevtotalcount = spaceusrssodevtotalcount + spaceusrssodevscount
+													}
+												}
+
+												//SSO Developer
+
+												if spaceusrssodevtotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("SSO Space Dev User: ", strings.TrimSpace(out.String()))
+
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "list" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceDeveloper")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+
+												} else if spaceusrssodevtotalcount == 2 {
+													fmt.Println("Admin set as SSO Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as SSO Space Dev User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//SSO Manager
+
+										SpaceUsLenSSOMan := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
+
+										var spaceusrssomanscount, spaceusrssomantotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_manager" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenSSOMan; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrssomantotalcount = 2
+													} else {
+														fmt.Println("SSO Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q],",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+															spaceusrssomanscount = 1
+														} else {
+															spaceusrssomanscount = 0
+														}
+														spaceusrssomantotalcount = spaceusrssomantotalcount + spaceusrssomanscount
+													}
+												}
+
+												if spaceusrssomantotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("SSO Space Manager User: ", strings.TrimSpace(out.String()))
+
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name,Orgs.Org.Spaces[j].Name, "SpaceManager")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceManager")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusrssomantotalcount == 2 {
+													fmt.Println("Admin set as SSO Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as SSO Space Manager User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//UAA Audit
+										SpaceUsLenUAAAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
+
+										var spaceusruaaauditscount, spaceusruaaaudittotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenUAAAuditor; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusruaaaudittotalcount = 2
+													} else {
+														fmt.Println("UAA Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q],",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+															spaceusruaaauditscount = 1
+														} else {
+															spaceusruaaauditscount = 0
+														}
+														spaceusruaaaudittotalcount = spaceusruaaaudittotalcount + spaceusruaaauditscount
+													}
+												}
+
+												if spaceusruaaaudittotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("UAA SpaceAuditor User: ", strings.TrimSpace(out.String()))
+
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceAuditor")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceAuditor")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusruaaaudittotalcount == 2 {
+													fmt.Println("Admin set as UAA Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as UAA Space Audit User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//UAA Developer
+
+										SpaceUsLenUAADeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
+
+										var spaceusruaadevscount, spaceusruaadevtotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_developer" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenUAADeveloper; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusruaadevtotalcount = 2
+													} else {
+														fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q],",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+															spaceusruaadevscount = 1
+														} else {
+															spaceusruaadevscount = 0
+														}
+														spaceusruaadevtotalcount = spaceusruaadevtotalcount + spaceusruaadevscount
+													}
+												}
+
+												if spaceusruaadevtotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("UAA SpaceDeveloper User: ", strings.TrimSpace(out.String()))
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceDeveloper")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusruaadevtotalcount == 2 {
+													fmt.Println("Admin set as UAA Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as UAA Space Dev User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//UAA Manager
+
+										SpaceUsLenUAAMan := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
+
+										var spaceusruaamanscount, spaceusruaamantotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_manager" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids="+userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenUAAMan; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusruaamantotalcount = 2
+													} else {
+														fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q],",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+															spaceusruaamanscount = 1
+														} else {
+															spaceusruaamanscount = 0
+														}
+														spaceusruaamantotalcount = spaceusruaamantotalcount + spaceusruaamanscount
+													}
+												}
+
+												if spaceusruaamantotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("UAA SpaceManager User: ", strings.TrimSpace(out.String()))
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,"SpaceManager")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceManager")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusruaamantotalcount == 2 {
+													fmt.Println("Admin set as UAA Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as UAA Space Manager User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//LDAP Audit
+										SpaceUsLenLDAPAuditor := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
+
+										var spaceusrldapauditscount, spaceusrldapaudittotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_auditor" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+
+												for q := 0; q < SpaceUsLenLDAPAuditor; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrldapaudittotalcount = 2
+													} else {
+														fmt.Println("LDAP Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q],",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+															spaceusrldapauditscount = 1
+														} else {
+															spaceusrldapauditscount = 0
+														}
+														spaceusrldapaudittotalcount = spaceusrldapaudittotalcount + spaceusrldapauditscount
+													}
+												}
+
+												if spaceusrldapaudittotalcount == 0 {
+													fmt.Println("User has not be listed in Org.yml: ")
+													fmt.Println("LDAP SpaceAuditor User: ", strings.TrimSpace(out.String()))
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceAuditor")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceAuditor")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusrldapaudittotalcount == 2 {
+													fmt.Println("Admin set as LDAP Space Audit User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as LDAP Space Audit User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//LDAP Developer
+
+										SpaceUsLenLDAPDeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
+
+										var spaceusrldapdevscount, spaceusrldapdevtotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_developer" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenLDAPDeveloper; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrldapdevtotalcount = 2
+													} else {
+														fmt.Println("LDAP Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q], ",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+															spaceusrldapdevscount = 1
+														} else {
+															spaceusrldapdevscount = 0
+														}
+														spaceusrldapdevtotalcount = spaceusrldapdevtotalcount + spaceusrldapdevscount
+													}
+												}
+
+												if spaceusrldapdevtotalcount == 0 {
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name,  "SpaceDeveloper")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceDeveloper")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusrldapdevtotalcount == 2 {
+													fmt.Println("Admin set as LDAP Space Dev User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as LDAP Space Dev User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+
+										//LDAP Manager
+
+										SpaceUsLenLDAPMan := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
+
+										var spaceusrldapmanscount, spaceusrldapmantotalcount int
+
+										if spaceusrslist.Resources[i].Type == "space_manager" {
+
+											userguid := spaceusrslist.Resources[i].GUID
+											path := "/v3/users/?guids=" + userguid
+											var out bytes.Buffer
+											username := exec.Command("cf", "curl", strings.TrimSpace(path))
+											username.Stdout = &out
+											err := username.Run()
+
+											if err == nil {
+												for q := 0; q < SpaceUsLenLDAPMan; q++ {
+
+													if out.String() == "admin" {
+														fmt.Println("Admin user skipping Validation")
+														spaceusrldapmantotalcount = 2
+													} else {
+														fmt.Println("LDAP Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q], ",", username)
+														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+															spaceusrldapmanscount = 1
+														} else {
+															spaceusrldapmanscount = 0
+														}
+														spaceusrldapmantotalcount = spaceusrldapmantotalcount + spaceusrldapmanscount
+													}
+												}
+
+												if spaceusrldapmantotalcount == 0 {
+													if Audit == "unset" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("Unsetting user")
+														unset := exec.Command("cf", "unset-space-role", strings.TrimSpace(out.String()), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+														if _, err := unset.Output(); err == nil {
+															fmt.Println("command: ", unset)
+															fmt.Println(unset.Stdout)
+														} else {
+															fmt.Println("command: ", unset)
+															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+														}
+													} else if Audit == "List" {
+														fmt.Println("UNSET!UNSET!")
+														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceManager")
+													} else {
+														fmt.Println("Provide Valid Input")
+													}
+												} else if spaceusrldapmantotalcount == 2 {
+													fmt.Println("Admin set as LDAP Space Manager User, skipping unset: ", strings.TrimSpace(out.String()))
+												} else {
+													fmt.Println("User is listed in Org.yml as LDAP Space Manager User: ", strings.TrimSpace(out.String()))
+												}
+											} else {
+												fmt.Println("err", username, username.Stdout, username.Stderr)
+											}
+										}
+									}
+
+									results := exec.Command("cf", "space-users", Orgs.Org.Name, Orgs.Org.Spaces[j].Name)
+									if _, err := results.Output(); err != nil{
+										fmt.Println("command: ", results)
+										fmt.Println("Err: ", results.Stdout, err)
+									} else {
+										fmt.Println("command: ", results)
+										fmt.Println(results.Stdout)
+									}
+								} else {
+									fmt.Println("No space users exist")
+								}
+								
 							} else {
-								fmt.Println("No space users exist")
+								fmt.Println("command: ", target)
+								fmt.Println("Err: ", target.Stdout, target.Stderr)
 							}
+							
 						} else {
 							fmt.Println("command: ",guid)
 							fmt.Println("Err: ", guid.Stdout, err)
@@ -2439,14 +2465,21 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 							fmt.Println("command: ", guid)
 							fmt.Println("Space exists: ", guid.Stdout)
 
-
-							fmt.Println("Deleting or Auditing ASGs")
-							if InitClusterConfigVals.ClusterDetails.EnableASG == true {
-								fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-								DeleteOrAuditASGs(Orgs.Org.Name, Orgs.Org.Spaces[j].Name, ASGPath, ostype, Audit)
+							target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", Orgs.Org.Spaces[j].Name)
+							if _, err := target.Output(); err == nil {
+								fmt.Println("command: ", target)
+								fmt.Println(target.Stdout)
+								fmt.Println("Deleting or Auditing ASGs")
+								if InitClusterConfigVals.ClusterDetails.EnableASG == true {
+									fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+									DeleteOrAuditASGs(Orgs.Org.Name, Orgs.Org.Spaces[j].Name, ASGPath, ostype, Audit)
+								} else {
+									fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
+									fmt.Println("ASGs not enabled")
+								}
 							} else {
-								fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-								fmt.Println("ASGs not enabled")
+								fmt.Println("command: ", target)
+								fmt.Println("Err: ", target.Stdout, target.Stderr)
 							}
 						} else {
 							fmt.Println("command: ", guid)
