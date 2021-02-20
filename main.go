@@ -3087,7 +3087,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 							fmt.Println(cmd.Stdout)
 						}
 					}
-					results := exec.Command("cf", "orgs-users", Orgs.Org.Name)
+					results := exec.Command("cf", "org-users", Orgs.Org.Name)
 					if _, err := results.Output(); err != nil{
 						fmt.Println("command: ", results)
 						fmt.Println("Err: ", results.Stdout, err)
