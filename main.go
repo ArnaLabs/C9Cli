@@ -2809,9 +2809,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 
 			if _, err := Quotadetails.Output(); err != nil{
 				fmt.Println("command: ", Quotadetails)
-				fmt.Println("Err: ", Quotadetails.Stdout)
-				fmt.Println("Err Code: ", err)
-				//fmt.Println("Quota Doesn't exits: ", Quotadetails.Stdout)
+				fmt.Println("Err: ", Quotadetails.Stdout, err)
 				fmt.Println("Creating Quota")
 
 				if Quotas.Quota[i].AllowPaidPlans == true {
@@ -2822,8 +2820,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 
 				if _, err := cmd.Output(); err != nil{
 					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", cmd.Stdout, err)
 				} else {
 					fmt.Println("command: ", cmd)
 					fmt.Println(cmd.Stdout)
@@ -2831,8 +2828,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
 				if _, err := QuotaGet.Output(); err != nil{
 					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", QuotaGet.Stdout, err)
 				} else {
 					fmt.Println("command: ", QuotaGet)
 					fmt.Println(QuotaGet.Stdout)
@@ -2850,8 +2846,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 
 				if _, err := cmd.Output(); err != nil{
 					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", cmd.Stdout, err)
 				} else {
 					fmt.Println("command: ", cmd)
 					fmt.Println(cmd.Stdout)
@@ -2859,8 +2854,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
 				if _, err := QuotaGet.Output(); err != nil{
 					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", QuotaGet.Stdout, err)
 				} else {
 					fmt.Println("command: ", QuotaGet)
 					fmt.Println(QuotaGet.Stdout)
