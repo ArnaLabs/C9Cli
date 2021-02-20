@@ -748,6 +748,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 			for i := 0; i < OrgsLen; i++ {
 
 				var count, totalcount int
+				fmt.Println(" ")
 				fmt.Println("Org: ", body.Resources[i].Name)
 
 				for p := 0; p < LenProtectedOrgs; p++ {
@@ -781,7 +782,9 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 						fmt.Println("Org has not be listed in Orglist.yml: ")
 						fmt.Println("Auditing Org: ", body.Resources[i].Name)
 						if Audit == "Delete" {
-							delete := exec.Command("cf", "delete-org", body.Resources[i].Name)
+							fmt.Println("DELETE!DELETE!")
+							fmt.Println("Deleting Org: ", body.Resources[i].Name)
+							delete := exec.Command("cf", "delete-org", body.Resources[i].Name, "-f")
 							if _, err := delete.Output(); err == nil {
 								fmt.Println("command: ", delete)
 								fmt.Println(delete.Stdout)
@@ -790,15 +793,24 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 								fmt.Println("Err: ", delete.Stdout, delete.Stderr)
 							}
 						} else if Audit == "Rename" {
-							rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"tobedeleted")
-							if _, err := rename.Output(); err == nil {
-								fmt.Println("command: ", rename)
-								fmt.Println(rename.Stdout)
+							fmt.Println("DELETE!DELETE!")
+							fmt.Println("Renaming Org: ", body.Resources[i].Name)
+							result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
+							if result == true{
+								fmt.Println("Org already renamed")
 							} else {
-								fmt.Println("command: ", rename)
-								fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+								rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"tobedeleted")
+								if _, err := rename.Output(); err == nil {
+									fmt.Println("command: ", rename)
+									fmt.Println(rename.Stdout)
+								} else {
+									fmt.Println("command: ", rename)
+									fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+								}
 							}
+
 						} else if Audit == "List" {
+							fmt.Println("DELETE!DELETE!")
 							fmt.Println("Org to be deleted: ", body.Resources[i].Name)
 						} else {
 							fmt.Println("Provide Valid Input")
@@ -2439,9 +2451,10 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
 	for i := 0; i < LenList; i++ {
 		var count, totalcount int
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -2456,7 +2469,6 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
 			OrgsYml := cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
-
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -2475,23 +2487,20 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 					SetQuota := exec.Command("cf", "set-quota", Orgs.Org.Name, Orgs.Org.Quota)
 					if _, err := SetQuota.Output(); err != nil{
 						fmt.Println("command: ", SetQuota)
-						fmt.Println("Err: ", SetQuota.Stdout)
-						fmt.Println("Err Code: ", err)
+						fmt.Println("Err: ", SetQuota.Stdout, err)
 					} else {
 						fmt.Println("command: ", SetQuota)
 						fmt.Println(SetQuota.Stdout)
 					}
 				} else {
 					fmt.Println("command: ", guid)
-					fmt.Println("Err: ", guid.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", guid.Stdout,err)
 					fmt.Println("Pulling Guid Id: ", guid.Stdout)
 					fmt.Println("Org doesn't exists, Creating Org")
 					createorg := exec.Command("cf", "create-org", Orgs.Org.Name)
 					if _, err := createorg.Output(); err != nil{
 						fmt.Println("command: ", createorg)
-						fmt.Println("Err: ", createorg.Stdout)
-						fmt.Println("Err Code: ", err)
+						fmt.Println("Err: ", createorg.Stdout, err)
 					} else {
 						fmt.Println("command: ", createorg)
 						fmt.Println(createorg.Stdout)
@@ -2499,8 +2508,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 					attachquota := exec.Command("cf", "set-quota", Orgs.Org.Name, Orgs.Org.Quota)
 					if _, err := attachquota.Output(); err != nil{
 						fmt.Println("command: ", attachquota)
-						fmt.Println("Err: ", attachquota.Stdout)
-						fmt.Println("Err Code: ", err)
+						fmt.Println("Err: ", attachquota.Stdout, err)
 					} else {
 						fmt.Println("command: ", attachquota)
 						fmt.Println(attachquota.Stdout)
@@ -2509,7 +2517,6 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 			} else {
 				fmt.Println("Org Name does't match with folder name")
 			}
-
 		} else {
 			fmt.Println("This is a protected Org")
 		}
