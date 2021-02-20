@@ -608,10 +608,11 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 			for i := 0; i < QuotaLen; i++ {
 
 				var count, totalcount int
+				fmt.Println(" ")
 				fmt.Println("Quota: ", body.Resources[i].Name)
 
 				for p := 0; p < LenProtectedQuota; p++ {
-					fmt.Println("Protected Org: ", ProtectedQuota.Quota[p], ",", body.Resources[i].Name)
+					fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p], ",", body.Resources[i].Name)
 					if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(body.Resources[i].Name, "") {
 						count = 1
 					} else {
@@ -2293,7 +2294,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 							fmt.Println("command: ", guid)
 							fmt.Println("Space exists: ", guid.Stdout)
 
-							
+
 							fmt.Println("Deleting or Auditing ASGs")
 							if InitClusterConfigVals.ClusterDetails.EnableASG == true {
 								fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
@@ -2390,7 +2391,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 		fmt.Println(check.Stdout)
 		fmt.Println("Running ASG defined for Org, Space combination", ASGName)
 	}
-	return 
+	return
 }
 func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
