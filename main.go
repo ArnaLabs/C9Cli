@@ -691,7 +691,14 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 		fmt.Println("command: ", getquotas)
 		fmt.Println("Err: ", getquotas.Stderr)
 	}
-	exec.Command("cf", "quotas")
+	results := exec.Command("cf", "quotas")
+	if _, err := results.Output(); err != nil{
+		fmt.Println("command: ", results)
+		fmt.Println("Err: ", results.Stdout, err)
+	} else {
+		fmt.Println("command: ", results)
+		fmt.Println(results.Stdout)
+	}
 	return err
 }
 func DeleteorAuditOrgs(clustername string, cpath string) error {
@@ -831,7 +838,14 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		fmt.Println("command: ", getorgs)
 		fmt.Println("Err: ", getorgs.Stderr)
 	}
-	exec.Command("cf", "orgs")
+	results := exec.Command("cf", "orgs")
+	if _, err := results.Output(); err != nil{
+		fmt.Println("command: ", results)
+		fmt.Println("Err: ", results.Stdout, err)
+	} else {
+		fmt.Println("command: ", results)
+		fmt.Println(results.Stdout)
+	}
 	return err
 }
 func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error {
@@ -2523,7 +2537,14 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 			fmt.Println("This is a protected Org")
 		}
 	}
-	exec.Command("cf", "orgs")
+	results := exec.Command("cf", "orgs")
+	if _, err := results.Output(); err != nil{
+		fmt.Println("command: ", results)
+		fmt.Println("Err: ", results.Stdout, err)
+	} else {
+		fmt.Println("command: ", results)
+		fmt.Println(results.Stdout)
+	}
 	return err
 }
 func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error {
@@ -2874,7 +2895,14 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 			fmt.Println("This is a protected Quota")
 		}
 	}
-	exec.Command("cf", "quotas")
+	results := exec.Command("cf", "quotas")
+	if _, err := results.Output(); err != nil{
+		fmt.Println("command: ", results)
+		fmt.Println("Err: ", results.Stdout, err)
+	} else {
+		fmt.Println("command: ", results)
+		fmt.Println(results.Stdout)
+	}
 	return err
 }
 func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
