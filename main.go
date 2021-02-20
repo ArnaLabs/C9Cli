@@ -691,6 +691,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 		fmt.Println("command: ", getquotas)
 		fmt.Println("Err: ", getquotas.Stderr)
 	}
+	exec.Command("cf", "quotas")
 	return err
 }
 func DeleteorAuditOrgs(clustername string, cpath string) error {
@@ -799,7 +800,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 							if result == true{
 								fmt.Println("Org already renamed")
 							} else {
-								rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"tobedeleted")
+								rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"_tobedeleted")
 								if _, err := rename.Output(); err == nil {
 									fmt.Println("command: ", rename)
 									fmt.Println(rename.Stdout)
@@ -830,6 +831,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		fmt.Println("command: ", getorgs)
 		fmt.Println("Err: ", getorgs.Stderr)
 	}
+	exec.Command("cf", "orgs")
 	return err
 }
 func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error {
@@ -2521,6 +2523,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 			fmt.Println("This is a protected Org")
 		}
 	}
+	exec.Command("cf", "orgs")
 	return err
 }
 func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error {
@@ -2871,6 +2874,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 			fmt.Println("This is a protected Quota")
 		}
 	}
+	exec.Command("cf", "quotas")
 	return err
 }
 func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
