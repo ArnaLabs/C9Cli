@@ -645,7 +645,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 						if Audit == "Delete" {
 							fmt.Println("DELETE!DELETE!")
 							fmt.Println("Deleting Quota: ", body.Resources[i].Name)
-							delete := exec.Command("cf", "delete-quota", body.Resources[i].Name)
+							delete := exec.Command("cf", "delete-quota", body.Resources[i].Name, "-f")
 							if _, err := delete.Output(); err == nil {
 								fmt.Println("command: ", delete)
 								fmt.Println(delete.Stdout)
@@ -658,7 +658,6 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 							fmt.Println("Renaming Quota: ", body.Resources[i].Name)
 							result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
 							if result == true{
-								fmt.Println("DELETE!DELETE!")
 								fmt.Println("Quota already renamed")
 							} else {
 								rename := exec.Command("cf", "update-quota", body.Resources[i].Name, "-n", body.Resources[i].Name+"_tobedeleted")
