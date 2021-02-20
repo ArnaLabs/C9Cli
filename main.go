@@ -901,9 +901,10 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -945,6 +946,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 
 					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
 					path := "/v3/spaces/?organization_guids="+out.String()
+
 					spacelist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spacelist.json")
 
 					var out bytes.Buffer
@@ -987,12 +989,13 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 							}
 
 							if Spacestotalcount == 0 {
-//								fmt.Println("Space has not be listed in Orgs.yml")
-//								fmt.Println("Delete Space: ", spacelistjson.Resources[i].Name)
+
 								fmt.Println("Space has not be listed in Org.yml: ")
 								fmt.Println("Auditing Space: ", spacelistjson.Resources[i].Name)
 								if Audit == "Delete" {
-									delete := exec.Command("cf", "delete-space", spacelistjson.Resources[i].Name, "-o", Orgs.Org.Name)
+									fmt.Println("DELETE!DELETE!")
+									fmt.Println("Deleting Space: ", spacelistjson.Resources[i].Name)
+									delete := exec.Command("cf", "delete-space", spacelistjson.Resources[i].Name, "-o", Orgs.Org.Name, "-f")
 									if _, err := delete.Output(); err == nil {
 										fmt.Println("command: ", delete)
 										fmt.Println(delete.Stdout)
@@ -1001,15 +1004,24 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 										fmt.Println("Err: ", delete.Stdout, delete.Stderr)
 									}
 								} else if Audit == "Rename" {
-									rename := exec.Command("cf", "rename", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"tobedeleted")
-									if _, err := rename.Output(); err == nil {
-										fmt.Println("command: ", rename)
-										fmt.Println(rename.Stdout)
+
+									fmt.Println("DELETE!DELETE!")
+									fmt.Println("Renaming Space: ", spacelistjson.Resources[i].Name)
+									result, _ := regexp.MatchString("_tobedeleted", spacelistjson.Resources[i].Name)
+									if result == true{
+										fmt.Println("Space already renamed")
 									} else {
-										fmt.Println("command: ", rename)
-										fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+										rename := exec.Command("cf", "rename", spacelistjson.Resources[i].Name, spacelistjson.Resources[i].Name+"_tobedeleted")
+										if _, err := rename.Output(); err == nil {
+											fmt.Println("command: ", rename)
+											fmt.Println(rename.Stdout)
+										} else {
+											fmt.Println("command: ", rename)
+											fmt.Println("Err: ", rename.Stdout, rename.Stderr)
+										}
 									}
 								} else if Audit == "List" {
+									fmt.Println("DELETE!DELETE!")
 									fmt.Println("Space to be deleted: ", spacelistjson.Resources[i].Name)
 								} else {
 									fmt.Println("Provide Valid Input")
@@ -1021,10 +1033,17 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 					} else {
 						fmt.Println("No Spaces Exist")
 					}
+					results := exec.Command("cf", "spaces")
+					if _, err := results.Output(); err != nil{
+						fmt.Println("command: ", results)
+						fmt.Println("Err: ", results.Stdout, err)
+					} else {
+						fmt.Println("command: ", results)
+						fmt.Println(results.Stdout)
+					}
 				} else {
 					fmt.Println("command: ", guid )
-					fmt.Println("Err: ", guid.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", guid.Stdout, err)
 					fmt.Println("Org doesn't exist")
 				}
 			} else {
@@ -1088,9 +1107,10 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",",list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -1154,6 +1174,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 					}
 
 					OrgUsrLen := len(orgusrslist.Resources)
+
 					fmt.Println("No of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
 
 					if OrgUsrLen != 0 {
@@ -1521,10 +1542,19 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 					} else {
 						fmt.Println("No users exist")
 					}
+
+					results := exec.Command("cf", "org-users", Orgs.Org.Name)
+					if _, err := results.Output(); err != nil{
+						fmt.Println("command: ", results)
+						fmt.Println("Err: ", results.Stdout, err)
+					} else {
+						fmt.Println("command: ", results)
+						fmt.Println(results.Stdout)
+					}
+
 				} else {
 					fmt.Println("command: ", guid )
-					fmt.Println("Err: ", guid.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", guid.Stdout, err)
 					fmt.Println("Org doesn't exist")
 				}
 			} else {
@@ -2433,6 +2463,147 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	}
 	return
 }
+func CreateOrUpdateQuotas(clustername string, cpath string) error {
+
+	var Quotas Quotalist
+	var ProtectedQuota ProtectedList
+	var cmd *exec.Cmd
+
+
+	QuotaYml := cpath+"/"+clustername+"/Quota.yml"
+	fileQuotaYml, err := ioutil.ReadFile(QuotaYml)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileQuotaYml), &Quotas)
+	if err != nil {
+		panic(err)
+	}
+
+	ProtectedQuotasYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	fileProtectedQYml, err := ioutil.ReadFile(ProtectedQuotasYml)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedQYml), &ProtectedQuota)
+	if err != nil {
+		panic(err)
+	}
+
+	LenQuota := len(Quotas.Quota)
+	LenProtectedQuota := len(ProtectedQuota.Quota)
+
+	for i := 0; i < LenQuota; i++ {
+
+		var count, totalcount int
+		fmt.Println(" ")
+		fmt.Println("Quota: ", Quotas.Quota[i].Name)
+
+		SerLimit := Quotas.Quota[i].ServiceInstanceLimit
+		AppLimt  := Quotas.Quota[i].AppInstanceLimit
+		MemLimit := Quotas.Quota[i].MemoryLimit
+
+		if Quotas.Quota[i].ServiceInstanceLimit == ""{
+			SerLimit = "0"
+		}else {
+		}
+
+		if string(Quotas.Quota[i].AppInstanceLimit) == "" {
+			AppLimt = "25"
+		} else {
+		}
+
+		if Quotas.Quota[i].MemoryLimit == "" {
+			MemLimit = "1024M"
+		} else {
+		}
+
+		for p := 0; p < LenProtectedQuota; p++ {
+			fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p],",", Quotas.Quota[i].Name)
+			if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(Quotas.Quota[i].Name, "") {
+				count = 1
+			} else {
+				count = 0
+			}
+			totalcount = totalcount + count
+		}
+
+		if totalcount == 0 {
+
+			fmt.Println("This is not Protected Quota")
+			Quotadetails := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+
+			if _, err := Quotadetails.Output(); err != nil{
+				fmt.Println("command: ", Quotadetails)
+				fmt.Println("Err: ", Quotadetails.Stdout, err)
+				fmt.Println("Creating Quota")
+
+				if Quotas.Quota[i].AllowPaidPlans == true {
+					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
+				} else {
+					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt)
+				}
+
+				if _, err := cmd.Output(); err != nil{
+					fmt.Println("command: ", cmd)
+					fmt.Println("Err: ", cmd.Stdout, err)
+				} else {
+					fmt.Println("command: ", cmd)
+					fmt.Println(cmd.Stdout)
+				}
+				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+				if _, err := QuotaGet.Output(); err != nil{
+					fmt.Println("command: ", QuotaGet)
+					fmt.Println("Err: ", QuotaGet.Stdout, err)
+				} else {
+					fmt.Println("command: ", QuotaGet)
+					fmt.Println(QuotaGet.Stdout)
+				}
+			} else {
+				fmt.Println("command: ", Quotadetails)
+				fmt.Println("Quota exists: ", Quotadetails.Stdout)
+				fmt.Println("Updating Quota")
+
+				if Quotas.Quota[i].AllowPaidPlans == true {
+					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
+				} else {
+					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--disallow-paid-service-plans")
+				}
+
+				if _, err := cmd.Output(); err != nil{
+					fmt.Println("command: ", cmd)
+					fmt.Println("Err: ", cmd.Stdout, err)
+				} else {
+					fmt.Println("command: ", cmd)
+					fmt.Println(cmd.Stdout)
+				}
+				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+				if _, err := QuotaGet.Output(); err != nil{
+					fmt.Println("command: ", QuotaGet)
+					fmt.Println("Err: ", QuotaGet.Stdout, err)
+				} else {
+					fmt.Println("command: ", QuotaGet)
+					fmt.Println(QuotaGet.Stdout)
+				}
+			}
+		} else {
+			fmt.Println("This is a protected Quota")
+		}
+	}
+	results := exec.Command("cf", "quotas")
+	if _, err := results.Output(); err != nil{
+		fmt.Println("command: ", results)
+		fmt.Println("Err: ", results.Stdout, err)
+	} else {
+		fmt.Println("command: ", results)
+		fmt.Println(results.Stdout)
+	}
+	return err
+}
 func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
 	var Orgs Orglist
@@ -2597,9 +2768,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
+
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -2644,8 +2817,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 						fmt.Println("Targeting: ", TargetOrg.Stdout)
 					} else {
 						fmt.Println("command: ", TargetOrg)
-						fmt.Println("Err: ", TargetOrg.Stdout)
-						fmt.Println("Err Code: ", err)
+						fmt.Println("Err: ", TargetOrg.Stdout, err)
 					}
 
 					for j := 0; j < SpaceLen; j++ {
@@ -2666,8 +2838,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
 								if _, err := iso.Output(); err != nil {
 									fmt.Println("command: ", iso)
-									fmt.Println("Err: ", iso.Stdout)
-									fmt.Println("Err Code: ", err)
+									fmt.Println("Err: ", iso.Stdout,err)
 								} else {
 									fmt.Println("command: ", iso)
 									fmt.Println(iso.Stdout)
@@ -2676,8 +2847,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 								if _, err := isospace.Output(); err != nil {
 									fmt.Println("command: ", isospace)
-									fmt.Println("Err: ", isospace.Stdout)
-									fmt.Println("Err Code: ", err)
+									fmt.Println("Err: ", isospace.Stdout,err)
 								} else {
 									fmt.Println("command: ", isospace)
 									fmt.Println(isospace.Stdout)
@@ -2686,15 +2856,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								fmt.Println("No Isolation Segment Provided, Will be attached to Default")
 							}
 
-
-							//fmt.Println("Creating or updating ASGs")
-							//if InitClusterConfigVals.ClusterDetails.EnableASG == true {
-							//	fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-							//	CreateOrUpdateASGs(Orgs.Org.Name, Orgs.Org.Spaces[j].Name, ASGPath, ostype)
-							//} else {
-							//	fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-							//	fmt.Println("ASGs not enabled")
-							//}
 						} else {
 							fmt.Println("command: ", guid)
 							fmt.Println("Pulling Space Guid ID: ", guid.Stdout )
@@ -2704,8 +2865,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 							if _, err := CreateSpace.Output(); err != nil {
 								fmt.Println("command: ", CreateSpace)
-								fmt.Println("Err: ", CreateSpace.Stdout)
-								fmt.Println("Err Code: ", err)
+								fmt.Println("Err: ", CreateSpace.Stdout, err)
 							} else {
 								fmt.Println("command: ", CreateSpace)
 								fmt.Println(CreateSpace.Stdout)
@@ -2717,8 +2877,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 									if _, err := iso.Output(); err != nil {
 										fmt.Println("command: ", iso)
-										fmt.Println("Err: ", iso.Stdout)
-										fmt.Println("Err Code: ", err)
+										fmt.Println("Err: ", iso.Stdout,err)
 									} else {
 										fmt.Println("command: ", iso)
 										fmt.Println(iso.Stdout)
@@ -2727,8 +2886,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									isospace := exec.Command("cf", "set-space-isolation-segment", Orgs.Org.Spaces[j].Name, Orgs.Org.Spaces[j].IsolationSeg)
 									if _, err := isospace.Output(); err != nil {
 										fmt.Println("command: ", isospace)
-										fmt.Println("Err: ", isospace.Stdout)
-										fmt.Println("Err Code: ", err)
+										fmt.Println("Err: ", isospace.Stdout, err)
 									} else {
 										fmt.Println("command: ", isospace)
 										fmt.Println(isospace.Stdout)
@@ -2737,22 +2895,20 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								} else {
 									fmt.Println("No Isolation Segment Provided, Will be attached to Default")
 								}
-
-				//				fmt.Println("Creating ASGs")
-				//				if InitClusterConfigVals.ClusterDetails.EnableASG == true {
-				//					fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-				//					CreateOrUpdateASGs(Orgs.Org.Name, Orgs.Org.Spaces[j].Name, ASGPath, ostype)
-				//				} else {
-				//					fmt.Println("Enable ASGs: ", InitClusterConfigVals.ClusterDetails.EnableASG)
-				//					fmt.Println("ASGs not enabled")
-				//				}
 							}
 						}
 					}
+					results := exec.Command("cf", "spaces")
+					if _, err := results.Output(); err != nil{
+						fmt.Println("command: ", results)
+						fmt.Println("Err: ", results.Stdout, err)
+					} else {
+						fmt.Println("command: ", results)
+						fmt.Println(results.Stdout)
+					}
 				} else {
 					fmt.Println("command: ", guid )
-					fmt.Println("Err: ", guid.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", guid.Stdout, err)
 					fmt.Println("Org doesn't exists, Please create Org")
 				}
 			} else {
@@ -2761,147 +2917,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		} else {
 			fmt.Println("This is a protected Org")
 		}
-	}
-	return err
-}
-func CreateOrUpdateQuotas(clustername string, cpath string) error {
-
-	var Quotas Quotalist
-	var ProtectedQuota ProtectedList
-	var cmd *exec.Cmd
-
-
-	QuotaYml := cpath+"/"+clustername+"/Quota.yml"
-	fileQuotaYml, err := ioutil.ReadFile(QuotaYml)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileQuotaYml), &Quotas)
-	if err != nil {
-		panic(err)
-	}
-
-	ProtectedQuotasYml := cpath+"/"+clustername+"/ProtectedResources.yml"
-	fileProtectedQYml, err := ioutil.ReadFile(ProtectedQuotasYml)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileProtectedQYml), &ProtectedQuota)
-	if err != nil {
-		panic(err)
-	}
-
-	LenQuota := len(Quotas.Quota)
-	LenProtectedQuota := len(ProtectedQuota.Quota)
-
-	for i := 0; i < LenQuota; i++ {
-
-		var count, totalcount int
-		fmt.Println(" ")
-		fmt.Println("Quota: ", Quotas.Quota[i].Name)
-
-		SerLimit := Quotas.Quota[i].ServiceInstanceLimit
-		AppLimt  := Quotas.Quota[i].AppInstanceLimit
-		MemLimit := Quotas.Quota[i].MemoryLimit
-
-		if Quotas.Quota[i].ServiceInstanceLimit == ""{
-			SerLimit = "0"
-		}else {
-		}
-
-		if string(Quotas.Quota[i].AppInstanceLimit) == "" {
-			AppLimt = "25"
-		} else {
-		}
-
-		if Quotas.Quota[i].MemoryLimit == "" {
-			MemLimit = "1024M"
-		} else {
-		}
-
-		for p := 0; p < LenProtectedQuota; p++ {
-			fmt.Println("Protected Quota: ", ProtectedQuota.Quota[p],",", Quotas.Quota[i].Name)
-			if strings.Trim(ProtectedQuota.Quota[p], "") == strings.Trim(Quotas.Quota[i].Name, "") {
-				count = 1
-			} else {
-				count = 0
-			}
-			totalcount = totalcount + count
-		}
-
-		if totalcount == 0 {
-
-			fmt.Println("This is not Protected Quota")
-			Quotadetails := exec.Command("cf", "quota", Quotas.Quota[i].Name)
-
-			if _, err := Quotadetails.Output(); err != nil{
-				fmt.Println("command: ", Quotadetails)
-				fmt.Println("Err: ", Quotadetails.Stdout, err)
-				fmt.Println("Creating Quota")
-
-				if Quotas.Quota[i].AllowPaidPlans == true {
-					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
-				} else {
-					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt)
-				}
-
-				if _, err := cmd.Output(); err != nil{
-					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout, err)
-				} else {
-					fmt.Println("command: ", cmd)
-					fmt.Println(cmd.Stdout)
-				}
-				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
-				if _, err := QuotaGet.Output(); err != nil{
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout, err)
-				} else {
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println(QuotaGet.Stdout)
-				}
-			} else {
-				fmt.Println("command: ", Quotadetails)
-				fmt.Println("Quota exists: ", Quotadetails.Stdout)
-				fmt.Println("Updating Quota")
-
-				if Quotas.Quota[i].AllowPaidPlans == true {
-					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
-				} else {
-					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--disallow-paid-service-plans")
-				}
-
-				if _, err := cmd.Output(); err != nil{
-					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout, err)
-				} else {
-					fmt.Println("command: ", cmd)
-					fmt.Println(cmd.Stdout)
-				}
-				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
-				if _, err := QuotaGet.Output(); err != nil{
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout, err)
-				} else {
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println(QuotaGet.Stdout)
-				}
-			}
-		} else {
-			fmt.Println("This is a protected Quota")
-		}
-	}
-	results := exec.Command("cf", "quotas")
-	if _, err := results.Output(); err != nil{
-		fmt.Println("command: ", results)
-		fmt.Println("Err: ", results.Stdout, err)
-	} else {
-		fmt.Println("command: ", results)
-		fmt.Println(results.Stdout)
 	}
 	return err
 }
@@ -2940,9 +2955,11 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
+
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -2969,6 +2986,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 			if list.OrgList[i] == Orgs.Org.Name {
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+
 				if _, err := guid.Output(); err == nil{
 
 					fmt.Println("command: ", guid)
@@ -2984,8 +3002,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout, err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
@@ -3000,8 +3017,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout,err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
@@ -3018,8 +3034,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout, err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
@@ -3034,8 +3049,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout, err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
@@ -3052,8 +3066,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout,err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
@@ -3068,17 +3081,24 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout)
-							fmt.Println("Err Code: ", err)
+							fmt.Println("Err: ", cmd.Stdout, err)
 						} else {
 							fmt.Println("command: ", cmd)
 							fmt.Println(cmd.Stdout)
 						}
 					}
+					results := exec.Command("cf", "orgs-users", Orgs.Org.Name)
+					if _, err := results.Output(); err != nil{
+						fmt.Println("command: ", results)
+						fmt.Println("Err: ", results.Stdout, err)
+					} else {
+						fmt.Println("command: ", results)
+						fmt.Println(results.Stdout)
+					}
+
 				} else {
 					fmt.Println("command: ", guid)
-					fmt.Println("Err: ", guid.Stdout)
-					fmt.Println("Err Code: ", err)
+					fmt.Println("Err: ", guid.Stdout, err)
 					fmt.Println("Pulling Org Guid Id: ", guid.Stdout)
 					fmt.Println("Please Create Org")
 				}
