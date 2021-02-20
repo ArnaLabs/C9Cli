@@ -1033,7 +1033,15 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 					} else {
 						fmt.Println("No Spaces Exist")
 					}
-					results := exec.Command("cf", "spaces")
+					results := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+					if _, err := results.Output(); err != nil{
+						fmt.Println("command: ", results)
+						fmt.Println("Err: ", results.Stdout, err)
+					} else {
+						fmt.Println("command: ", results)
+						fmt.Println(results.Stdout)
+					}
+					results = exec.Command("cf", "spaces")
 					if _, err := results.Output(); err != nil{
 						fmt.Println("command: ", results)
 						fmt.Println("Err: ", results.Stdout, err)
@@ -1218,6 +1226,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										fmt.Println("SSO OrgAuditor User: ", strings.TrimSpace(out.String()))
 
 										if Audit == "unset" {
+											fmt.Println("UNSET!UNSET!")
+											fmt.Println("Unsetting user")
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
 											if _, err := unset.Output(); err == nil {
 												fmt.Println("command: ", unset)
@@ -1227,6 +1237,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
 										} else if Audit == "List" {
+											fmt.Println("UNSET!UNSET!")
 											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO OrgAuditor")
 										} else {
 											fmt.Println("Provide Valid Input")
@@ -1279,9 +1290,12 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										if Audit == "unset" {
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
 											if _, err := unset.Output(); err == nil {
+												fmt.Println("UNSET!UNSET!")
+												fmt.Println("Unsetting user")
 												fmt.Println("command: ", unset)
 												fmt.Println(unset.Stdout)
 											} else {
+												fmt.Println("UNSET!UNSET!")
 												fmt.Println("command: ", unset)
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
@@ -1336,6 +1350,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										fmt.Println("UAA OrgAuditor User: ", strings.TrimSpace(out.String()))
 
 										if Audit == "unset" {
+											fmt.Println("UNSET!UNSET!")
+											fmt.Println("Unsetting user")
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
 											if _, err := unset.Output(); err == nil {
 												fmt.Println("command: ", unset)
@@ -1345,6 +1361,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
 										} else if Audit == "List" {
+											fmt.Println("UNSET!UNSET!")
 											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgAuditor")
 										} else {
 											fmt.Println("Provide Valid Input")
@@ -1396,6 +1413,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										fmt.Println("UAA OrgManager User: ", strings.TrimSpace(out.String()))
 
 										if Audit == "unset" {
+											fmt.Println("UNSET!UNSET!")
+											fmt.Println("Unsetting user")
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
 											if _, err := unset.Output(); err == nil {
 												fmt.Println("command: ", unset)
@@ -1405,6 +1424,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
 										} else if Audit == "List" {
+											fmt.Println("UNSET!UNSET!")
 											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA OrgManager")
 										} else {
 											fmt.Println("Provide Valid Input")
@@ -1457,6 +1477,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										fmt.Println("LDAP OrgAuditor User: ", strings.TrimSpace(out.String()))
 
 										if Audit == "unset" {
+											fmt.Println("UNSET!UNSET!")
+											fmt.Println("Unsetting user")
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgAuditor")
 											if _, err := unset.Output(); err == nil {
 												fmt.Println("command: ", unset)
@@ -1466,6 +1488,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
 										} else if Audit == "List" {
+											fmt.Println("UNSET!UNSET!")
 											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgAuditor")
 										} else {
 											fmt.Println("Provide Valid Input")
@@ -1516,6 +1539,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										fmt.Println("LDAP OrgManager User: ", strings.TrimSpace(out.String()))
 
 										if Audit == "unset" {
+											fmt.Println("UNSET!UNSET!")
+											fmt.Println("Unsetting user")
 											unset := exec.Command("cf", "unset-org-role", strings.TrimSpace(out.String()), Orgs.Org.Name, "OrgManager")
 											if _, err := unset.Output(); err == nil {
 												fmt.Println("command: ", unset)
@@ -1525,6 +1550,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 											}
 										} else if Audit == "List" {
+											fmt.Println("UNSET!UNSET!")
 											fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP OrgManager")
 										} else {
 											fmt.Println("Provide Valid Input")
