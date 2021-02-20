@@ -2770,6 +2770,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 	for i := 0; i < LenQuota; i++ {
 
 		var count, totalcount int
+		fmt.Println(" ")
 		fmt.Println("Quota: ", Quotas.Quota[i].Name)
 
 		SerLimit := Quotas.Quota[i].ServiceInstanceLimit
@@ -2816,7 +2817,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 				if Quotas.Quota[i].AllowPaidPlans == true {
 					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
 				} else {
-					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--disallow-paid-service-plans")
+					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt)
 				}
 
 				if _, err := cmd.Output(); err != nil{
@@ -2866,7 +2867,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 				}
 			}
 		} else {
-			fmt.Println("This is a protected Org")
+			fmt.Println("This is a protected Quota")
 		}
 	}
 	return err
