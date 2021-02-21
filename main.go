@@ -459,7 +459,7 @@ func main()  {
 		SetupConnection (ClusterName, pwd, cpath)
 		DeleteOrAuditSpaceUsers (ClusterName, cpath, ostype)
 
-	} else if operation == "audit-asg"{
+	} else if operation == "audit-space-asg"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath)
@@ -997,7 +997,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 							}
 
 							if Spacestotalcount == 0 {
-								
+
 								fmt.Println("Space has not be listed in Org.yml: ")
 								fmt.Println("Auditing Space: ", spacelistjson.Resources[i].Name)
 
@@ -1165,7 +1165,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 			Audit := Orgs.UserAudit
 
 			if list.OrgList[i] == Orgs.Org.Name {
-				
+
 				var out bytes.Buffer
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -1174,7 +1174,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 				err := guid.Run()
 
 				if err == nil {
-					
+
 					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
 
 					path := "/v3/roles/?organization_guids="+out.String()
@@ -1592,7 +1592,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 						fmt.Println("command: ", target)
 						fmt.Println("Err: ", target.Stdout, target.Stderr)
 					}
-					
+
 					results := exec.Command("cf", "org-users", Orgs.Org.Name)
 					if _, err := results.Output(); err != nil{
 						fmt.Println("command: ", results)
@@ -1653,9 +1653,11 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
+
+		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[i])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
 			if ProtectedOrgs.Org[p] == list.OrgList[i] {
 				count = 1
 			} else {
@@ -1688,6 +1690,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 			Audit := Orgs.SpaceAudit
 
 			if list.OrgList[i] == Orgs.Org.Name {
+
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
 				if _, err := guid.Output(); err == nil {
@@ -1700,32 +1703,31 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 						fmt.Println("Targeted Org: ", targetOrg.Stdout)
 					} else {
 						fmt.Println("command: ", targetOrg)
-						fmt.Println("Err: ", targetOrg.Stdout)
-						fmt.Println("Err Code: ", targetOrg.Stderr)
+						fmt.Println("Err: ", targetOrg.Stdout, targetOrg.Stderr)
 					}
 
 					SpaceLen := len(Orgs.Org.Spaces)
 
 					for j := 0; j < SpaceLen; j++ {
-						
-						
 
-						var out bytes.Buffer
-						guid.Stdout = &out
+						var outguid bytes.Buffer
+						
 						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
+						guid.Stdout = &outguid
 						err := guid.Run()
 
 						if err == nil {
 
-							fmt.Println("Space exists: ", Orgs.Org.Spaces[j].Name,",", out.String())
+							fmt.Println("Space exists: ", Orgs.Org.Spaces[j].Name,",", outguid.String())
 
 							target := exec.Command("cf", "t", "-o", Orgs.Org.Name,  "-s", Orgs.Org.Spaces[j].Name)
 							if _, err := target.Output(); err == nil {
-								
+
 								fmt.Println("command: ", target)
 								fmt.Println(target.Stdout)
 
-								path := "/v3/roles/?space_guids="+out.String()
+								path := "/v3/roles/?space_guids="+outguid.String()
+								
 								spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spaceusrslist.json")
 
 								var out bytes.Buffer
@@ -2324,12 +2326,12 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 								} else {
 									fmt.Println("No space users exist")
 								}
-								
+
 							} else {
 								fmt.Println("command: ", target)
 								fmt.Println("Err: ", target.Stdout, target.Stderr)
 							}
-							
+
 						} else {
 							fmt.Println("command: ",guid)
 							fmt.Println("Err: ", guid.Stdout, err)
