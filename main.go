@@ -1379,7 +1379,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("User to be deleted: ", username, "SSO OrgManager")
 													} else {
 														fmt.Println("Provide Valid Input")
@@ -1595,7 +1595,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", username, "LDAP OrgAuditor")
 													} else {
@@ -2028,7 +2028,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "SSO SpaceManager")
 													} else {
@@ -2090,7 +2090,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceAuditor")
 													} else {
@@ -2152,7 +2152,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceDeveloper")
 													} else {
@@ -2214,7 +2214,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "UAA SpaceManager")
 													} else {
@@ -2276,7 +2276,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceAuditor")
 													} else {
@@ -2336,7 +2336,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceDeveloper")
 													} else {
@@ -2396,7 +2396,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
 														}
-													} else if Audit == "List" {
+													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", strings.TrimSpace(out.String()), "LDAP SpaceManager")
 													} else {
