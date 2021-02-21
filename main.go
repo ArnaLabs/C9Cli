@@ -1415,7 +1415,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 								var orgusrldapmangscount, aorusrldapmangtotalcount int
 
 
-								if orgusrslist.Resources[i].Type == "organization_managers"{
+								if orgusrslist.Resources[i].Type == "organization_manager"{
 
 									userguid := orgusrslist.Resources[i].Relationships.User.Data.GUID
 									path := "/v3/users/?guids="+userguid
@@ -1481,8 +1481,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													fmt.Println("User is listed in Org.yml as SSO Org Manager User: ", username)
 												}
 											}
-										}
-										if origin == "uaa" {
+										} else if origin == "uaa" {
 
 											if err == nil {
 												for q := 0; q < OrgUsLenUAAManagers; q++ {
@@ -1528,8 +1527,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													fmt.Println("User is listed in Org.yml as UAA Org Manager User: ", username)
 												}
 											}
-										}
-										if origin == "ldap" {
+										} else if origin == "ldap" {
 											if err == nil {
 												for q := 0; q < OrgUsLenLDAPManagers; q++ {
 
@@ -1573,7 +1571,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													fmt.Println("User is listed in Org.yml as LDAP Org Manager User: ", username)
 												}
 											}
-										}
+										} else { fmt.Println("Authentication of type", origin, "is not monitored")}
 									}
 								}
 							}
