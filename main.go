@@ -1244,8 +1244,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 						if OrgUsrLen != 0 {
 
 							for i := 0; i < OrgUsrLen; i++ {
-
-
+								
 								OrgUsLenSSOAuditor := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
 								OrgUsLenUAAAuditor := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
 								OrgUsLenLDAPAuditor := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
@@ -1253,7 +1252,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 								var orgusrssoauditscount, aorusrssoaudittotalcount int
 								var orgusruaaauditscount, aorusruaaaudittotalcount int
 								var orgusrldapauditscount, aorusrldapaudittotalcount int
-
 
 								if orgusrslist.Resources[i].Type == "organization_auditor"{
 									userguid := orgusrslist.Resources[i].Relationships.User.Data.GUID
@@ -1275,10 +1273,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										if origin == "sso" {
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOAuditor; q++ {
-													if strings.TrimSpace(username) == "admin" {
-														fmt.Println("Admin user skipping Validation")
-														aorusrssoaudittotalcount = 2
-													} else {
 														fmt.Println("SSO Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]), ",", username)
 														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q])) == username {
 															orgusrssoauditscount = 1
@@ -1286,7 +1280,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															orgusrssoauditscount = 0
 														}
 														aorusrssoaudittotalcount = aorusrssoaudittotalcount + orgusrssoauditscount
-													}
 												}
 
 												if aorusrssoaudittotalcount == 0 {
@@ -1294,13 +1287,17 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													if Audit == "unset" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("Unsetting user")
-														unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgAuditor")
-														if _, err := unset.Output(); err == nil {
-															fmt.Println("command: ", unset)
-															fmt.Println(unset.Stdout)
+														if strings.TrimSpace(username) == "admin"{
+															fmt.Println("Skipping unset for admin user")
 														} else {
-															fmt.Println("command: ", unset)
-															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+															unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgAuditor")
+															if _, err := unset.Output(); err == nil {
+																fmt.Println("command: ", unset)
+																fmt.Println(unset.Stdout)
+															} else {
+																fmt.Println("command: ", unset)
+																fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+															}
 														}
 													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
@@ -1308,8 +1305,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													} else {
 														fmt.Println("Provide Valid Input")
 													}
-												} else if aorusrssoaudittotalcount ==2 {
-													fmt.Println("Admin set as SSO Org Audit User, skipping unset: ", username)
 												} else {
 													fmt.Println("User is listed in Org.yml as SSO Org Audit User: ", username)
 												}
@@ -1318,10 +1313,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												if err == nil {
 													for q := 0; q < OrgUsLenUAAAuditor; q++ {
 
-														if strings.TrimSpace(username) == "admin" {
-															fmt.Println("Admin user skipping Validation")
-															aorusruaaaudittotalcount = 2
-														} else {
 															fmt.Println("UAA Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]), ",", username)
 															if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q])) == username {
 																orgusruaaauditscount = 1
@@ -1329,7 +1320,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 																orgusruaaauditscount = 0
 															}
 															aorusruaaaudittotalcount = aorusruaaaudittotalcount + orgusruaaauditscount
-														}
+
 													}
 
 													if aorusruaaaudittotalcount == 0 {
@@ -1338,13 +1329,17 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														if Audit == "unset" {
 															fmt.Println("UNSET!UNSET!")
 															fmt.Println("Unsetting user")
-															unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgAuditor")
-															if _, err := unset.Output(); err == nil {
-																fmt.Println("command: ", unset)
-																fmt.Println(unset.Stdout)
+															if strings.TrimSpace(username) == "admin"{
+																fmt.Println("Skipping unset for admin user")
 															} else {
-																fmt.Println("command: ", unset)
-																fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+																unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgAuditor")
+																if _, err := unset.Output(); err == nil {
+																	fmt.Println("command: ", unset)
+																	fmt.Println(unset.Stdout)
+																} else {
+																	fmt.Println("command: ", unset)
+																	fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+																}
 															}
 														} else if Audit == "list" {
 															fmt.Println("UNSET!UNSET!")
@@ -1362,10 +1357,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												if err == nil {
 													for q := 0; q < OrgUsLenLDAPAuditor; q++ {
 
-														if strings.TrimSpace(username) == "admin" {
-															fmt.Println("Admin user skipping Validation")
-															aorusrldapaudittotalcount = 2
-														} else {
 															fmt.Println("LDAP Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]), ",", username)
 															if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q])) == username {
 																orgusrldapauditscount = 1
@@ -1373,7 +1364,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 																orgusrldapauditscount = 0
 															}
 															aorusrldapaudittotalcount = aorusrldapaudittotalcount + orgusrldapauditscount
-														}
+
 													}
 
 													if aorusrldapaudittotalcount == 0 {
@@ -1381,6 +1372,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														if Audit == "unset" {
 															fmt.Println("UNSET!UNSET!")
 															fmt.Println("Unsetting user")
+															if strings.TrimSpace(username) == "admin"{
+																fmt.Println("Skipping unset for admin user")
+															} else {
 															unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgAuditor")
 															if _, err := unset.Output(); err == nil {
 																fmt.Println("command: ", unset)
@@ -1388,8 +1382,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															} else {
 																fmt.Println("command: ", unset)
 																fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+																}
 															}
-														} else if Audit == "list" {
+														}else if Audit == "list" {
 															fmt.Println("UNSET!UNSET!")
 															fmt.Println("User to be deleted: ", username, "LDAP OrgAuditor")
 														} else {
@@ -1413,7 +1408,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 								var orgusrssomangscount, aorusrssomangtotalcount int
 								var orgusruaamangscount, aorusruaamangtotalcount int
 								var orgusrldapmangscount, aorusrldapmangtotalcount int
-
 
 								if orgusrslist.Resources[i].Type == "organization_manager"{
 
@@ -1439,11 +1433,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOManagers; q++ {
 
-													if strings.TrimSpace(username) == "admin" {
-														fmt.Println("Admin user skipping Validation")
-														aorusrssomangtotalcount = 2
-													} else {
-
 														fmt.Println("SSO Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[q]), ",", username)
 														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q])) == username {
 															orgusrssomangscount = 1
@@ -1451,7 +1440,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															orgusrssomangscount = 0
 														}
 														aorusrssomangtotalcount = aorusrssomangtotalcount + orgusrssomangscount
-													}
 												}
 												if aorusrssomangtotalcount == 0 {
 
@@ -1459,6 +1447,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													fmt.Println(": ", strings.TrimSpace(out.String()))
 
 													if Audit == "unset" {
+														if strings.TrimSpace(username) == "admin"{
+															fmt.Println("Skipping unset for admin user")
+														} else {
 														unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgManager")
 														if _, err := unset.Output(); err == nil {
 															fmt.Println("UNSET!UNSET!")
@@ -1469,6 +1460,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															fmt.Println("UNSET!UNSET!")
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+															}
 														}
 													} else if Audit == "list" {
 														fmt.Println("User to be deleted: ", username, "SSO OrgManager")
@@ -1486,11 +1478,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenUAAManagers; q++ {
 
-													if strings.TrimSpace(username) == "admin" {
-														fmt.Println("Admin user skipping Validation")
-														aorusruaamangtotalcount = 2
-													} else {
-
 														fmt.Println("UAA Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[q]), ",", username)
 														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q])) == username {
 															orgusruaamangscount = 1
@@ -1498,7 +1485,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 															orgusruaamangscount = 0
 														}
 														aorusruaamangtotalcount = aorusruaamangtotalcount + orgusruaamangscount
-													}
 												}
 												if aorusruaamangtotalcount == 0 {
 
@@ -1507,6 +1493,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													if Audit == "unset" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("Unsetting user")
+														if strings.TrimSpace(username) == "admin"{
+															fmt.Println("Skipping unset for admin user")
+														} else {
 														unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgManager")
 														if _, err := unset.Output(); err == nil {
 															fmt.Println("command: ", unset)
@@ -1514,8 +1503,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														} else {
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+															}
 														}
-													} else if Audit == "list" {
+													}else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("User to be deleted: ", username, "UAA OrgManager")
 													} else {
@@ -1531,11 +1521,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenLDAPManagers; q++ {
 
-													if username == "admin" {
-														fmt.Println("Admin user skipping Validation")
-														aorusrldapmangtotalcount = 2
-													} else {
-
 														fmt.Println("LDAP Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[q]), ",", username)
 														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]))== username {
 															orgusrldapmangscount = 1
@@ -1544,13 +1529,15 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														}
 														aorusrldapmangtotalcount = aorusrldapmangtotalcount + orgusrldapmangscount
 													}
-												}
 												if aorusrldapmangtotalcount == 0 {
 													fmt.Println("LDAP OrgManager User", username,"has not be listed in Org.yml")
 
 													if Audit == "unset" {
 														fmt.Println("UNSET!UNSET!")
 														fmt.Println("Unsetting user")
+														if strings.TrimSpace(username) == "admin"{
+															fmt.Println("Skipping unset for admin user")
+														} else {
 														unset := exec.Command("cf", "unset-org-role", username, Orgs.Org.Name, "OrgManager")
 														if _, err := unset.Output(); err == nil {
 															fmt.Println("command: ", unset)
@@ -1558,6 +1545,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														} else {
 															fmt.Println("command: ", unset)
 															fmt.Println("Err: ", unset.Stdout, unset.Stderr)
+															}
 														}
 													} else if Audit == "list" {
 														fmt.Println("UNSET!UNSET!")
