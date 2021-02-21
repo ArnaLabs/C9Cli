@@ -1,7 +1,7 @@
 package main
 
-//import "C"
-import (
+import "C"
+//import (
 	"bytes"
 	"encoding/json"
 	"flag"
@@ -1716,7 +1716,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 									fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
 								}
 
-								fileSpaceJson, err := ioutil.ReadFile("spaceuserslist.json")
+								fileSpaceJson, err := ioutil.ReadFile("spaceusrslist.json")
 								if err != nil {
 									fmt.Println(err)
 								}
