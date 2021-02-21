@@ -2486,6 +2486,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	ASGPath := asgpath
 	ASGName := Org+"_"+Space+".json"
 	path := ASGPath+ASGName
+	ASG := Org+"_"+Space
 
 	var asglist ASGListJson
 
@@ -2502,39 +2503,38 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 		fmt.Println("Err: ", check.Stdout, err)
 		fmt.Println("No running ASG defined for Org/Space combination", Org, Space)
 		fmt.Println("Checking if ASG has been already binded to Org/Space combinatio")
-		
-		path := "/v3/security_groups?="+ASGName
+
+		path := "/v3/security_groups?="+ASG
 		checkasg := exec.Command("cf", "curl", path, "--output", "asg.json")
-		
+
 		if _, err := checkasg.Output(); err != nil {
 			fmt.Println("command: ", checkasg)
 			fmt.Println("Err: ", checkasg.Stdout, err)
 		} else {
-		
+
 			fileAsgJson, err := ioutil.ReadFile("asg.json")
 			if err != nil {
 				fmt.Println(err)
 			}
-		
+
 			if err := json.Unmarshal(fileAsgJson, &asglist); err != nil {
 				panic(err)
 			}
-			
-			
+
+
 			if strings.TrimSpace(asglist.Resources[0].Name) == "" {
-				fmt.Println("Running ASG",ASGName," is not binded for deleting")
+				fmt.Println("Running ASG",ASG," is not binded for deleting")
 			} else {
-				
 				if audit == "delete" {
 					fmt.Println("DELETE!DELETE!")
-					fmt.Println("Unbinding running ASG: ", ASGName)
-					unbind := exec.Command("cf", "unbind-running-security-group", ASGName, Org, Space, "--lifecycle", "running")
+					fmt.Println("Unbinding running ASG: ", ASG)
+					unbind := exec.Command("cf", "unbind-running-security-group", ASG, Org, Space, "--lifecycle", "running")
 					if _, err := unbind.Output(); err != nil {
 						fmt.Println("command: ", unbind)
 						fmt.Println("Err: ", unbind.Stdout, err)
 					} else {
-						fmt.Println("Deleting running ASG: ", ASGName)
-						delete := exec.Command("cf", "delete-security-group", ASGName, "-f")
+						fmt.Println("Deleting running ASG: ", ASG)
+						delete := exec.Command("cf", "delete-security-group", ASG, "-f")
 						if _, err := delete.Output(); err != nil {
 							fmt.Println("command: ", delete)
 							fmt.Println("Err: ", delete.Stdout, err)
@@ -2545,7 +2545,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 					}
 				} else if audit == "list" {
 					fmt.Println("DELETE!DELETE!")
-					fmt.Println("ASG to be deleted, Org, Space: ",ASGName, Org, Space)
+					fmt.Println("ASG to be deleted, Org, Space: ",ASG, Org, Space)
 				} else {
 					fmt.Println("Provide Valid Input")
 				}
@@ -2563,7 +2563,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	} else {
 		fmt.Println("command: ", check)
 		fmt.Println(check.Stdout)
-		fmt.Println("Running ASG defined for Org, Space combination", ASGName)
+		fmt.Println("Running ASG defined for Org, Space combination", ASG)
 	}
 	return
 }
@@ -3597,6 +3597,8 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 
 	ASGPath := asgpath
 	ASGName := Org+"_"+Space+".json"
+	ASG := Org+"_"+Space
+
 	path := ASGPath+ASGName
 
 	//check := exec.Command("powershell", "-command","Get-Content", path)
@@ -3622,13 +3624,13 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 		fmt.Println(check.Stdout)
 		fmt.Println("Binding ASGs")
 
-		checkcreate := exec.Command("cf", "security-group", ASGName)
+		checkcreate := exec.Command("cf", "security-group", ASG)
 		if _, err := checkcreate.Output(); err != nil {
 			fmt.Println("command: ", checkcreate)
 			fmt.Println("Err: ", checkcreate.Stdout,err)
 			fmt.Println("ASG doesn't exist, Creating ASG")
 
-			createasg := exec.Command("cf", "create-security-group", ASGName, path)
+			createasg := exec.Command("cf", "create-security-group", ASG, path)
 			if _, err := createasg.Output(); err != nil {
 				fmt.Println("command: ", createasg)
 				fmt.Println("Err: ", createasg.Stdout,err)
@@ -3641,7 +3643,7 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 			fmt.Println("command: ", checkcreate)
 			fmt.Println(checkcreate.Stdout)
 			fmt.Println("ASG exist, Updating ASG")
-			updateasg := exec.Command("cf", "update-security-group", ASGName, path)
+			updateasg := exec.Command("cf", "update-security-group", ASG, path)
 			if _, err := updateasg.Output(); err != nil {
 				fmt.Println("command: ", updateasg)
 				fmt.Println("Err: ", updateasg.Stdout,err)
@@ -3652,7 +3654,7 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 			}
 		}
 		fmt.Println("Creating or Updating ASG finished, binding ASG")
-		bindasg := exec.Command("cf", "bind-security-group", ASGName, Org, Space, "--lifecycle", "running")
+		bindasg := exec.Command("cf", "bind-security-group", ASG, Org, Space, "--lifecycle", "running")
 		if _, err := bindasg.Output(); err != nil {
 			fmt.Println("command: ", bindasg)
 			fmt.Println("Err: ", bindasg.Stdout,err)
