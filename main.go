@@ -2504,7 +2504,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 		fmt.Println("No running ASG defined for Org/Space combination", Org, Space)
 		fmt.Println("Checking if ASG has been already binded to Org/Space combinatio")
 
-		path := "/v3/security_groups?="+ASG
+		path := "/v3/security_groups?names="+ASG
 		checkasg := exec.Command("cf", "curl", path, "--output", "asg.json")
 
 		if _, err := checkasg.Output(); err != nil {
