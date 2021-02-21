@@ -1,7 +1,7 @@
 package main
 
-import "C"
-//import (
+//import "C"
+import (
 	"bytes"
 	"encoding/json"
 	"flag"
