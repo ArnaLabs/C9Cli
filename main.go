@@ -1314,8 +1314,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													fmt.Println("User is listed in Org.yml as SSO Org Audit User: ", username)
 												}
 											}
-										}
-										if origin == "uaa" {
+										} else if origin == "uaa" {
 												if err == nil {
 													for q := 0; q < OrgUsLenUAAAuditor; q++ {
 
@@ -1359,8 +1358,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														fmt.Println("User is listed in Org.yml as UAA Org Audit User: ", username)
 													}
 												}
-										}
-										if origin == "ldap" {
+										} else if origin == "ldap" {
 												if err == nil {
 													for q := 0; q < OrgUsLenLDAPAuditor; q++ {
 
@@ -1403,10 +1401,11 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														fmt.Println("User is listed in Org.yml as LDAP Org Audit User: ", username)
 													}
 												}
+											} else { fmt.Println("Authentication of type", origin, "is not monitored")
 											}
 										}
 									}
-									
+
 								OrgUsLenSSOManagers := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
 								OrgUsLenUAAManagers := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
 								OrgUsLenLDAPManagers := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
