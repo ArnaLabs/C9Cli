@@ -1275,7 +1275,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										if origin == "sso" {
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOAuditor; q++ {
-													if out.String() == "admin" {
+													if username == "admin" {
 														fmt.Println("Admin user skipping Validation")
 														aorusrssoaudittotalcount = 2
 													} else {
@@ -1318,7 +1318,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												if err == nil {
 													for q := 0; q < OrgUsLenUAAAuditor; q++ {
 
-														if out.String() == "admin" {
+														if username == "admin" {
 															fmt.Println("Admin user skipping Validation")
 															aorusruaaaudittotalcount = 2
 														} else {
@@ -1362,7 +1362,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												if err == nil {
 													for q := 0; q < OrgUsLenLDAPAuditor; q++ {
 
-														if out.String() == "admin" {
+														if username == "admin" {
 															fmt.Println("Admin user skipping Validation")
 															aorusrldapaudittotalcount = 2
 														} else {
@@ -1439,7 +1439,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOManagers; q++ {
 
-													if out.String() == "admin" {
+													if username == "admin" {
 														fmt.Println("Admin user skipping Validation")
 														aorusrssomangtotalcount = 2
 													} else {
@@ -1486,7 +1486,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenUAAManagers; q++ {
 
-													if out.String() == "admin" {
+													if username == "admin" {
 														fmt.Println("Admin user skipping Validation")
 														aorusruaamangtotalcount = 2
 													} else {
@@ -1531,7 +1531,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 											if err == nil {
 												for q := 0; q < OrgUsLenLDAPManagers; q++ {
 
-													if out.String() == "admin" {
+													if username == "admin" {
 														fmt.Println("Admin user skipping Validation")
 														aorusrldapmangtotalcount = 2
 													} else {
