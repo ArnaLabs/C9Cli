@@ -1244,7 +1244,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 						if OrgUsrLen != 0 {
 
 							for i := 0; i < OrgUsrLen; i++ {
-								
+
 								OrgUsLenSSOAuditor := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
 								OrgUsLenUAAAuditor := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
 								OrgUsLenLDAPAuditor := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
@@ -2500,26 +2500,31 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	if _, err := check.Output(); err != nil {
 		fmt.Println("command: ", check)
 		fmt.Println("Err: ", check.Stdout, err)
-		fmt.Println("No ASG defined for Org and Space combination")
-
+		fmt.Println("No running ASG defined for Org/Space combination", Org, Space)
+		fmt.Println("Checking if ASG has been already binded to Org/Space combinatio")
+		
 		path := "/v3/security_groups?="+ASGName
 		checkasg := exec.Command("cf", "curl", path, "--output", "asg.json")
+		
 		if _, err := checkasg.Output(); err != nil {
 			fmt.Println("command: ", checkasg)
 			fmt.Println("Err: ", checkasg.Stdout, err)
 		} else {
+		
 			fileAsgJson, err := ioutil.ReadFile("asg.json")
 			if err != nil {
 				fmt.Println(err)
 			}
+		
 			if err := json.Unmarshal(fileAsgJson, &asglist); err != nil {
 				panic(err)
 			}
-
-			if len(asglist.Resources) == 0 {
+			
+			
+			if strings.TrimSpace(asglist.Resources[0].Name) == "" {
 				fmt.Println("Running ASG",ASGName," is not binded for deleting")
 			} else {
-
+				
 				if audit == "delete" {
 					fmt.Println("DELETE!DELETE!")
 					fmt.Println("Unbinding running ASG: ", ASGName)
@@ -2553,7 +2558,6 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 					fmt.Println("command: ", results)
 					fmt.Println(results.Stdout)
 				}
-
 			}
 		}
 	} else {
