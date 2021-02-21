@@ -615,7 +615,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 
 	LenQuota := len(Quotas.Quota)
 	LenProtectedQuota := len(ProtectedQuota.Quota)
-	Audit := Quotas.Audit
+	Audit := strings.ToLower(Quotas.Audit)
 
 	getquotas := exec.Command("cf", "curl", "/v3/organization_quotas", "--output", "listquotas.json")
 
@@ -750,7 +750,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		panic(err)
 	}
 	LenList := len(list.OrgList)
-	Audit := list.Audit
+	Audit := strings.ToLower(list.Audit)
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -973,7 +973,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 				panic(err)
 			}
 
-			Audit := Orgs.SpaceAudit
+			Audit := strings.ToLower(Orgs.SpaceAudit)
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
@@ -1197,7 +1197,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 				panic(err)
 			}
 
-			Audit := Orgs.UserAudit
+			Audit := strings.ToLower(Orgs.UserAudit)
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
@@ -1279,8 +1279,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														fmt.Println("Admin user skipping Validation")
 														aorusrssoaudittotalcount = 2
 													} else {
-														fmt.Println("SSO Audit Usr: ", Orgs.Org.OrgUsers.SSO.OrgAuditors[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == username {
+														fmt.Println("SSO Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q])) == username {
 															orgusrssoauditscount = 1
 														} else {
 															orgusrssoauditscount = 0
@@ -1317,9 +1317,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 										}
 									}
 								}
-
-
-
+								
 								OrgUsLenSSOManagers := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
 
 								var orgusrssomangscount, aorusrssomangtotalcount int
@@ -1353,8 +1351,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														aorusrssomangtotalcount = 2
 													} else {
 
-														fmt.Println("SSO Org Managers Usr: ", Orgs.Org.OrgUsers.SSO.OrgManagers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]) == username {
+														fmt.Println("SSO Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.SSO.OrgAuditors[q])) == username {
 															orgusrssomangscount = 1
 														} else {
 															orgusrssomangscount = 0
@@ -1426,8 +1424,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														fmt.Println("Admin user skipping Validation")
 														aorusruaaaudittotalcount = 2
 													} else {
-														fmt.Println("UAA Audit Usr: ", Orgs.Org.OrgUsers.UAA.OrgAuditors[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == username {
+														fmt.Println("UAA Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q])) == username {
 															orgusruaaauditscount = 1
 														} else {
 															orgusruaaauditscount = 0
@@ -1500,8 +1498,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														aorusruaamangtotalcount = 2
 													} else {
 
-														fmt.Println("UAA Org Managers Usr: ", Orgs.Org.OrgUsers.UAA.OrgManagers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q]) == username {
+														fmt.Println("UAA Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.UAA.OrgAuditors[q])) == username {
 															orgusruaamangscount = 1
 														} else {
 															orgusruaamangscount = 0
@@ -1572,8 +1570,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														fmt.Println("Admin user skipping Validation")
 														aorusrldapaudittotalcount = 2
 													} else {
-														fmt.Println("LDAP Audit Usr: ", Orgs.Org.OrgUsers.LDAP.OrgAuditors[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == username {
+														fmt.Println("LDAP Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q])) == username {
 															orgusrldapauditscount = 1
 														} else {
 															orgusrldapauditscount = 0
@@ -1644,8 +1642,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 														aorusrldapmangtotalcount = 2
 													} else {
 
-														fmt.Println("LDAP Org Managers Usr: ", Orgs.Org.OrgUsers.LDAP.OrgManagers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]) == username {
+														fmt.Println("LDAP Org Managers Usr: ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.OrgUsers.LDAP.OrgAuditors[q]))== username {
 															orgusrldapmangscount = 1
 														} else {
 															orgusrldapmangscount = 0
@@ -1785,7 +1783,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 				panic(err)
 			}
 
-			Audit := Orgs.SpaceAudit
+			Audit := strings.ToLower(Orgs.SpaceAudit)
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
@@ -1874,8 +1872,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrssoaudittotalcount = 2
 													} else {
-														fmt.Println("SSO Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("SSO Space Audit Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]), ",", username)
+														if strings.TrimSpace(strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q])) == strings.TrimSpace(out.String()) {
 															spaceusrssoauditscount = 1
 														} else {
 															spaceusrssoauditscount = 0
@@ -1937,8 +1935,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrssodevtotalcount = 2
 													} else {
-														fmt.Println("SSO Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("SSO Space Dev Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[q])) == strings.TrimSpace(out.String()) {
 															spaceusrssodevscount = 1
 														} else {
 															spaceusrssodevscount = 0
@@ -2003,8 +2001,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrssomantotalcount = 2
 													} else {
-														fmt.Println("SSO Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q],",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("SSO Space Manager Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q]),",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[q])) == strings.TrimSpace(out.String()) {
 															spaceusrssomanscount = 1
 														} else {
 															spaceusrssomanscount = 0
@@ -2065,8 +2063,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusruaaaudittotalcount = 2
 													} else {
-														fmt.Println("UAA Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q],",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("UAA Space Audit Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q]),",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[q])) == strings.TrimSpace(out.String()) {
 															spaceusruaaauditscount = 1
 														} else {
 															spaceusruaaauditscount = 0
@@ -2128,8 +2126,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusruaadevtotalcount = 2
 													} else {
-														fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q],",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("UAA Space Dev Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q]),",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[q])) == strings.TrimSpace(out.String()) {
 															spaceusruaadevscount = 1
 														} else {
 															spaceusruaadevscount = 0
@@ -2190,8 +2188,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusruaamantotalcount = 2
 													} else {
-														fmt.Println("UAA Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q],",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("UAA Space Dev Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q]),",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[q])) == strings.TrimSpace(out.String()) {
 															spaceusruaamanscount = 1
 														} else {
 															spaceusruaamanscount = 0
@@ -2252,8 +2250,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrldapaudittotalcount = 2
 													} else {
-														fmt.Println("LDAP Space Audit Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q],",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("LDAP Space Audit Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q]),",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[q])) == strings.TrimSpace(out.String()) {
 															spaceusrldapauditscount = 1
 														} else {
 															spaceusrldapauditscount = 0
@@ -2314,8 +2312,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrldapdevtotalcount = 2
 													} else {
-														fmt.Println("LDAP Space Dev Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("LDAP Space Dev Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[q])) == strings.TrimSpace(out.String()) {
 															spaceusrldapdevscount = 1
 														} else {
 															spaceusrldapdevscount = 0
@@ -2374,8 +2372,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 														fmt.Println("Admin user skipping Validation")
 														spaceusrldapmantotalcount = 2
 													} else {
-														fmt.Println("LDAP Space Manager Usr: ", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q], ",", username)
-														if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q]) == strings.TrimSpace(out.String()) {
+														fmt.Println("LDAP Space Manager Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q]), ",", username)
+														if strings.ToLower(strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[q])) == strings.TrimSpace(out.String()) {
 															spaceusrldapmanscount = 1
 														} else {
 															spaceusrldapmanscount = 0
@@ -2535,7 +2533,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 				panic(err)
 			}
 
-			Audit := Orgs.ASGAudit
+			Audit := strings.ToLower(Orgs.ASGAudit)
 
 			if list.OrgList[i] == Orgs.Org.Name {
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -3218,7 +3216,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < LDAPOrgManLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.LDAP.OrgManagers[j], Orgs.Org.Name, "OrgManager")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3233,7 +3231,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < LDAPOrgAudLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.LDAP.OrgAuditors[j], Orgs.Org.Name, "OrgAuditor")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3250,7 +3248,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < UAAOrgManLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.UAA.OrgManagers[j], Orgs.Org.Name, "OrgManager")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3265,7 +3263,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < UAAOrgAudLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.UAA.OrgAuditors[j], Orgs.Org.Name, "OrgAuditor")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3282,7 +3280,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < SSOOrgManLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.SSO.OrgManagers[j], Orgs.Org.Name, "OrgManager")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3297,7 +3295,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 					for j := 0; j < SSOOrgAudLen; j++ {
 
-						cmd := exec.Command("cf", "set-org-role", Orgs.Org.OrgUsers.SSO.OrgAuditors[j], Orgs.Org.Name, "OrgAuditor")
+						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
 
 						if _, err := cmd.Output(); err != nil{
 							fmt.Println("command: ", cmd)
@@ -3424,7 +3422,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							LDAPSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
 
 							for k := 0; k < LDAPSpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3437,7 +3435,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							LDAPSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
 
 							for k := 0; k < LDAPSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout, err)
@@ -3450,7 +3448,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							LDAPSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
 
 							for k := 0; k < LDAPSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3466,7 +3464,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							UAASpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
 
 							for k := 0; k < UAASpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3479,7 +3477,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							UAASpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
 
 							for k := 0; k < UAASpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3492,7 +3490,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							UAASpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
 
 							for k := 0; k < UAASpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3507,7 +3505,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							SSOSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
 
 							for k := 0; k < SSOSpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3520,7 +3518,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							SSOSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
 
 							for k := 0; k < SSOSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
@@ -3533,7 +3531,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 							SSOSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
 
 							for k := 0; k < SSOSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k], Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
 								if _, err := cmd.Output(); err != nil{
 									fmt.Println("command: ", cmd)
 									fmt.Println("Err: ", cmd.Stdout,err)
