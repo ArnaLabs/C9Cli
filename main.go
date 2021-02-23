@@ -1628,15 +1628,15 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 	LenList := len(list.OrgList)
 
-	for i := 0; i < LenList; i++ {
+	for z := 0; z < LenList; z++ {
 
 		var count, totalcount int
 
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", list.OrgList[z])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[z])
+			if ProtectedOrgs.Org[p] == list.OrgList[z] {
 				count = 1
 			} else {
 				count = 0
@@ -1649,9 +1649,9 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 			var OrgsYml string
 			if ostype == "windows" {
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[z]+"\\Org.yml"
 			} else {
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[z]+"/Org.yml"
 			}
 
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -1667,7 +1667,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 			Audit := strings.ToLower(Orgs.SpaceAudit)
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if list.OrgList[z] == Orgs.Org.Name {
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
