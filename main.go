@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -1702,12 +1703,12 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 								fmt.Println("command: ", target)
 								fmt.Println(target.Stdout)
+								var out bytes.Buffer
 
 								path := "/v3/roles/?space_guids="+outguid.String()
 
 								spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "spaceusrslist.json")
 
-								var out bytes.Buffer
 								spaceuserslist.Stdout = &out
 								err := spaceuserslist.Run()
 								if err == nil {
@@ -1725,6 +1726,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 								}
 
 								SpaceUsrLen := len(spaceusrslist.Resources)
+
 								fmt.Println("No of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
 
 								if SpaceUsrLen != 0 {
@@ -2476,6 +2478,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 	var Quotas Quotalist
 	var ProtectedQuota ProtectedList
 	var cmd *exec.Cmd
+	var quotalistjson QuotaListJson
 
 
 	QuotaYml := cpath+"/"+clustername+"/Quota.yml"
@@ -2510,6 +2513,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 		var count, totalcount int
 		fmt.Println(" ")
 		fmt.Println("Quota: ", Quotas.Quota[i].Name)
+		
 
 		SerLimit := Quotas.Quota[i].ServiceInstanceLimit
 		AppLimt  := Quotas.Quota[i].AppInstanceLimit
@@ -2543,59 +2547,161 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 		if totalcount == 0 {
 
 			fmt.Println("This is not Protected Quota")
-			Quotadetails := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+			
+			path := "/v3/organization_quotas?names="+Quotas.Quota[i].Name
+			getquotas := exec.Command("cf", "curl", path, "--output", "listquotas.json")
 
-			if _, err := Quotadetails.Output(); err != nil{
-				fmt.Println("command: ", Quotadetails)
-				fmt.Println("Err: ", Quotadetails.Stdout, err)
-				fmt.Println("Creating Quota")
-
-				if Quotas.Quota[i].AllowPaidPlans == true {
-					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
-				} else {
-					cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt)
-				}
-
-				if _, err := cmd.Output(); err != nil{
-					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout, err)
-				} else {
-					fmt.Println("command: ", cmd)
-					fmt.Println(cmd.Stdout)
-				}
-				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
-				if _, err := QuotaGet.Output(); err != nil{
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout, err)
-				} else {
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println(QuotaGet.Stdout)
-				}
+			if _, err := getquotas.Output(); err != nil {
+				fmt.Println("command: ", getquotas)
+				fmt.Println("Err: ", getquotas.Stdout, err)
 			} else {
-				fmt.Println("command: ", Quotadetails)
-				fmt.Println("Quota exists: ", Quotadetails.Stdout)
-				fmt.Println("Updating Quota")
-
-				if Quotas.Quota[i].AllowPaidPlans == true {
-					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
-				} else {
-					cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--disallow-paid-service-plans")
+				fileQuotaJson, err := ioutil.ReadFile("listquotas.json")
+				if err != nil {
+					fmt.Println(err)
 				}
 
-				if _, err := cmd.Output(); err != nil{
-					fmt.Println("command: ", cmd)
-					fmt.Println("Err: ", cmd.Stdout, err)
-				} else {
-					fmt.Println("command: ", cmd)
-					fmt.Println(cmd.Stdout)
+				if err := json.Unmarshal(fileQuotaJson, &quotalistjson); err != nil {
+					panic(err)
 				}
-				QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
-				if _, err := QuotaGet.Output(); err != nil{
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println("Err: ", QuotaGet.Stdout, err)
+
+				if len(quotalistjson.Resources) == 0 {
+					
+					fmt.Println("Creating Quota")
+
+					if Quotas.Quota[i].AllowPaidPlans == true {
+						cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
+						if _, err := cmd.Output(); err != nil{
+							fmt.Println("command: ", cmd)
+							fmt.Println("Err: ", cmd.Stdout, err)
+						} else {
+							fmt.Println("command: ", cmd)
+							fmt.Println(cmd.Stdout)
+						}
+						QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+						if _, err := QuotaGet.Output(); err != nil{
+							fmt.Println("command: ", QuotaGet)
+							fmt.Println("Err: ", QuotaGet.Stdout, err)
+						} else {
+							fmt.Println("command: ", QuotaGet)
+							fmt.Println(QuotaGet.Stdout)
+						}
+					} else {
+						cmd = exec.Command("cf", "create-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s", SerLimit, "-a", AppLimt)
+						if _, err := cmd.Output(); err != nil{
+							fmt.Println("command: ", cmd)
+							fmt.Println("Err: ", cmd.Stdout, err)
+						} else {
+							fmt.Println("command: ", cmd)
+							fmt.Println(cmd.Stdout)
+						}
+						QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+						if _, err := QuotaGet.Output(); err != nil{
+							fmt.Println("command: ", QuotaGet)
+							fmt.Println("Err: ", QuotaGet.Stdout, err)
+						} else {
+							fmt.Println("command: ", QuotaGet)
+							fmt.Println(QuotaGet.Stdout)
+						}
+					}
+
 				} else {
-					fmt.Println("command: ", QuotaGet)
-					fmt.Println(QuotaGet.Stdout)
+					
+					//fmt.Println("Updating Quota")
+
+					var count, NewMemLimit int
+
+					result1, _ := regexp.MatchString("m", strings.ToLower(MemLimit))
+					if result1 == true{
+						NewMemLimit, _ = strconv.Atoi(strings.Trim(strings.ToLower(MemLimit),"m"))
+					}
+
+					result2, _ := regexp.MatchString("mb", strings.ToLower(MemLimit))
+					if result2 == true {
+						NewMemLimit, _ = strconv.Atoi(strings.Trim(strings.ToLower(MemLimit), "mb"))
+					}
+
+				    result3, _ := regexp.MatchString("g", strings.ToLower(MemLimit))
+					if result3 == true {
+					 	NewMemLimit, _ = strconv.Atoi(strings.Trim(strings.ToLower(MemLimit), "g"))
+					 	NewMemLimit = 1024*NewMemLimit
+					}
+
+				    result4, _ := regexp.MatchString("gb", strings.ToLower(MemLimit))
+					if result4 == true {
+						NewMemLimit, _ = strconv.Atoi(strings.Trim(strings.ToLower(MemLimit), "gb"))
+						NewMemLimit = 1024 * NewMemLimit
+					}
+
+					if Quotas.Quota[i].MemoryLimit == "" {
+						MemLimit = "1024M"
+					} else {
+					}
+
+					if strings.TrimSpace(string(quotalistjson.Resources[0].Apps.TotalMemoryInMb)) !=  strings.TrimSpace(string(NewMemLimit)) {
+						fmt.Println("memory -", quotalistjson.Resources[0].Apps.TotalMemoryInMb)
+						if strings.TrimSpace(string(NewMemLimit)) == "" {
+							fmt.Println("memory +", MemLimit)
+						} else {
+							fmt.Println("memory +", strings.TrimSpace(string(NewMemLimit)))
+						}
+						count = 1
+					}
+					if quotalistjson.Resources[0].Services.PaidServicesAllowed != Quotas.Quota[i].AllowPaidPlans {
+						fmt.Println("allow service plans -", quotalistjson.Resources[0].Services.PaidServicesAllowed)
+						fmt.Println("allow service plans +", Quotas.Quota[i].AllowPaidPlans)
+						count = 1
+					}
+					if strconv.Itoa(quotalistjson.Resources[0].Apps.TotalInstances) != AppLimt {
+						fmt.Println("total app instances -", quotalistjson.Resources[0].Apps.TotalInstances)
+						fmt.Println("total app instances +", AppLimt)
+						count = 1
+					}
+					if strconv.Itoa(quotalistjson.Resources[0].Services.TotalServiceInstances) != SerLimit {
+						fmt.Println("total service instances -", quotalistjson.Resources[0].Services.TotalServiceInstances)
+						fmt.Println("total service instances +", SerLimit)
+						count = 1
+					}
+
+					if count == 1 {
+						fmt.Println("Updating Quota")
+						if Quotas.Quota[i].AllowPaidPlans == true {
+							cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--allow-paid-service-plans")
+							if _, err := cmd.Output(); err != nil{
+								fmt.Println("command: ", cmd)
+								fmt.Println("Err: ", cmd.Stdout, err)
+							} else {
+								fmt.Println("command: ", cmd)
+								fmt.Println(cmd.Stdout)
+							}
+							QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+							if _, err := QuotaGet.Output(); err != nil{
+								fmt.Println("command: ", QuotaGet)
+								fmt.Println("Err: ", QuotaGet.Stdout, err)
+							} else {
+								fmt.Println("command: ", QuotaGet)
+								fmt.Println(QuotaGet.Stdout)
+							}
+
+						} else {
+							cmd = exec.Command("cf", "update-quota", Quotas.Quota[i].Name, "-m", MemLimit, "-i", "-1", "-r", "-1", "-s",  SerLimit, "-a", AppLimt, "--disallow-paid-service-plans")
+							if _, err := cmd.Output(); err != nil{
+								fmt.Println("command: ", cmd)
+								fmt.Println("Err: ", cmd.Stdout, err)
+							} else {
+								fmt.Println("command: ", cmd)
+								fmt.Println(cmd.Stdout)
+							}
+							QuotaGet := exec.Command("cf", "quota", Quotas.Quota[i].Name)
+							if _, err := QuotaGet.Output(); err != nil{
+								fmt.Println("command: ", QuotaGet)
+								fmt.Println("Err: ", QuotaGet.Stdout, err)
+							} else {
+								fmt.Println("command: ", QuotaGet)
+								fmt.Println(QuotaGet.Stdout)
+							}
+
+						}
+					}
 				}
 			}
 		} else {
