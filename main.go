@@ -18,7 +18,6 @@ import (
 	"text/template"
 	"time"
 )
-
 type SpaceListJson struct {
 	Pagination struct {
 		TotalResults int `json:"total_results"`
@@ -1696,7 +1695,6 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 		if totalcount == 0 {
 
-
 			var OrgsYml string
 			if ostype == "windows" {
 				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[z]+"\\Org.yml"
@@ -1739,7 +1737,6 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 					for j := 0; j < SpaceLen; j++ {
 
 						var outguid bytes.Buffer
-
 						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
 						guid.Stdout = &outguid
 						err := guid.Run()
@@ -1753,13 +1750,13 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 								fmt.Println("command: ", target)
 								fmt.Println(target.Stdout)
-								var out bytes.Buffer
+								//var out bytes.Buffer
 
 								path := "/v3/roles/?space_guids="+outguid.String()
 
 								spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceusrslist.json")
 
-								spaceuserslist.Stdout = &out
+								//spaceuserslist.Stdout = &out
 								err := spaceuserslist.Run()
 								if err == nil {
 									fmt.Println(spaceuserslist, spaceuserslist.Stdout)
@@ -1791,13 +1788,28 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 										var spaceusrssoauditscount, spaceusrssoaudittotalcount int
 										var spaceusruaaauditscount, spaceusruaaaudittotalcount int
 										var spaceusrldapauditscount, spaceusrldapaudittotalcount int
+
+										SpaceUsLenSSODeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
+										SpaceUsLenUAADeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
+										SpaceUsLenLDAPDeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
+										var spaceusrldapdevscount, spaceusrldapdevtotalcount int
+										var spaceusrssodevscount, spaceusrssodevtotalcount int
+										var spaceusruaadevscount, spaceusruaadevtotalcount int
+
+										SpaceUsLenSSOMan := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
+										SpaceUsLenUAAMan := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
+										SpaceUsLenLDAPMan := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
+										var spaceusruaamanscount, spaceusruaamantotalcount int
+										var spaceusrssomanscount, spaceusrssomantotalcount int
+										var spaceusrldapmanscount, spaceusrldapmantotalcount int
+
 										if spaceusrslist.Resources[i].Type == "space_auditor" {
 
-											userguid := spaceusrslist.Resources[i].GUID
+											userguid := spaceusrslist.Resources[i].Relationships.User.Data.GUID
 											path := "/v3/users/?guids=" + userguid
-											var out1 bytes.Buffer
+											//var out1 bytes.Buffer
 											userdetails := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
-											userdetails.Stdout = &out1
+											//userdetails.Stdout = &out1
 											err := userdetails.Run()
 
 											fileusrdetlsjson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_usrdetails.json")
@@ -1939,23 +1951,14 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 													}
 												}
 											}
-										}
+										} else if spaceusrslist.Resources[i].Type == "space_developer" {
 
-										//Developer
-										SpaceUsLenSSODeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
-										SpaceUsLenUAADeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
-										SpaceUsLenLDAPDeveloper := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
-										var spaceusrldapdevscount, spaceusrldapdevtotalcount int
-										var spaceusrssodevscount, spaceusrssodevtotalcount int
-										var spaceusruaadevscount, spaceusruaadevtotalcount int
-										if spaceusrslist.Resources[i].Type == "space_developer" {
-
-											userguid := spaceusrslist.Resources[i].GUID
+											userguid := spaceusrslist.Resources[i].Relationships.User.Data.GUID
 											path := "/v3/users/?guids=" + userguid
-											var out bytes.Buffer
+											//var out bytes.Buffer
 
 											userdetails := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
-											userdetails.Stdout = &out
+											//userdetails.Stdout = &out
 											err := userdetails.Run()
 
 											fileusrdetlsjson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_usrdetails.json")
@@ -2093,23 +2096,14 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 													}
 												}
 											}
-										}
+										} else if spaceusrslist.Resources[i].Type == "space_manager" {
 
-										//Manager
-										SpaceUsLenSSOMan := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
-										SpaceUsLenUAAMan := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
-										SpaceUsLenLDAPMan := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
-										var spaceusruaamanscount, spaceusruaamantotalcount int
-										var spaceusrssomanscount, spaceusrssomantotalcount int
-										var spaceusrldapmanscount, spaceusrldapmantotalcount int
-										if spaceusrslist.Resources[i].Type == "space_manager" {
-
-											userguid := spaceusrslist.Resources[i].GUID
+											userguid := spaceusrslist.Resources[i].Relationships.User.Data.GUID
 											path := "/v3/users/?guids=" + userguid
-											var out bytes.Buffer
+											//var out bytes.Buffer
 
 											userdetails := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
-											userdetails.Stdout = &out
+											//userdetails.Stdout = &out
 											err := userdetails.Run()
 
 											fileusrdetlsjson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_usrdetails.json")
@@ -2940,6 +2934,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 	var spacedets SpaceListJson
 	var spaceiso SpaceIsoJson
 	var isoexistingdetails, isodetails IsoJson
+
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
 	if err != nil {
@@ -2979,7 +2974,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 	LenList := len(list.OrgList)
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
-
 
 	for i := 0; i < LenList; i++ {
 
@@ -3021,8 +3015,9 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 				path := "/v3/organizations?names=" + Orgs.Org.Name
 				getorg := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
 
-				var out bytes.Buffer
-				getorg.Stdout = &out
+				//var out bytes.Buffer
+				//getorg.Stdout = &out
+
 				err := getorg.Run()
 				if err == nil {
 				//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
@@ -3047,14 +3042,15 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 					for j := 0; j < SpaceLen; j++ {
 
-						path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + ",organization_guids=" + orgguid
+						path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
 						getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails.json")
 
-						var out2 bytes.Buffer
-						getspace.Stdout = &out2
+						//var out2 bytes.Buffer
+						//getspace.Stdout = &out2
+
 						err := getspace.Run()
 						if err == nil {
-				//			fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+							//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 						} else {
 							fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
 						}
@@ -3063,7 +3059,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 						if err != nil {
 							fmt.Println(err)
 						}
-						if err := json.Unmarshal(fileSpaceJson, spacedets); err != nil {
+						if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
 							panic(err)
 						}
 
@@ -3075,9 +3071,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								fmt.Println("command: ", CreateSpace)
 								fmt.Println("Err: ", CreateSpace.Stdout, err)
 							} else {
-								//	fmt.Println("command: ", CreateSpace)
-								fmt.Println(CreateSpace.Stdout)
 
+								//fmt.Println("command: ", CreateSpace)
+
+								fmt.Println(CreateSpace.Stdout)
 								if Orgs.Org.Spaces[j].IsolationSeg != "" {
 									fmt.Println("Enabling Space Isolation Segment")
 									fmt.Println("SegName: ", Orgs.Org.Spaces[j].IsolationSeg)
@@ -3102,16 +3099,14 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 							}
 						} else {
-
+							// pulling if any isolation segment assigned to org
 							spaceguid := spacedets.Resources[0].GUID
 							path := "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
 							getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
-
-							var out2 bytes.Buffer
-							getisoguid.Stdout = &out2
 							err := getisoguid.Run()
+
 							if err == nil {
-								//	fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 							} else {
 								fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
 							}
@@ -3123,12 +3118,17 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
 								panic(err)
 							}
+							// iso segment guid if noting specific it will be default
 							isoguid := spaceiso.Data.GUID
+							////
 
+							// Pulling isolation segment Name from Guid
 							path = "/v3/isolation_segments?guids="+isoguid
 							existingisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
-							var out4 bytes.Buffer
-							existingisoguid.Stdout = &out4
+
+								//var out4 bytes.Buffer
+								//existingisoguid.Stdout = &out4
+
 							err = existingisoguid.Run()
 							if err == nil {
 								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
@@ -3143,16 +3143,19 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err := json.Unmarshal(fileSpaceJson, &isoexistingdetails); err != nil {
 								panic(err)
 							}
+							//// 	pulled name of iso
 
+							// 	Pulling Guid of Iso Specified in YAML file
 							segname := Orgs.Org.Spaces[j].IsolationSeg
 							path = "/v3/isolation_segments?names="+segname
 							detailsisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
-							var out3 bytes.Buffer
-							detailsisoguid.Stdout = &out3
-						
+
+							//var out3 bytes.Buffer
+							//detailsisoguid.Stdout = &out3
+
 							err = detailsisoguid.Run()
 							if err == nil {
-								//	fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 							} else {
 								fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
 							}
@@ -3164,13 +3167,22 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err := json.Unmarshal(fileSpaceJson, &isodetails); err != nil {
 								panic(err)
 							}
+							//// Pulled name
 
 							if len(isodetails.Resources) == 0 {
-								fmt.Println("No Isolation segment defined with name: ", segname)
+
+								// If some name is defined in YAML but that does/t exits
+
+								if segname == "" {
+
+								} else {
+									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,segname)
+									fmt.Println("No Isolation segment exists with name: ", segname)
+								}
 							} else {
-								
+
 								if isodetails.Resources[0].GUID == isoguid {
-									
+
 								} else {
 									fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
 									fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
@@ -3181,31 +3193,49 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											fmt.Println("command: ", iso)
 											fmt.Println("Err: ", iso.Stdout, err)
 										} else {
-									//		fmt.Println("command: ", iso)
+											//	fmt.Println("command: ", iso)
 											fmt.Println(iso.Stdout)
 										}
-										
+
 										isospace := exec.Command("cf", "set-space-isolation-segment", Orgs.Org.Spaces[j].Name, Orgs.Org.Spaces[j].IsolationSeg)
 										if _, err := isospace.Output(); err != nil {
 											fmt.Println("command: ", isospace)
 											fmt.Println("Err: ", isospace.Stdout, err)
 										} else {
-									//		fmt.Println("command: ", isospace)
+										//	fmt.Println("command: ", isospace)
 											fmt.Println(isospace.Stdout)
 										}
 								}
 							}
 						}
 					}
-				}
 
-				results := exec.Command("cf", "spaces")
-				if _, err := results.Output(); err != nil {
-					fmt.Println("command: ", results)
-					fmt.Println("Err: ", results.Stdout, err)
-				} else {
-					fmt.Println("command: ", results)
-					fmt.Println(results.Stdout)
+					path := "/v3/spaces?organization_guids=" + orgguid
+					getspacelit := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
+
+					//var out2 bytes.Buffer
+					//getspace.Stdout = &out2
+
+					err := getspacelit.Run()
+					if err == nil {
+						//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+					} else {
+						fmt.Println("err", getspacelit, getspacelit.Stdout, getspacelit.Stderr)
+					}
+
+					fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacelist.json")
+					if err != nil {
+						fmt.Println(err)
+					}
+					if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
+						panic(err)
+					}
+
+					noofspace := len(spacedets.Resources)
+					fmt.Println("Spaces: ")
+					for s := 0; s < noofspace; s ++ {
+						fmt.Println(" ",spacedets.Resources[s].Name)
+					}
 				}
 			} else {
 				fmt.Println("Org Name does't match with folder name")
