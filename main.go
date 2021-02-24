@@ -1040,8 +1040,8 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 
 					spacelist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditSpaces_spacelist.json")
 
-					var out bytes.Buffer
-					spacelist.Stdout = &out
+					//var out bytes.Buffer
+					//spacelist.Stdout = &out
 					err := spacelist.Run()
 					if err == nil {
 						fmt.Println(spacelist, spacelist.Stdout, spacelist.Stderr)
@@ -1270,8 +1270,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 						fmt.Println("command: ", target)
 						fmt.Println(target.Stdout)
 
-						var out bytes.Buffer
-						orguserslist.Stdout = &out
+						//var out bytes.Buffer
+						//orguserslist.Stdout = &out
 						err := orguserslist.Run()
 						if err == nil {
 							fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
@@ -1306,9 +1306,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 								if orgusrslist.Resources[i].Type == "organization_auditor"{
 									userguid := orgusrslist.Resources[i].Relationships.User.Data.GUID
 									path := "/v3/users/?guids="+userguid
-									var out1 bytes.Buffer
+									//var out1 bytes.Buffer
 									userdetails := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
-									userdetails.Stdout = &out1
+									//userdetails.Stdout = &out1
 									err := userdetails.Run()
 									fileusrdetlsjson, err := ioutil.ReadFile("DeleteorAuditOrgUsers_usrdetails.json")
 									if err != nil {
@@ -1463,10 +1463,10 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 									userguid := orgusrslist.Resources[i].Relationships.User.Data.GUID
 									path := "/v3/users/?guids="+userguid
-									var out bytes.Buffer
+									//var out bytes.Buffer
 
 									userdetails := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
-									userdetails.Stdout = &out
+									//userdetails.Stdout = &out
 									err := userdetails.Run()
 
 									fileusrdetlsjson, err := ioutil.ReadFile("DeleteorAuditOrgUsers_usrdetails.json")
@@ -2830,8 +2830,8 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 				path := "/v3/organizations?names="+Orgs.Org.Name
 				getorg := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails.json")
 
-				var out bytes.Buffer
-				getorg.Stdout = &out
+				//var out bytes.Buffer
+				//getorg.Stdout = &out
 				err := getorg.Run()
 				if err == nil {
 				//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
@@ -2853,8 +2853,8 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 					quotaguid := orgdetails.Resources[0].Relationships.Quota.Data.GUID
 					path := "/v3/organization_quotas?guids="+quotaguid
 					getquotaName := exec.Command("cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
-					var out2 bytes.Buffer
-					getquotaName.Stdout = &out2
+					//var out2 bytes.Buffer
+					//getquotaName.Stdout = &out2
 					err := getquotaName.Run()
 					if err == nil {
 				//		fmt.Println(getquotaName, getquotaName.Stdout, getquotaName.Stderr)
@@ -3176,7 +3176,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								if segname == "" {
 
 								} else {
-									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,segname)
+									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
 									fmt.Println("No Isolation segment exists with name: ", segname)
 								}
 							} else {
@@ -3187,7 +3187,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
 									fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
 									fmt.Println("Enabling Space Isolation Segment")
-									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,Orgs.Org.Spaces[j].IsolationSeg)
+									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,",", Orgs.Org.Spaces[j].IsolationSeg)
 										iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
 										if _, err := iso.Output(); err != nil {
 											fmt.Println("command: ", iso)
