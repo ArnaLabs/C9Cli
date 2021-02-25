@@ -684,7 +684,7 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 
 		QuotaLen := len(body.Resources)
 
-		fmt.Println("No of Quotas: ", QuotaLen)
+		fmt.Println("Number of Quotas: ", QuotaLen)
 
 		if QuotaLen != 0 {
 
@@ -831,7 +831,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 
 		OrgsLen := len(body.Resources)
 
-		fmt.Println("No of Orgs: ", OrgsLen)
+		fmt.Println("Number of Orgs: ", OrgsLen)
 
 		if OrgsLen != 0 {
 
@@ -1059,7 +1059,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 					}
 
 					SpaceLen := len(spacelistjson.Resources)
-					fmt.Println("No of Spaces for Org",Orgs.Org.Name,":", SpaceLen)
+					fmt.Println("Number of Spaces for Org",Orgs.Org.Name,":", SpaceLen)
 
 					if SpaceLen != 0 {
 
@@ -1289,7 +1289,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 						OrgUsrLen := len(orgusrslist.Resources)
 
-						fmt.Println("No of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
+						fmt.Println("Number of Users currently exist in Org",Orgs.Org.Name,":", OrgUsrLen)
 
 						if OrgUsrLen != 0 {
 
@@ -1774,7 +1774,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 								SpaceUsrLen := len(spaceusrslist.Resources)
 
-								fmt.Println("No of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
+								fmt.Println("Number of Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceUsrLen)
 
 								if SpaceUsrLen != 0 {
 
@@ -3184,10 +3184,15 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								if isodetails.Resources[0].GUID == isoguid {
 
 								} else {
-									fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-									fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
-									fmt.Println("Enabling Space Isolation Segment")
-									fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,",", Orgs.Org.Spaces[j].IsolationSeg)
+									if isoguid == "" {
+										fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
+										fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
+										fmt.Println("Please remove isolation segment assigned to space manually")
+									} else {
+										fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
+										fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
+										fmt.Println("Enabling Space Isolation Segment")
+										fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,",", Orgs.Org.Spaces[j].IsolationSeg)
 										iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
 										if _, err := iso.Output(); err != nil {
 											fmt.Println("command: ", iso)
@@ -3196,15 +3201,15 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											//	fmt.Println("command: ", iso)
 											fmt.Println(iso.Stdout)
 										}
-
 										isospace := exec.Command("cf", "set-space-isolation-segment", Orgs.Org.Spaces[j].Name, Orgs.Org.Spaces[j].IsolationSeg)
 										if _, err := isospace.Output(); err != nil {
 											fmt.Println("command: ", isospace)
 											fmt.Println("Err: ", isospace.Stdout, err)
 										} else {
-										//	fmt.Println("command: ", isospace)
+											//	fmt.Println("command: ", isospace)
 											fmt.Println(isospace.Stdout)
 										}
+									}
 								}
 							}
 						}
@@ -3251,6 +3256,9 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 	var list List
 	var Orgs Orglist
 	var ProtectedOrgs ProtectedList
+	var orgdetails OrgListJson
+	var orgusrslist OrgUsersListJson
+	var usedetails UserDetailsJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3311,106 +3319,440 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
-				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
-				if _, err := guid.Output(); err == nil{
+				path := "/v3/organizations?names="+Orgs.Org.Name
+				getorg := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgdetails.json")
 
-					fmt.Println("command: ", guid)
-					fmt.Println("Org exists: ", guid.Stdout)
-					fmt.Println("Updating Org Users")
-					fmt.Println("Updating LDAP Users")
+				//var out bytes.Buffer
+				//getorg.Stdout = &out
+				err := getorg.Run()
+				if err == nil {
+					//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+				} else {
+					fmt.Println("err", getorg, getorg.Stdout, getorg.Stderr)
+				}
 
-					LDAPOrgManLen := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
+				fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgdetails.json")
+				if err != nil {
+					fmt.Println(err)
+				}
+				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
+					panic(err)
+				}
 
-					for j := 0; j < LDAPOrgManLen; j++ {
+				OrgLen := len(orgdetails.Resources)
+				if OrgLen == 0 {
+					fmt.Println("Org doesn't exist, Please Create Org")
+				} else {
 
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
+					orgguid := orgdetails.Resources[0].GUID
+					path := "/v3/roles/?organization_guids="+orgguid
+					orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
 
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout, err)
+					target := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+					if _, err := target.Output(); err == nil {
+
+						fmt.Println("command: ", target)
+						fmt.Println(target.Stdout)
+
+						err := orguserslist.Run()
+						if err == nil {
+							fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
 						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
+							fmt.Println("err", orguserslist, orguserslist.Stdout, orguserslist.Stderr)
 						}
-					}
 
-					LDAPOrgAudLen := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
-
-					for j := 0; j < LDAPOrgAudLen; j++ {
-
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
-
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout,err)
-						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
+						fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrslist.json")
+						if err != nil {
+							fmt.Println(err)
 						}
-					}
-
-					fmt.Println("Updating UAA Users")
-
-					UAAOrgManLen := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
-
-					for j := 0; j < UAAOrgManLen; j++ {
-
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
-
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout, err)
-						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
+						if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+							panic(err)
 						}
-					}
 
-					UAAOrgAudLen := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
+						OrgUsrLen := len(orgusrslist.Resources)
 
-					for j := 0; j < UAAOrgAudLen; j++ {
+						fmt.Println("Number of Users currently exist in Org", Orgs.Org.Name, ":", OrgUsrLen)
+						if OrgUsrLen != 0 {
 
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
+							LDAPOrgManLen := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
+							for j := 0; j < LDAPOrgManLen; j++ {
 
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout, err)
-						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
-						}
-					}
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]) + "&origins=ldap"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
-					fmt.Println("Updating SSO Users")
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
 
-					SSOOrgManLen := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
 
-					for j := 0; j < SSOOrgManLen; j++ {
+								if len(usedetails.Resources) != 0 {
 
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_manager"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
 
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout,err)
-						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
-						}
-					}
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
 
-					SSOOrgAudLen := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
 
-					for j := 0; j < SSOOrgAudLen; j++ {
+									if OrgUsrdetailsLen == 0 {
 
-						cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
+									} else {
 
-						if _, err := cmd.Output(); err != nil{
-							fmt.Println("command: ", cmd)
-							fmt.Println("Err: ", cmd.Stdout, err)
-						} else {
-							fmt.Println("command: ", cmd)
-							fmt.Println(cmd.Stdout)
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]), ",", "LDAP OrgManager")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+							}
+
+							LDAPOrgAudLen := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
+							for j := 0; j < LDAPOrgAudLen; j++ {
+
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]) + "&origins=ldap"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
+
+								if len(usedetails.Resources) != 0 {
+
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_auditor"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
+
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
+
+									if OrgUsrdetailsLen == 0 {
+
+									} else {
+
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]), ",", "LDAP OrgAuditor")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
+
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+							}
+
+							UAAOrgManLen := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
+							for j := 0; j < UAAOrgManLen; j++ {
+
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]) + "&origins=uaa"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
+
+								if len(usedetails.Resources) != 0 {
+
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_manager"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
+
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
+
+									if OrgUsrdetailsLen == 0 {
+
+									} else {
+
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]), ",", "UAA OrgManager")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+
+							}
+
+							UAAOrgAudLen := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
+							for j := 0; j < UAAOrgAudLen; j++ {
+
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]) + "&origins=uaa"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
+
+								if len(usedetails.Resources) != 0 {
+
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_auditor"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
+
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
+
+									if OrgUsrdetailsLen == 0 {
+
+									} else {
+
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]), ",", "UAA OrgAuditor")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+
+							}
+
+							SSOOrgManLen := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
+							for j := 0; j < SSOOrgManLen; j++ {
+
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]) + "&origins=sso"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
+
+								if len(usedetails.Resources) != 0 {
+
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_manager"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
+
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
+
+									if OrgUsrdetailsLen == 0 {
+
+									} else {
+
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), ",", "SSO OrgManager")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), Orgs.Org.Name, "OrgManager")
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+
+							}
+
+							SSOOrgAudLen := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
+							for j := 0; j < SSOOrgAudLen; j++ {
+
+								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]) + "&origins=sso"
+								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+
+								err := getspace.Run()
+								if err == nil {
+									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+								} else {
+									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+									panic(err)
+								}
+
+								if len(usedetails.Resources) != 0 {
+
+									userguid := usedetails.Resources[0].GUID
+									path := "/v3/roles/?organization_guids=" + orgguid + "&user_guids=" + userguid + "types=organization_auditor"
+									orgusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									err := orgusersdetailslist.Run()
+									if err == nil {
+										fmt.Println(orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									} else {
+										fmt.Println("err", orgusersdetailslist, orgusersdetailslist.Stdout, orgusersdetailslist.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
+										panic(err)
+									}
+
+									OrgUsrdetailsLen := len(orgusrslist.Resources)
+
+									if OrgUsrdetailsLen == 0 {
+
+									} else {
+
+										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]), ",", "SSO OrgAuditor")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), Orgs.Org.Name, "OrgAuditor")
+										if _, err := cmd.Output(); err != nil {
+											fmt.Println("command: ", cmd)
+											fmt.Println("Err: ", cmd.Stdout, err)
+										} else {
+											//fmt.Println("command: ", cmd)
+											fmt.Println(cmd.Stdout)
+										}
+									}
+								} else {
+									fmt.Println("User does't exist please login to apps manager")
+								}
+							}
+
 						}
 					}
 					results := exec.Command("cf", "org-users", Orgs.Org.Name)
@@ -3421,13 +3763,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 						fmt.Println("command: ", results)
 						fmt.Println(results.Stdout)
 					}
-
-				} else {
-					fmt.Println("command: ", guid)
-					fmt.Println("Err: ", guid.Stdout, err)
-					fmt.Println("Pulling Org Guid Id: ", guid.Stdout)
-					fmt.Println("Please Create Org")
 				}
+
 			} else {
 				fmt.Println("Org Name does't match with folder name")
 			}
@@ -3442,6 +3779,10 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 	var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
+	var orgdetails OrgListJson
+	var spaceusrslist SpaceUsersListJson
+	var usedetails UserDetailsJson
+	var spacedets SpaceListJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3501,174 +3842,671 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
-				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
-				if _, err := guid.Output(); err == nil {
+				path := "/v3/organizations?names="+Orgs.Org.Name
+				getorg := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_orgdetails.json")
 
-					fmt.Println("command: ", guid)
-					fmt.Println("Org exists: ", guid.Stdout)
-					targetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
-					if _, err := targetOrg.Output(); err == nil {
-						fmt.Println("command: ", targetOrg)
-						fmt.Println("Targeted Org: ", targetOrg.Stdout)
-					} else {
-						fmt.Println("command: ", targetOrg)
-						fmt.Println("Err: ", targetOrg.Stdout,targetOrg.Stderr)
-					}
+				//var out bytes.Buffer
+				//getorg.Stdout = &out
+				err := getorg.Run()
+				if err == nil {
+					//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+				} else {
+					fmt.Println("err", getorg, getorg.Stdout, getorg.Stderr)
+				}
+
+				fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_orgdetails.json")
+				if err != nil {
+					fmt.Println(err)
+				}
+				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
+					panic(err)
+				}
+
+				OrgLen := len(orgdetails.Resources)
+				if OrgLen == 0 {
+					fmt.Println("Org doesn't exist, Please Create Org")
+				} else {
+
+					orgguid := orgdetails.Resources[0].GUID
+
 					SpaceLen := len(Orgs.Org.Spaces)
-
 					for j := 0; j < SpaceLen; j++ {
 
-						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
-						if _, err := guid.Output(); err == nil {
-							fmt.Println("command: ", guid)
-							fmt.Println("Space exists: ", guid.Stdout)
-							fmt.Println("Creating Space users")
+						path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
+						getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpacesUsers_spacedetails.json")
 
-							fmt.Println("Updating LDAP Users")
-
-							LDAPSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
-
-							for k := 0; k < LDAPSpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							LDAPSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
-
-							for k := 0; k < LDAPSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout, err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							LDAPSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
-
-							for k := 0; k < LDAPSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-
-							fmt.Println("Updating UAA Users")
-
-							UAASpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
-
-							for k := 0; k < UAASpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							UAASpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
-
-							for k := 0; k < UAASpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							UAASpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
-
-							for k := 0; k < UAASpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							fmt.Println("Updating SSO Users")
-
-							SSOSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
-
-							for k := 0; k < SSOSpaceManLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							SSOSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
-
-							for k := 0; k < SSOSpaceDevLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
-							SSOSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
-
-							for k := 0; k < SSOSpaceAuditLen; k++ {
-								cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
-								if _, err := cmd.Output(); err != nil{
-									fmt.Println("command: ", cmd)
-									fmt.Println("Err: ", cmd.Stdout,err)
-								} else {
-									fmt.Println("command: ", cmd)
-									fmt.Println(cmd.Stdout)
-								}
-							}
-
+						err := getspace.Run()
+						if err == nil {
+							//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 						} else {
-							fmt.Println("command: ",guid)
-							fmt.Println("Err: ", guid.Stdout,err)
-							fmt.Println("Space doesn't exist")
+							fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
 						}
 
-						results := exec.Command("cf", "space-users", Orgs.Org.Name, Orgs.Org.Spaces[j].Name )
-						if _, err := results.Output(); err != nil{
-							fmt.Println("command: ", results)
-							fmt.Println("Err: ", results.Stdout, err)
+						fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpacesUsers_spacedetails.json")
+						if err != nil {
+							fmt.Println(err)
+						}
+						if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
+							panic(err)
+						}
+						if len(spacedets.Resources) == 0 {
+							fmt.Println("Space does't exist, Create Space")
 						} else {
-							fmt.Println("command: ", results)
-							fmt.Println(results.Stdout)
+
+							targetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name, "-s", Orgs.Org.Spaces[j].Name)
+							if _, err := targetOrg.Output(); err == nil {
+								//fmt.Println("command: ", targetOrg)
+								fmt.Println("Targeted Org: ", targetOrg.Stdout)
+
+								spaceguid := spacedets.Resources[0].GUID
+								path := "/v3/roles/?space_guids="+spaceguid
+								spaceuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrslist.json")
+								err := spaceuserslist.Run()
+								if err == nil {
+									fmt.Println(spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
+								} else {
+									fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
+								}
+
+								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrslist.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+									panic(err)
+								}
+
+								SpaceUsrLen := len(spaceusrslist.Resources)
+								fmt.Println("Number of Users currently exist in Org", Orgs.Org.Name, ":", SpaceUsrLen)
+
+								//
+								LDAPSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers)
+								for k := 0; k < LDAPSpaceManLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]) + "&origins=ldap"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_manager"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]), ",", "LDAP SpaceManager")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								LDAPSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers)
+								for k := 0; k < LDAPSpaceDevLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k]) + "&origins=ldap"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_developer"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k]), ",", "LDAP SpaceDeveloper")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								LDAPSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors)
+								for k := 0; k < LDAPSpaceAuditLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k]) + "&origins=ldap"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_auditor"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k]), ",", "LDAP SpaceAuditor")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and assign to Org as audit user")
+									}
+								}
+
+								//
+								UAASpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers)
+								for k := 0; k < UAASpaceManLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]) + "&origins=uaa"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_manager"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]), ",", "UAA SpaceManager")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								UAASpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers)
+								for k := 0; k < UAASpaceDevLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k]) + "&origins=uaa"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_developer"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k]), ",", "UAA SpaceDeveloper")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								UAASpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors)
+								for k := 0; k < UAASpaceAuditLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k]) + "&origins=uaa"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_auditor"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k]), ",", "UAA SpaceAuditor")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and assign to Org as audit user")
+									}
+								}
+
+								//
+								SSOSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
+								for k := 0; k < SSOSpaceManLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]) + "&origins=sso"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_manager"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]), ",", "SSO SpaceManager")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceManager")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								SSOSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
+								for k := 0; k < SSOSpaceDevLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k]) + "&origins=sso"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_developer"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k]), ",", "SSO SpaceDeveloper")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceDeveloper")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and to Org as audit user")
+									}
+								}
+
+								SSOSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
+								for k := 0; k < SSOSpaceAuditLen; k++ {
+
+									path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k]) + "&origins=sso"
+									getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+
+									err := getspace.Run()
+									if err == nil {
+										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+									} else {
+										fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
+									}
+
+									fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_userguidfind.json")
+									if err != nil {
+										fmt.Println(err)
+									}
+									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
+										panic(err)
+									}
+
+									if len(usedetails.Resources) != 0 {
+
+										//"/v3/roles/?space_guids="+spaceguid
+										userguid := usedetails.Resources[0].GUID
+										path := "/v3/roles/?space_guids="+spaceguid + "&user_guids=" + userguid + "types=space_auditor"
+										spaceusersdetailslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										err := spaceusersdetailslist.Run()
+										if err == nil {
+											fmt.Println(spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										} else {
+											fmt.Println("err", spaceusersdetailslist, spaceusersdetailslist.Stdout, spaceusersdetailslist.Stderr)
+										}
+
+										fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+										if err != nil {
+											fmt.Println(err)
+										}
+										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
+											panic(err)
+										}
+
+										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
+
+										if SpaceUsrdetailsLen == 0 {
+
+										} else {
+
+											fmt.Println("+ ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k]), ",", "SSO SpaceAuditor")
+											cmd := exec.Command("cf", "set-space-role", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k]), Orgs.Org.Name, Orgs.Org.Spaces[j].Name, "SpaceAuditor")
+											if _, err := cmd.Output(); err != nil {
+												fmt.Println("command: ", cmd)
+												fmt.Println("Err: ", cmd.Stdout, err)
+											} else {
+												//fmt.Println("command: ", cmd)
+												fmt.Println(cmd.Stdout)
+											}
+										}
+									} else {
+										fmt.Println("User does't exist please login to apps manager, and assign to Org as audit user")
+									}
+								}
+
+								results := exec.Command("cf", "space-users", Orgs.Org.Name, Orgs.Org.Spaces[j].Name )
+								if _, err := results.Output(); err != nil{
+									fmt.Println("command: ", results)
+									fmt.Println("Err: ", results.Stdout, err)
+								} else {
+									fmt.Println("command: ", results)
+									fmt.Println(results.Stdout)
+								}
+
+							} else {
+								fmt.Println("command: ", targetOrg)
+								fmt.Println("Err: ", targetOrg.Stdout,targetOrg.Stderr)
+							}
 						}
 					}
-				} else {
-					fmt.Println("command: ", guid)
-					fmt.Println("Err: ", guid.Stdout,err)
-					fmt.Println("Org doesn't exists, Please create Org")
 				}
+
 			} else {
 				fmt.Println("Org Name does't match with folder name")
 			}
