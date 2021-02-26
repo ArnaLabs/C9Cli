@@ -665,19 +665,22 @@ func DeleteOrAuditQuotas(clustername string, cpath string) error {
 	LenQuota := len(Quotas.Quota)
 	LenProtectedQuota := len(ProtectedQuota.Quota)
 	Audit := strings.ToLower(Quotas.Audit)
+	if Audit == "" {
+		Audit = "list"
+	}
 
 	getquotas := exec.Command("cf", "curl", "/v3/organization_quotas", "--output", "DeleteOrAuditQuotas_listquotas.json")
 
 	if _, err := getquotas.Output(); err == nil {
 		fmt.Println("command: ", getquotas)
 
-		var body QuotaListJson
 
 		fileOrgJson, err := ioutil.ReadFile("DeleteOrAuditQuotas_listquotas.json")
 		if err != nil {
 			fmt.Println(err)
 		}
 
+		var body QuotaListJson
 		if err := json.Unmarshal(fileOrgJson, &body); err != nil {
 			panic(err)
 		}
@@ -800,6 +803,9 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 	}
 	LenList := len(list.OrgList)
 	Audit := strings.ToLower(list.Audit)
+	if Audit == "" {
+		Audit = "list"
+	}
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -941,10 +947,8 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 }
 func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
-	var ProtectedOrgs ProtectedList
 	var list List
-	var spacelistjson SpaceListJson
+	var ProtectedOrgs ProtectedList
 
 	// Org List
 
@@ -1014,6 +1018,8 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
 			}
 
+			var Orgs Orglist
+
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
 			if err != nil {
 				fmt.Println(err)
@@ -1024,6 +1030,9 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 			}
 
 			Audit := strings.ToLower(Orgs.SpaceAudit)
+			if Audit == "" {
+				Audit = "list"
+			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
@@ -1053,6 +1062,9 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 					if err != nil {
 						fmt.Println(err)
 					}
+
+					var spacelistjson SpaceListJson
+
 					if err := json.Unmarshal(fileSpaceJson, &spacelistjson); err != nil {
 						panic(err)
 					}
@@ -1163,11 +1175,11 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 }
 func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
-	var ProtectedOrgs ProtectedList
 	var list List
-	var orgusrslist OrgUsersListJson
-	var usedetails UserDetailsJson
+	var ProtectedOrgs ProtectedList
+	//var Orgs Orglist
+	//var orgusrslist OrgUsersListJson
+	//var usedetails UserDetailsJson
 
 
 	// Org List
@@ -1241,12 +1253,18 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 			if err != nil {
 				fmt.Println(err)
 			}
+
+			var Orgs Orglist
+
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
 			}
 
 			Audit := strings.ToLower(Orgs.UserAudit)
+			if Audit == "" {
+				Audit = "list"
+			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
@@ -1259,11 +1277,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 				if err == nil {
 
 					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
-
-					path := "/v3/roles/?organization_guids="+out.String()
-					orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgusrslist.json")
-
 					target := exec.Command("cf", "t", "-o", Orgs.Org.Name)
+
 					if _, err := target.Output(); err == nil {
 
 				//		fmt.Println("command: ", target)
@@ -1271,7 +1286,11 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 						//var out bytes.Buffer
 						//orguserslist.Stdout = &out
+
+						path := "/v3/roles/?organization_guids="+out.String()
+						orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgusrslist.json")
 						err := orguserslist.Run()
+
 						if err == nil {
 				//			fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
 						} else {
@@ -1282,6 +1301,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 						if err != nil {
 							fmt.Println(err)
 						}
+
+						var orgusrslist OrgUsersListJson
+
 						if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 							panic(err)
 						}
@@ -1313,6 +1335,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									var usedetails UserDetailsJson
+
 									err = json.Unmarshal([]byte(fileusrdetlsjson), &usedetails)
 									if err != nil {
 										panic(err)
@@ -1484,6 +1509,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									var usedetails UserDetailsJson
+
 									err = json.Unmarshal([]byte(fileusrdetlsjson), &usedetails)
 									if err != nil {
 										panic(err)
@@ -1661,11 +1689,11 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 }
 func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
-	var ProtectedOrgs ProtectedList
 	var list List
-	var spaceusrslist SpaceUsersListJson
-	var usedetails UserDetailsJson
+	var ProtectedOrgs ProtectedList
+	//var Orgs Orglist
+	//var spaceusrslist SpaceUsersListJson
+	//var usedetails UserDetailsJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -1725,12 +1753,16 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 				fmt.Println(err)
 			}
 
+			var Orgs Orglist
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
 			}
 
 			Audit := strings.ToLower(Orgs.SpaceAudit)
+			if Audit == "" {
+				Audit = "list"
+			}
 
 			if list.OrgList[z] == Orgs.Org.Name {
 
@@ -1781,6 +1813,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 									fmt.Println("err", spaceuserslist, spaceuserslist.Stdout, spaceuserslist.Stderr)
 								}
 
+								var spaceusrslist SpaceUsersListJson
 								fileSpaceJson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_spaceusrslist.json")
 								if err != nil {
 									fmt.Println(err)
@@ -1833,6 +1866,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											if err != nil {
 												fmt.Println(err)
 											}
+
+											var usedetails UserDetailsJson
 											err = json.Unmarshal([]byte(fileusrdetlsjson), &usedetails)
 											if err != nil {
 												panic(err)
@@ -1994,6 +2029,9 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											if err != nil {
 												fmt.Println(err)
 											}
+											//var Orgs Orglist
+											//var spaceusrslist SpaceUsersListJson
+											var usedetails UserDetailsJson
 											err = json.Unmarshal([]byte(fileusrdetlsjson), &usedetails)
 											if err != nil {
 												panic(err)
@@ -2151,6 +2189,9 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											if err != nil {
 												fmt.Println(err)
 											}
+											//var Orgs Orglist
+											//var spaceusrslist SpaceUsersListJson
+											var usedetails UserDetailsJson
 											err = json.Unmarshal([]byte(fileusrdetlsjson), &usedetails)
 											if err != nil {
 												panic(err)
@@ -2335,7 +2376,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 }
 func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
+	//var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
 
@@ -2413,12 +2454,16 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 				fmt.Println(err)
 			}
 
+			var Orgs Orglist
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
 			}
 
 			Audit := strings.ToLower(Orgs.ASGAudit)
+			if Audit == "" {
+				Audit = "list"
+			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -2491,7 +2536,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	path := ASGPath+ASGName
 	ASG := Org+"_"+Space
 
-	var asglist ASGListJson
+	//var asglist ASGListJson
 
 	var check *exec.Cmd
 
@@ -2521,6 +2566,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 				fmt.Println(err)
 			}
 
+			var asglist ASGListJson
 			if err := json.Unmarshal(fileAsgJson, &asglist); err != nil {
 				panic(err)
 			}
@@ -2575,7 +2621,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 	var Quotas Quotalist
 	var ProtectedQuota ProtectedList
 	var cmd *exec.Cmd
-	var quotalistjson QuotaListJson
+	//var quotalistjson QuotaListJson
 
 
 	QuotaYml := cpath+"/"+clustername+"/Quota.yml"
@@ -2656,6 +2702,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 				if err != nil {
 					fmt.Println(err)
 				}
+				var quotalistjson QuotaListJson
 				if err := json.Unmarshal(fileQuotaJson, &quotalistjson); err != nil {
 					panic(err)
 				}
@@ -2816,11 +2863,11 @@ func CreateOrUpdateQuotas(clustername string, cpath string) error {
 }
 func CreateOrUpdateOrgs(clustername string, cpath string) error {
 
-	var Orgs Orglist
 	var list List
 	var ProtectedOrgs ProtectedList
-	var orgdetails OrgListJson
-	var body QuotaListJson
+	//var Orgs Orglist
+	//var orgdetails OrgListJson
+	//var body QuotaListJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -2872,6 +2919,9 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 				fmt.Println(err)
 			}
 
+			var Orgs Orglist
+			//var orgdetails OrgListJson
+			//var body QuotaListJson
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
@@ -2896,6 +2946,9 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 				if err != nil {
 					fmt.Println(err)
 				}
+				//var Orgs Orglist
+				var orgdetails OrgListJson
+				//var body QuotaListJson
 				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
 					panic(err)
 				}
@@ -2920,6 +2973,9 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 					if err != nil {
 						fmt.Println(err)
 					}
+					//var Orgs Orglist
+					//var orgdetails OrgListJson
+					var body QuotaListJson
 					if err := json.Unmarshal(fileNameJson, &body); err != nil {
 						panic(err)
 					}
@@ -2980,13 +3036,13 @@ func CreateOrUpdateOrgs(clustername string, cpath string) error {
 }
 func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
-	var orgdetails OrgListJson
-	var spacedets SpaceListJson
-	var spaceiso SpaceIsoJson
-	var isoexistingdetails, isodetails IsoJson
+	//var Orgs Orglist
+	//var orgdetails OrgListJson
+	//var spacedets SpaceListJson
+	//var spaceiso SpaceIsoJson
+	//var isoexistingdetails, isodetails IsoJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3058,6 +3114,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 				fmt.Println(err)
 			}
 
+			var Orgs Orglist
+			//var orgdetails OrgListJson
+			//var spacedets SpaceListJson
+			//var spaceiso SpaceIsoJson
+			//var isoexistingdetails, isodetails IsoJson
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
@@ -3082,6 +3143,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 				if err != nil {
 					fmt.Println(err)
 				}
+				//var Orgs Orglist
+				var orgdetails OrgListJson
+				//var spacedets SpaceListJson
+				//var spaceiso SpaceIsoJson
+				//var isoexistingdetails, isodetails IsoJson
 				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
 					panic(err)
 				}
@@ -3112,6 +3178,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 						if err != nil {
 							fmt.Println(err)
 						}
+						//var Orgs Orglist
+						//var orgdetails OrgListJson
+						var spacedets SpaceListJson
+						//var spaceiso SpaceIsoJson
+						//var isoexistingdetails, isodetails IsoJson
 						if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
 							panic(err)
 						}
@@ -3170,6 +3241,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err != nil {
 								fmt.Println(err)
 							}
+							//var Orgs Orglist
+							//var orgdetails OrgListJson
+							//var spacedets SpaceListJson
+							var spaceiso SpaceIsoJson
+							//var isoexistingdetails, isodetails IsoJson
 							if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
 								panic(err)
 							}
@@ -3195,6 +3271,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err != nil {
 								fmt.Println(err)
 							}
+							//var Orgs Orglist
+							//var orgdetails OrgListJson
+							//var spacedets SpaceListJson
+							//var spaceiso SpaceIsoJson
+							var isoexistingdetails IsoJson
 							if err := json.Unmarshal(fileSpaceJson, &isoexistingdetails); err != nil {
 								panic(err)
 							}
@@ -3219,6 +3300,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err != nil {
 								fmt.Println(err)
 							}
+							var isodetails IsoJson
 							if err := json.Unmarshal(fileSpaceJson, &isodetails); err != nil {
 								panic(err)
 							}
@@ -3288,6 +3370,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 					if err != nil {
 						fmt.Println(err)
 					}
+					//var Orgs Orglist
+					//var orgdetails OrgListJson
+					var spacedets SpaceListJson
+					//var spaceiso SpaceIsoJson
+					//var isoexistingdetails, isodetails IsoJson
 					if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
 						panic(err)
 					}
@@ -3310,11 +3397,14 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 	var list List
-	var Orgs Orglist
 	var ProtectedOrgs ProtectedList
-	var orgdetails OrgListJson
-	var orgusrslist OrgUsersListJson
-	var usedetails UserDetailsJson
+
+	//var Orgs Orglist
+	//var orgdetails OrgListJson
+	//var orgusrslist OrgUsersListJson
+	//var usedetails UserDetailsJson
+
+	//fmt.Println(Orgs)
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3329,11 +3419,9 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
-
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
 	if err != nil {
 		panic(err)
@@ -3362,20 +3450,27 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 
 			fmt.Println("This is not Protected Org")
 
+			//fmt.Println("test empty",Orgs)
+
+			var Orgs Orglist
 			OrgsYml := cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
-			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+			//fmt.Println(OrgsYml)
+
+			fileOrgdetsYml, err := ioutil.ReadFile(OrgsYml)
 
 			if err != nil {
 				fmt.Println(err)
 			}
 
-			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			err = yaml.Unmarshal([]byte(fileOrgdetsYml), &Orgs)
 			if err != nil {
 				panic(err)
 			}
 
 			if list.OrgList[i] == Orgs.Org.Name {
 
+				//fmt.Println(Orgs)
+				//fmt.Println(list.OrgList[i], Orgs.Org.Name)
 				path := "/v3/organizations?names="+Orgs.Org.Name
 				getorg := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgdetails.json")
 
@@ -3392,6 +3487,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 				if err != nil {
 					fmt.Println(err)
 				}
+
+				var orgdetails OrgListJson
 				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
 					panic(err)
 				}
@@ -3401,19 +3498,19 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 					fmt.Println("Org doesn't exist, Please Create Org")
 				} else {
 
-					orgguid := orgdetails.Resources[0].GUID
-					path := "/v3/roles/?organization_guids="+orgguid
-					orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
-
 					target := exec.Command("cf", "t", "-o", Orgs.Org.Name)
 					if _, err := target.Output(); err == nil {
 
-			//			fmt.Println("command: ", target)
-			//			fmt.Println(target.Stdout)
+				//		fmt.Println("command: ", target)
+				//		fmt.Println(target.Stdout)
 
+						orgguid := orgdetails.Resources[0].GUID
+						path := "/v3/roles/?organization_guids="+orgguid
+						orguserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
 						err := orguserslist.Run()
+
 						if err == nil {
-			//				fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
+						//	fmt.Println(orguserslist, orguserslist.Stdout, orguserslist.Stderr)
 						} else {
 							fmt.Println("err", orguserslist, orguserslist.Stdout, orguserslist.Stderr)
 						}
@@ -3422,6 +3519,9 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 						if err != nil {
 							fmt.Println(err)
 						}
+
+						var orgusrslist OrgUsersListJson
+
 						if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 							panic(err)
 						}
@@ -3434,16 +3534,21 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 							LDAPOrgManLen := len(Orgs.Org.OrgUsers.LDAP.OrgManagers)
 							for j := 0; j < LDAPOrgManLen; j++ {
 
+					//			fmt.Println(Orgs.Org.Name)
+					//			fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgManagers[j])
+					//			fmt.Println(len(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]))
+
 								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgManagers[j]) + "&origins=ldap"
 								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
-
 								err := getspace.Run()
+
 								if err == nil {
 									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 								} else {
 									fmt.Println("err", getspace, getspace.Stdout, getspace.Stderr)
 								}
 
+								var usedetails UserDetailsJson
 								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateOrgsUsers_userguidfind.json")
 								if err != nil {
 									fmt.Println(err)
@@ -3468,10 +3573,11 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
-
 									OrgUsrdetailsLen := len(orgusrslist.Resources)
 
 									if OrgUsrdetailsLen == 0 {
@@ -3489,12 +3595,15 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 										}
 									}
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgManagers[j], "User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgManagers[j], "LDAP OrgManager User does't exist in foundation, please ask user to login to apps manager")
 								}
 							}
 
 							LDAPOrgAudLen := len(Orgs.Org.OrgUsers.LDAP.OrgAuditors)
 							for j := 0; j < LDAPOrgAudLen; j++ {
+
+								//fmt.Println(Orgs.Org.Name)
+								//fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j])
 
 								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j]) + "&origins=ldap"
 								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
@@ -3510,6 +3619,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+
+								var usedetails UserDetailsJson
 								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 									panic(err)
 								}
@@ -3530,6 +3641,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
@@ -3553,13 +3665,15 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									}
 
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j], "User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.LDAP.OrgAuditors[j], "LDAP OrgAuditor User does't exist in foundation, please ask user to login to apps manager")
 								}
 							}
 
 							UAAOrgManLen := len(Orgs.Org.OrgUsers.UAA.OrgManagers)
 							for j := 0; j < UAAOrgManLen; j++ {
 
+								//fmt.Println(Orgs.Org.Name)
+								//fmt.Println(Orgs.Org.OrgUsers.UAA.OrgManagers[j])
 								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgManagers[j]) + "&origins=uaa"
 								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
@@ -3574,6 +3688,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+
+								var usedetails UserDetailsJson
 								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 									panic(err)
 								}
@@ -3594,6 +3710,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
@@ -3615,7 +3733,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 										}
 									}
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.UAA.OrgManagers[j], "User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.UAA.OrgManagers[j], "UAA OrgManager User does't exist in foundation, please ask user to login to apps manager")
 								}
 
 							}
@@ -3623,6 +3741,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 							UAAOrgAudLen := len(Orgs.Org.OrgUsers.UAA.OrgAuditors)
 							for j := 0; j < UAAOrgAudLen; j++ {
 
+								//fmt.Println(Orgs.Org.Name)
+								//fmt.Println(Orgs.Org.OrgUsers.UAA.OrgAuditors[j])
 								path := "/v3/users/?usernames=" + strings.ToLower(Orgs.Org.OrgUsers.UAA.OrgAuditors[j]) + "&origins=uaa"
 								getspace := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
@@ -3637,6 +3757,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+								var usedetails UserDetailsJson
 								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 									panic(err)
 								}
@@ -3657,6 +3778,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
@@ -3679,7 +3801,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									}
 
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.UAA.OrgAuditors[j], "User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.UAA.OrgAuditors[j], "UAA OrgAuditor User does't exist in foundation, please ask user to login to apps manager")
 								}
 							}
 
@@ -3700,6 +3822,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+								var usedetails UserDetailsJson
 								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 									panic(err)
 								}
@@ -3720,6 +3843,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
@@ -3741,7 +3865,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 										}
 									}
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.SSO.OrgManagers[j],"User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.SSO.OrgManagers[j],"SSO OrgManager User does't exist in foundation, please ask user to login to apps manager")
 								}
 							}
 
@@ -3762,6 +3886,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+								var usedetails UserDetailsJson
 								if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 									panic(err)
 								}
@@ -3782,6 +3907,8 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									var orgusrslist OrgUsersListJson
 									if err := json.Unmarshal(fileSpaceJson, &orgusrslist); err != nil {
 										panic(err)
 									}
@@ -3793,7 +3920,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 									} else {
 
 										fmt.Println("+ ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]), ",", "SSO OrgAuditor")
-										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgManagers[j]), Orgs.Org.Name, "OrgAuditor")
+										cmd := exec.Command("cf", "set-org-role", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[j]), Orgs.Org.Name, "OrgAuditor")
 										if _, err := cmd.Output(); err != nil {
 											fmt.Println("command: ", cmd)
 											fmt.Println("Err: ", cmd.Stdout, err)
@@ -3803,7 +3930,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 										}
 									}
 								} else {
-									fmt.Println(Orgs.Org.OrgUsers.SSO.OrgAuditors[j],"User does't exist in foundation, please ask user to login to apps manager")
+									fmt.Println(Orgs.Org.OrgUsers.SSO.OrgAuditors[j],"SSO OrgAuditor User does't exist in foundation, please ask user to login to apps manager")
 								}
 							}
 
@@ -3830,13 +3957,13 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string) error {
 }
 func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 
-	var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
-	var orgdetails OrgListJson
-	var spaceusrslist SpaceUsersListJson
-	var usedetails UserDetailsJson
-	var spacedets SpaceListJson
+	//var Orgs Orglist
+	//var orgdetails OrgListJson
+	//var spaceusrslist SpaceUsersListJson
+	//var usedetails UserDetailsJson
+	//var spacedets SpaceListJson
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3890,6 +4017,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 				fmt.Println(err)
 			}
 
+			var Orgs Orglist
+			//var orgdetails OrgListJson
+			//var spaceusrslist SpaceUsersListJson
+			//var usedetails UserDetailsJson
+			//var spacedets SpaceListJson
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
 				panic(err)
@@ -3913,6 +4045,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 				if err != nil {
 					fmt.Println(err)
 				}
+				//var Orgs Orglist
+				var orgdetails OrgListJson
+				//var spaceusrslist SpaceUsersListJson
+				//var usedetails UserDetailsJson
+				//var spacedets SpaceListJson
 				if err := json.Unmarshal(fileSpaceJson, &orgdetails); err != nil {
 					panic(err)
 				}
@@ -3941,6 +4078,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 						if err != nil {
 							fmt.Println(err)
 						}
+						//var Orgs Orglist
+						//var orgdetails OrgListJson
+						//var spaceusrslist SpaceUsersListJson
+						//var usedetails UserDetailsJson
+						var spacedets SpaceListJson
 						if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
 							panic(err)
 						}
@@ -3967,6 +4109,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 								if err != nil {
 									fmt.Println(err)
 								}
+								//var Orgs Orglist
+								//var orgdetails OrgListJson
+								var spaceusrslist SpaceUsersListJson
+								//var usedetails UserDetailsJson
+								//var spacedets SpaceListJson
 								if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 									panic(err)
 								}
@@ -3992,6 +4139,12 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4013,6 +4166,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4034,7 +4188,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceManagers[k],"LDAP SpaceManagers User does't exist in Space",Orgs.Org.Spaces[j].Name, "please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4055,6 +4209,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4076,10 +4235,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
-
 										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
 
 										if SpaceUsrdetailsLen == 0 {
@@ -4097,7 +4257,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceDevelopers[k],"LDAP SpaceDeveloper User does't exist in Space",Orgs.Org.Spaces[j].Name, "please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4118,6 +4278,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4139,6 +4304,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4160,7 +4326,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.LDAP.SpaceAuditors[k],"LDAP SpaceAuditor User does't exist in Space",Orgs.Org.Spaces[j].Name,"please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4182,6 +4348,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4203,10 +4374,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
-
 										SpaceUsrdetailsLen := len(spaceusrslist.Resources)
 
 										if SpaceUsrdetailsLen == 0 {
@@ -4224,7 +4396,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceManagers[k],"UAA SpaceManagers User does't exist in Space",Orgs.Org.Spaces[j].Name,"please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4245,6 +4417,12 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4266,6 +4444,8 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4287,7 +4467,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceDevelopers[k],"UAA SpaceDeveloper User does't exist in Space",Orgs.Org.Spaces[j].Name,"please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4308,6 +4488,12 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4329,6 +4515,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4350,7 +4537,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.UAA.SpaceAuditors[k],"UAA SpaceAuditor User does't exist in Space",Orgs.Org.Spaces[j].Name, "please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4372,6 +4559,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4393,6 +4585,8 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4414,7 +4608,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k],"SSO SpaceManagers User does't exist in Space",Orgs.Org.Spaces[j].Name, "please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4435,6 +4629,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4456,6 +4655,8 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4477,7 +4678,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k],"SSO SpaceDeveloper User does't exist in Space",Orgs.Org.Spaces[j].Name,"please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4498,6 +4699,11 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 									if err != nil {
 										fmt.Println(err)
 									}
+									//var Orgs Orglist
+									//var orgdetails OrgListJson
+									//var spaceusrslist SpaceUsersListJson
+									var usedetails UserDetailsJson
+									//var spacedets SpaceListJson
 									if err := json.Unmarshal(fileSpaceJson, &usedetails); err != nil {
 										panic(err)
 									}
@@ -4519,6 +4725,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 										if err != nil {
 											fmt.Println(err)
 										}
+										var spaceusrslist SpaceUsersListJson
 										if err := json.Unmarshal(fileSpaceJson, &spaceusrslist); err != nil {
 											panic(err)
 										}
@@ -4540,7 +4747,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 											}
 										}
 									} else {
-										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k],"User does't exist please ask user to login to apps manager, and add user to Org as audit user")
+										fmt.Println(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k],"SSO SpaceAuditor User does't exist in Space",Orgs.Org.Spaces[j].Name,"please ask user to login to apps manager, and add user to Org as audit user")
 									}
 								}
 
@@ -4570,7 +4777,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string) error {
 }
 func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) error {
 
-	var Orgs Orglist
+	//var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
 
@@ -4647,6 +4854,8 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 			if err != nil {
 				fmt.Println(err)
 			}
+
+			var Orgs Orglist
 
 			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
 			if err != nil {
