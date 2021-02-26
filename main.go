@@ -921,7 +921,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 							fmt.Println("Err: ", target.Stdout, target.Stderr)
 						}
 					} else {
-						fmt.Println("Org exists in Orgslist.yml: ", body.Resources[i].Name)
+						//fmt.Println("Org exists in Orgslist.yml: ", body.Resources[i].Name)
 					}
 				} else {
 					fmt.Println("This is a protected Org:", body.Resources[i].Name)
@@ -1044,7 +1044,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 
 				if err == nil {
 
-					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
+					//fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
 					path := "/v3/spaces/?organization_guids="+out.String()
 
 					spacelist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditSpaces_spacelist.json")
@@ -1137,7 +1137,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 									fmt.Println("Err: ", target.Stdout, target.Stderr)
 								}
 							} else {
-								fmt.Println("Space exists in Orgs.yml: ", spacelistjson.Resources[i].Name)
+								//fmt.Println("Space exists in Orgs.yml: ", spacelistjson.Resources[i].Name)
 							}
 						}
 					} else {
@@ -1276,7 +1276,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 				if err == nil {
 
-					fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
+					//fmt.Println("Org exists: ", Orgs.Org.Name,",", out.String())
 					target := exec.Command("cf", "t", "-o", Orgs.Org.Name)
 
 					if _, err := target.Output(); err == nil {
@@ -1483,7 +1483,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													//	fmt.Println("User is listed in Org.yml as LDAP Org Audit User: ", username)
 													}
 												}
-											} else { 
+											} else {
 												fmt.Println("Authentication of type", origin, "is not monitored")
 											}
 										}
@@ -1659,7 +1659,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 													//fmt.Println("User is listed in Org.yml as LDAP Org Manager User: ", username)
 												}
 											}
-										} else { 
+										} else {
 											fmt.Println("Authentication of type", origin, "is not monitored")
 										}
 									}
@@ -1780,7 +1780,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 				if _, err := guid.Output(); err == nil {
 
 					fmt.Println("command: ", guid)
-					fmt.Println("Org exists: ", guid.Stdout)
+					//fmt.Println("Org exists: ", guid.Stdout)
 					targetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
 					if _, err := targetOrg.Output(); err == nil {
 						fmt.Println("command: ", targetOrg)
@@ -2508,7 +2508,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 				if _, err := guid.Output(); err == nil {
 
 					fmt.Println("command: ", guid)
-					fmt.Println("Org exists: ", guid.Stdout)
+					//fmt.Println("Org exists: ", guid.Stdout)
 					SpaceLen := len(Orgs.Org.Spaces)
 
 					TargetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
@@ -4905,7 +4905,7 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 				if _, err := guid.Output(); err == nil {
 
 					fmt.Println("command: ", guid)
-					fmt.Println("Org exists: ", guid.Stdout)
+					//fmt.Println("Org exists: ", guid.Stdout)
 					SpaceLen := len(Orgs.Org.Spaces)
 
 					TargetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
