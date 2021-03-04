@@ -542,6 +542,7 @@ func main()  {
 	} else if operation == "org-init" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection (ClusterName, pwd, cpath)
 		OrgsInit(ClusterName, cpath, ostype)
 
 	} else if operation == "audit-quota"{
