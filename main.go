@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -3263,7 +3263,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						OrgGuid    string `yaml:"OrgGuid"`
 					}
 
-					spath := cpath+"/"+clustername+"-state/"
+					//spath := cpath+"/"+clustername+"-state/"
 					values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
 
 					var templates *template.Template
@@ -3700,7 +3700,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								SpaceGuid    string
 							}
 
-							spath := cpath+"/"+clustername+"-state/"
+							//spath := cpath+"/"+clustername+"-state/"
 							values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
 
 							var templates *template.Template
@@ -5523,6 +5523,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 	var list List
 	var ProtectedOrgs ProtectedList
+	spath := cpath+"/"+clustername+"-state/"
 
 	ListYml := cpath + "/" + clustername + "/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -5556,7 +5557,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 		var checkfile *exec.Cmd
 
-		spath := cpath+"/"+clustername+"-state/"
 		fullpath := spath+list.OrgList[i]+"_OrgState.yml"
 		OrgsStateYml := fullpath
 
@@ -5722,7 +5722,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									SpaceGuid    string `yaml:"SpaceGuid"`
 								}
 
-								spath := cpath+"/"+clustername+"-state/"
+								//spath := cpath+"/"+clustername+"-state/"
 								values := SpaceState{Org: Orgs.Org.Name, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
 
 								var templates *template.Template
@@ -5818,7 +5818,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					}
 
 					//changing org state filename
-					spath := cpath+"/"+clustername+"-state/"
+					//spath := cpath+"/"+clustername+"-state/"
 					oldfullpath := spath+OrgOldName+"_OrgState.yml"
 					newfullpath := spath+OrgNewName+"_OrgState.yml"
 					fmt.Println("- ", oldfullpath)
@@ -6011,7 +6011,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									SpaceGuid    string
 								}
 
-								spath := cpath + "/" + clustername + "-state/"
+								//spath := cpath + "/" + clustername + "-state/"
 								values := SpaceState{Org: OrgNewName, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
 
 								var templates *template.Template
@@ -6076,7 +6076,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				OrgGuid    string `yaml:"OrgGuid"`
 			}
 
-			spath := cpath+"/"+clustername+"-state/"
+			//spath := cpath+"/"+clustername+"-state/"
 			values := OrgState{OldName: list.OrgList[i], NewName: list.OrgList[i], OrgGuid: OrgGuidPull}
 
 			var templates *template.Template
@@ -6248,7 +6248,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							SpaceGuid    string `yaml:"SpaceGuid"`
 						}
 
-						spath := cpath+"/"+clustername+"-state/"
+						//spath := cpath+"/"+clustername+"-state/"
 						values := SpaceState{Org: Orgs.Org.Name, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
 
 						var templates *template.Template
