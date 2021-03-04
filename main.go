@@ -5524,7 +5524,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 	var list List
 	var ProtectedOrgs ProtectedList
 	spath := cpath+"/"+clustername+"-state/"
-
 	ListYml := cpath + "/" + clustername + "/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
 	if err != nil {
