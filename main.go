@@ -3495,13 +3495,12 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 						if SpaceStateGuidLen != 0 {
 
 							//fmt.Println("Space exists in state and platform")
-							//Checking if Org name has changed
 						spacename := spacedetailsguid.Resources[0].Name
 						if Orgs.Org.Spaces[j].Name == spacename {
 							SpaceGuidPull = spacedetailsguid.Resources[0].GUID
-							} else {
+						} else {
 								// Checking space name
-								fmt.Println("Resetting Org Name")
+								fmt.Println("Resetting Space Name")
 								fmt.Println("- ", spacename)
 								fmt.Println("+ ", Orgs.Org.Spaces[j].Name)
 								path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
@@ -3512,121 +3511,167 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								} else {
 									fmt.Println("err", renamespace, renamespace.Stdout, renamespace.Stderr)
 								}
+
+
 								// checking isolation segments
-								spaceguid := spacedetailsname.Resources[0].GUID
-								path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment" // get iso attached to space
-								getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+								//spaceguid := spacedetailsname.Resources[0].GUID
+								//path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment" // get iso attached to space
+								//getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
-								err := getisoguid.Run()
-								if err == nil {
-									//fmt.Println(getisoguid, getisoguid.Stdout, getisoguid.Stderr)
+								//err := getisoguid.Run()
+								//if err == nil {
+								//	//fmt.Println(getisoguid, getisoguid.Stdout, getisoguid.Stderr)
+								//} else {
+								//	fmt.Println("err", getisoguid, getisoguid.Stdout, getisoguid.Stderr)
+								//}
+
+								//fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spaceisodetails.json")
+								//if err != nil {
+								//	fmt.Println(err)
+								//}
+
+								//var spaceiso SpaceIsoJson
+								//if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
+								//	panic(err)
+								//}
+								//isoguid := spaceiso.Data.GUID //get existing isolation segment guid
+
+							////////////// From CF
+							// pulling if any isolation segment assigned to org
+
+							var spacedets SpaceListJson
+							//var spaceiso SpaceIsoJson
+							//var isoexistingdetails, isodetails IsoJson
+							if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
+								panic(err)
+							}
+							spaceguid := spacedets.Resources[0].GUID
+							path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
+							getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+							err := getisoguid.Run() // it can be nill
+							if err == nil {
+								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+							} else {
+								fmt.Println("err", getisoguid, getisoguid.Stdout, getisoguid.Stderr)
+							}
+							fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spaceisodetails.json")
+							if err != nil {
+								fmt.Println(err)
+							}
+							var spaceiso SpaceIsoJson
+							if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
+								panic(err)
+							}
+							isoguid := spaceiso.Data.GUID // will be null
+							// iso segment guid if noting specific it will be default
+							////
+							// Pulling isolation segment Name from Guid
+							path = "/v3/isolation_segments?guids="+isoguid
+							existingisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
+							err = existingisoguid.Run()
+							if err == nil {
+								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+							} else {
+								fmt.Println("err", existingisoguid, existingisoguid.Stdout, existingisoguid.Stderr)
+							}
+							fileSpaceJson, err = ioutil.ReadFile("CreateOrUpdateSpaces_existingisodetails.json")
+							if err != nil {
+								fmt.Println(err)
+							}
+							var isoexistingdetails IsoJson
+							if err := json.Unmarshal(fileSpaceJson, &isoexistingdetails); err != nil {
+								panic(err)
+							}
+							//// 	pulled info of iso
+
+							///////////From YAML
+							// 	Pulling Guid of Iso Specified in YAML file
+							segname := Orgs.Org.Spaces[j].IsolationSeg
+							path = "/v3/isolation_segments?names="+segname
+							detailsisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
+							err = detailsisoguid.Run()
+							if err == nil {
+								//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
+							} else {
+								fmt.Println("err", detailsisoguid, detailsisoguid.Stdout, detailsisoguid.Stderr)
+							}
+							fileSpaceJson, err = ioutil.ReadFile("CreateOrUpdateSpaces_isodetails.json")
+							if err != nil {
+								fmt.Println(err)
+							}
+							var isodetails IsoJson
+							if err := json.Unmarshal(fileSpaceJson, &isodetails); err != nil {
+								panic(err)
+							}
+
+
+							if len(isodetails.Resources) == 0 {
+
+								// If some name is defined in YAML but that does/t exits
+
+								if segname == "" {
+
+									// No Iso defined in yaml and No Iso required
+									// No action needs to be done
+
 								} else {
-									fmt.Println("err", getisoguid, getisoguid.Stdout, getisoguid.Stderr)
+
+									// This is just for stdout
+
+									fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
+									fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
+									fmt.Println("No Isolation segment exists with name: ", segname)
 								}
+							} else {
 
-								fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spaceisodetails.json")
-								if err != nil {
-									fmt.Println(err)
-								}
+								if isodetails.Resources[0].GUID == isoguid {
 
-								var spaceiso SpaceIsoJson
-								if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
-									panic(err)
-								}
-								isoguid := spaceiso.Data.GUID //get existing isolation segment guid
+									// Iso defined in YAML exist
+									// Check if that is same as currectly binded
+									// No action needed
 
-								////
-								// Pulling isolation segment Name from Guid
-								path = "/v3/isolation_segments?guids="+isoguid
-								existingisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
-
-								err = existingisoguid.Run()
-								if err == nil {
-									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
 								} else {
-									fmt.Println("err", existingisoguid, existingisoguid.Stdout, existingisoguid.Stderr)
-								}
+									if isoguid == "" {
 
-								fileSpaceJson, err = ioutil.ReadFile("CreateOrUpdateSpaces_existingisodetails.json")
-								if err != nil {
-									fmt.Println(err)
-								}
+										// Iso defined in YAML exist
+										// Currently it is not binded to any Iso
+										// This is a new request
 
-								var isoexistingdetails IsoJson
-								if err := json.Unmarshal(fileSpaceJson, &isoexistingdetails); err != nil {
-									panic(err)
-								}
-
-								//// 	pulled name of iso
-
-								// 	Pulling Guid of Iso Specified in YAML file
-								segname := Orgs.Org.Spaces[j].IsolationSeg
-								path = "/v3/isolation_segments?names="+segname
-								detailsisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
-
-								err = detailsisoguid.Run()
-								if err == nil {
-									//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
-								} else {
-									fmt.Println("err", detailsisoguid, detailsisoguid.Stdout, detailsisoguid.Stderr)
-								}
-
-								fileSpaceJson, err = ioutil.ReadFile("CreateOrUpdateSpaces_isodetails.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-								var isodetails IsoJson
-								if err := json.Unmarshal(fileSpaceJson, &isodetails); err != nil {
-									panic(err)
-								}
-
-								//// Pulled name of iso from yaml
-								if len(isodetails.Resources) == 0 {
-									// If some name is defined in YAML but that does/t exits
-									fmt.Println("Isolation segment defined in Org.yml doesn't exist: ", isodetails.Resources[0].Name)
-									if segname == " " {
-										SpaceGuidPull = spacedetailsguid.Resources[0].GUID
-									} else {
 										fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-										fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
-										fmt.Println("No Isolation segment exists with name: ", segname)
-										SpaceGuidPull = spacedetailsguid.Resources[0].GUID
-									}
-								} else {
-									if isodetails.Resources[0].GUID == isoguid {
-										SpaceGuidPull = spacedetailsguid.Resources[0].GUID
-									} else {
-										if isoguid == "" {
-											fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-											fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
-											fmt.Println("Please remove isolation segment assigned to space manually")
-											SpaceGuidPull = spacedetailsguid.Resources[0].GUID
+										//fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
+										fmt.Println("Enabling Space Isolation Segment")
+										fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",", Orgs.Org.Spaces[j].IsolationSeg)
+										iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
+										if _, err := iso.Output(); err != nil {
+											fmt.Println("command: ", iso)
+											fmt.Println("Err: ", iso.Stdout, err)
 										} else {
-											fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-											fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
-											fmt.Println("Enabling Space Isolation Segment")
-											fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name,",", Orgs.Org.Spaces[j].IsolationSeg)
-											iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
-											if _, err := iso.Output(); err != nil {
-												fmt.Println("command: ", iso)
-												fmt.Println("Err: ", iso.Stdout, err)
-											} else {
-												//	fmt.Println("command: ", iso)
-												fmt.Println(iso.Stdout)
-											}
-											isospace := exec.Command("cf", "set-space-isolation-segment", Orgs.Org.Spaces[j].Name, Orgs.Org.Spaces[j].IsolationSeg)
-											if _, err := isospace.Output(); err != nil {
-												fmt.Println("command: ", isospace)
-												fmt.Println("Err: ", isospace.Stdout, err)
-											} else {
-												//	fmt.Println("command: ", isospace)
-												fmt.Println(isospace.Stdout)
-											}
-											//SpaceGuidPull = spacedetailsguid.Resources[0].GUID
+											//	fmt.Println("command: ", iso)
+											fmt.Println(iso.Stdout)
 										}
+										isospace := exec.Command("cf", "set-space-isolation-segment", Orgs.Org.Spaces[j].Name, Orgs.Org.Spaces[j].IsolationSeg)
+										if _, err := isospace.Output(); err != nil {
+											fmt.Println("command: ", isospace)
+											fmt.Println("Err: ", isospace.Stdout, err)
+										} else {
+											//	fmt.Println("command: ", isospace)
+											fmt.Println(isospace.Stdout)
+										}
+
+									} else {
+
+										// Iso defined in YAML exist
+										// Currently it is not binded to any Iso
+										// This is a change in request
+
+										fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
+										fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
+										fmt.Println("Please remove isolation segment assigned to space manually")
+
 									}
 								}
 							}
+						}
 							SpaceGuidPull = spacedetailsguid.Resources[0].GUID
 						} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 							fmt.Println("Missing State file, Please use org-init function to create state files")
@@ -3661,7 +3706,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										fmt.Println(isospace.Stdout)
 									}
 								} else {
-									fmt.Println("No Isolation Segment Provided, Will be attached to Default")
+									fmt.Println("No Isolation Segment Provided, Will be attached to Org default, if it exist")
 								}
 
 								// Pulling Space GUID
@@ -5568,7 +5613,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 
 		if _, err := checkfile.Output(); err == nil{
-
 			//fmt.Println("Statefile exist")
 			fmt.Println("Org: ", list.OrgList[i])
 			fmt.Println(checkfile.Stdout)
@@ -5659,30 +5703,43 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 								//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 								stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+SpaceOldName+"', '    - Name: "+SpaceNewName+"') | Set-Content -path "+neworgfilepath
-									changeyml := exec.Command("powershell", "-command",stng)
-									err := changeyml.Run()
-									if err != nil{
-										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-										panic(err)
-									} else {
-
-										//fmt.Println(changeyml, changeyml.Stdout)
+								value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
+								trimquotes := exec.Command("powershell", "-command", value)
+								err := trimquotes.Run()
+								if err != nil{
+									fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+									panic(err)
+								}
+								changeyml := exec.Command("powershell", "-command",stng)
+								err = changeyml.Run()
+								if err != nil{
+									fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
+									panic(err)
+								} else {
+										//fmt.Println(changeyml, changeyml.Stdout) 
 									}
 								} else {
 
+									//sed 's/\"//g' file.txt
 									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 									stng := "'s/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g'"
-									changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
-									err := changeyml.Run()
+									value := "'s/\"//g'"
+									trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
+									err := trimquotes.Run()
 									if err != nil{
+										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+										panic(err)
+									}
+									changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
+									err = changeyml.Run()
+									if err != nil{
+										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 										panic(err)
 									}
 								}
 							}
 						} else {
 							// Space state file missing, create state file
-
-
 							path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid
 							getspacename := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							err = getspacename.Run()
@@ -5799,9 +5856,15 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 						stng := "((Get-Content -path"+" "+olpath+" -Raw) -replace '"+OrgOldName+"', '"+OrgNewName+"') | Set-Content -path "+olpath
 						//(Get-Content $TeamCityConfPath).replace('name=Default Agent', 'name=TeamCityBA1') | Set-Content $TeamCityConfPath
-
+						value := "(Get-Content "+olpath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+olpath+" -Encoding UTF8"
+						trimquotes := exec.Command("powershell", "-command", value)
+						err := trimquotes.Run()
+						if err != nil{
+							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+							panic(err)
+						}
 						changestr := exec.Command("powershell", "-command",stng)
-						err := changestr.Run()
+						err = changestr.Run()
 						if err != nil{
 							fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
 							panic(err)
@@ -5810,9 +5873,17 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					} else {
 						olpath := cpath+"/"+clustername+"/OrgsList.yml"
 						stng := "'s/"+strings.TrimSpace(OrgOldName)+"/"+strings.TrimSpace(OrgNewName)+"/g'"
-						changestr := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
-						err := changestr.Run()
+						value := "'s/\"//g'"
+						trimquotes := exec.Command("sed", "-i", value, olpath)
+						err := trimquotes.Run()
 						if err != nil{
+							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+							panic(err)
+						}
+						changestr := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
+						err = changestr.Run()
+						if err != nil{
+							fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
 							panic(err)
 						}
 					}
@@ -5865,8 +5936,15 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 						//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 						stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '  Name: "+OrgOldName+"', '  Name: "+OrgNewName+"') | Set-Content -path "+neworgfilepath
+						value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
+						trimquotes := exec.Command("powershell", "-command", value)
+						err := trimquotes.Run()
+						if err != nil{
+							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+							panic(err)
+						}
 						changeyml := exec.Command("powershell", "-command",stng)
-						err := changeyml.Run()
+						err = changeyml.Run()
 						if err != nil{
 							fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 							panic(err)
@@ -5876,9 +5954,17 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					} else {
 						olpath := cpath+"/"+clustername+"/OrgsList.yml"
 						stng := "'s/"+"  Name: "+strings.TrimSpace(OrgOldName)+"/"+"  Name: "+strings.TrimSpace(OrgNewName)+"/g'"
-						changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
-						err := changeyml.Run()
+						value := "'s/\"//g'"
+						trimquotes := exec.Command("sed", "-i", value, olpath)
+						err := trimquotes.Run()
 						if err != nil{
+							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+							panic(err)
+						}
+						changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
+						err = changeyml.Run()
+						if err != nil{
+							fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 							panic(err)
 						}
 					}
@@ -5951,8 +6037,15 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 									//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 									stng := "((Get-Content -path" + " " + neworgfilepath + " -Raw) -replace '    - Name: " + SpaceOldName + "', '    - Name: " + SpaceNewName + "') | Set-Content -path " + neworgfilepath
+									value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
+									trimquotes := exec.Command("powershell", "-command", value)
+									err := trimquotes.Run()
+									if err != nil{
+										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+										panic(err)
+									}
 									changeyml := exec.Command("powershell", "-command", stng)
-									err := changeyml.Run()
+									err = changeyml.Run()
 									if err != nil {
 										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 										panic(err)
@@ -5963,9 +6056,17 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 									stng := "'s/" + "    - Name: " + strings.TrimSpace(SpaceOldName) + "/" + "    - Name: " + strings.TrimSpace(SpaceNewName) + "/g'"
+									value := "'s/\"//g'"
+									trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
+									err := trimquotes.Run()
+									if err != nil{
+										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+										panic(err)
+									}
 									changeyml := exec.Command("sed", "-i", strings.TrimSpace(stng), neworgfilepath)
-									err := changeyml.Run()
+									err = changeyml.Run()
 									if err != nil {
+										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 										panic(err)
 									}
 								}
@@ -6176,8 +6277,15 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						if ostype == "windows" {
 							neworgfilepath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
 							stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+strings.Trim(SpaceOldName,"\"")+"', '    - Name: "+strings.Trim(SpaceNewName,"\"")+"') | Set-Content -path "+neworgfilepath
+							value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
+							trimquotes := exec.Command("powershell", "-command", value)
+							err := trimquotes.Run()
+							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
 							changeyml := exec.Command("powershell", "-command",stng)
-							err := changeyml.Run()
+							err = changeyml.Run()
 							if err != nil{
 								fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 								panic(err)
@@ -6187,9 +6295,17 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						} else {
 							neworgfilepath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
 							stng := "'s/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceOldName),"\n")+"/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceNewName), "\"")+"/g'"
-							changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
-							err := changeyml.Run()
+							value := "'s/\"//g'"
+							trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
+							err := trimquotes.Run()
 							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
+							changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
+							err = changeyml.Run()
+							if err != nil{
+								fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
 								panic(err)
 							}
 						}
