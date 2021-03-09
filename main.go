@@ -5725,12 +5725,14 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									stng := "'s/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g'"
 									//value := "'s/\\"//g'"
 									//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-									trimquotes := exec.Command("tr", "-d", "'\"'", "< "+neworgfilepath, "> output && mv output "+neworgfilepath)
+									trimquotes := exec.Command("tr", "-d", "'\"'", "<", neworgfilepath, ">", "output")
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 										panic(err)
 									}
+									mv := exec.Command("mv","output", neworgfilepath )
+									err = mv.Run()
 									changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
 									err = changeyml.Run()
 									if err != nil{
@@ -5878,12 +5880,14 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						//fmt.Println(value)
 						//trimquotes := exec.Command("sed", "-i", value, olpath)
 						//trimquotes := exec.Command("tr", "-d", "\"", "<"+olpath)
-						trimquotes := exec.Command("tr", "-d", "'\"'", "< "+olpath, "> output && mv output "+olpath)
+						trimquotes := exec.Command("tr", "-d", "'\"'", "<",olpath, ">", "output")
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 							panic(err)
 						}
+						mv := exec.Command("mv","output", olpath )
+						err = mv.Run()
 						changestr := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
 						err = changestr.Run()
 						if err != nil{
@@ -5961,12 +5965,14 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						//value := "'s/\\"//g'"
 						//trimquotes := exec.Command("sed", "-i", value, olpath)
 						//trimquotes := exec.Command("tr", "-d", "\"", "<"+olpath)
-						trimquotes := exec.Command("tr", "-d", "'\"'", "< "+olpath, "> output && mv output "+olpath)
+						trimquotes := exec.Command("tr", "-d", "'\"'", "<",olpath, ">", "output")
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 							panic(err)
 						}
+						mv := exec.Command("mv","output", olpath )
+						err = mv.Run()
 						changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , olpath)
 						err = changeyml.Run()
 						if err != nil{
@@ -6064,12 +6070,14 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									stng := "'s/" + "    - Name: " + strings.TrimSpace(SpaceOldName) + "/" + "    - Name: " + strings.TrimSpace(SpaceNewName) + "/g'"
 									//value := "'s/\\"//g'"
 									//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-									trimquotes := exec.Command("tr", "-d", "'\"'", "< "+neworgfilepath, "> output && mv output "+neworgfilepath)
+									trimquotes := exec.Command("tr", "-d", "'\"'", "<", neworgfilepath,">","output")
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 										panic(err)
 									}
+									mv := exec.Command("mv","output", neworgfilepath)
+									err = mv.Run()
 									changeyml := exec.Command("sed", "-i", strings.TrimSpace(stng), neworgfilepath)
 									err = changeyml.Run()
 									if err != nil {
@@ -6304,12 +6312,14 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							stng := "'s/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceOldName),"\n")+"/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceNewName), "\"")+"/g'"
 							//value := "'s/\\"//g'"
 							//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-							trimquotes := exec.Command("tr", "-d", "'\"'", "< "+neworgfilepath, "> output && mv output "+neworgfilepath)
+							trimquotes := exec.Command("tr", "-d", "'\"'", "<", neworgfilepath, ">", "output")
 							err := trimquotes.Run()
 							if err != nil{
 								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 								panic(err)
 							}
+							mv := exec.Command("mv","output", neworgfilepath)
+							err = mv.Run()
 							changeyml := exec.Command("sed", "-i",strings.TrimSpace(stng) , neworgfilepath)
 							err = changeyml.Run()
 							if err != nil{
