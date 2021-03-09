@@ -5701,7 +5701,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 								if ostype == "windows" {
 								neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-								//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 								stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+SpaceOldName+"', '    - Name: "+SpaceNewName+"') | Set-Content -path "+neworgfilepath
 								value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
 								trimquotes := exec.Command("powershell", "-command", value)
@@ -5719,26 +5718,25 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 										//fmt.Println(changeyml, changeyml.Stdout)
 									}
 								} else {
-
 									//sed 's/\"//g' file.txt
-									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-									stng := "sed -i 's/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g' "+neworgfilepath
-									value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
-									trimquotes := exec.Command("sh", "-c", value)
-									err := trimquotes.Run()
-									if err != nil{
-										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-										panic(err)
-									}
-									changeyml := exec.Command("sh", "-c",stng)
-									err = changeyml.Run()
-									if err != nil{
-										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-										panic(err)
-									}
+								neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
+								stng := "sed -i 's/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g' "+neworgfilepath
+								value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
+								trimquotes := exec.Command("sh", "-c", value)
+								err := trimquotes.Run()
+								if err != nil{
+									fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+									panic(err)
+								}
+								changeyml := exec.Command("sh", "-c",stng)
+								err = changeyml.Run()
+								if err != nil{
+									fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
+									panic(err)
 								}
 							}
-						} else {
+					}
+				} else {
 							// Space state file missing, create state file
 							path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid
 							getspacename := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
@@ -5853,9 +5851,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					fmt.Println("+ OrgList.yml", OrgNewName)
 					if ostype == "windows" {
 						olpath := cpath+"/"+clustername+"/OrgsList.yml"
-						//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 						stng := "((Get-Content -path"+" "+olpath+" -Raw) -replace '"+OrgOldName+"', '"+OrgNewName+"') | Set-Content -path "+olpath
-						//(Get-Content $TeamCityConfPath).replace('name=Default Agent', 'name=TeamCityBA1') | Set-Content $TeamCityConfPath
 						value := "(Get-Content "+olpath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+olpath+" -Encoding UTF8"
 						trimquotes := exec.Command("powershell", "-command", value)
 						err := trimquotes.Run()
@@ -5880,7 +5876,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 							panic(err)
 						}
-						
+
 						changestr := exec.Command("sh", "-c",stng)
 						err = changestr.Run()
 						if err != nil{
@@ -5896,82 +5892,82 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					fmt.Println("- ", oldfullpath)
 					fmt.Println("+ ", newfullpath)
 					if ostype == "windows" {
-						changestfile := exec.Command("powershell", "-command", "mv", strings.TrimSpace(oldfullpath), strings.TrimSpace(newfullpath))
+						changestfile := exec.Command("powershell", "-command", "mv", oldfullpath,newfullpath)
 						err := changestfile.Run()
 						if err != nil{
 							panic(err)
 						}
 					} else {
-						//exec.Command("cp", strings.TrimSpace(oldfullpath), strings.TrimSpace(oldfullpath+".bkp"))
-						changestfile := exec.Command("mv", strings.TrimSpace(oldfullpath), strings.TrimSpace(newfullpath))
+						value := "mv"+" "+oldfullpath+" "+newfullpath
+						changestfile := exec.Command("sh", "-c", value)
 						err := changestfile.Run()
 						if err != nil{
 							panic(err)
+						} else {
+							fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
 						}
 					}
-
 					//Changing Folder name
 					oldmgmtpath := cpath + "/" + clustername + "/" + OrgOldName
 					newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
 					fmt.Println("- ", oldmgmtpath)
 					fmt.Println("+ ", newmgmtpath)
 					if ostype == "windows" {
-						//exec.Command("cp", "-r",strings.TrimSpace(oldmgmtpath), strings.TrimSpace(oldmgmtpath+".bkp"))
-						changefolderfile := exec.Command("powershell", "-command", "mv", strings.TrimSpace(oldmgmtpath), strings.TrimSpace(newmgmtpath))
+						changefolderfile := exec.Command("powershell", "-command", "mv", oldmgmtpath, newmgmtpath)
 						err = changefolderfile.Run()
 						if err != nil {
 							panic(err)
-						}
+						} 
 					} else {
-						changefolderfile := exec.Command("mv", strings.TrimSpace(oldmgmtpath), strings.TrimSpace(newmgmtpath))
+						value := "mv"+" "+oldmgmtpath+" "+newmgmtpath
+						changefolderfile := exec.Command("sh", "-c", value)
 						err = changefolderfile.Run()
 						if err != nil {
 							panic(err)
+						} else {
+							fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 						}
 					}
-
 					//Changing org name in Org.yml
 					fmt.Println("- Org.yml", OrgOldName)
 					fmt.Println("+ Org.yml", OrgNewName)
 					if ostype == "windows" {
-						neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-						//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
-						stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '  Name: "+OrgOldName+"', '  Name: "+OrgNewName+"') | Set-Content -path "+neworgfilepath
-						value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
-						trimquotes := exec.Command("powershell", "-command", value)
-						err := trimquotes.Run()
-						if err != nil{
-							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
-						}
-						changeyml := exec.Command("powershell", "-command",stng)
-						err = changeyml.Run()
-						if err != nil{
-							fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-							panic(err)
-						} else {
-							//fmt.Println(changeyml, changeyml.Stdout)
-						}
-					} else {
-						olpath := cpath+"/"+clustername+"/OrgsList.yml"
-						stng := "sed -i 's/"+"  Name: "+strings.TrimSpace(OrgOldName)+"/"+"  Name: "+strings.TrimSpace(OrgNewName)+"/g' "+olpath
-						value := "sed -i 's/\\"+"\"//g' "+olpath
-						trimquotes := exec.Command("sh", "-c",value)
-						err := trimquotes.Run()
-						if err != nil{
-							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
-						}
-						//mv := exec.Command("mv","output", olpath )
-						//err = mv.Run()
-						changeyml := exec.Command("sh", "-c",stng)
-						err = changeyml.Run()
-						if err != nil{
-							fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-							panic(err)
-						}
+					neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
+					stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '  Name: "+OrgOldName+"', '  Name: "+OrgNewName+"') | Set-Content -path "+neworgfilepath
+					value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
+					trimquotes := exec.Command("powershell", "-command", value)
+					err := trimquotes.Run()
+					if err != nil{
+						fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+						panic(err)
 					}
-
+					changeyml := exec.Command("powershell", "-command",stng)
+					err = changeyml.Run()
+					if err != nil{
+						fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
+						panic(err)
+					} else {
+							fmt.Println(changeyml, changeyml.Stdout)
+					}
+				} else {
+					neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
+					stng := "sed -i 's/"+"  Name: "+strings.TrimSpace(OrgOldName)+"/"+"  Name: "+strings.TrimSpace(OrgNewName)+"/g' "+neworgfilepath
+					value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
+					trimquotes := exec.Command("sh", "-c",value)
+					err := trimquotes.Run()
+					if err != nil{
+						fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+						panic(err)
+					}
+					changeyml := exec.Command("sh", "-c",stng)
+					err = changeyml.Run()
+					if err != nil{
+						fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
+						panic(err)
+					} else {
+						fmt.Println(changeyml, changeyml.Stdout, changeyml.Stderr)
+					}
+				}
 					// Checking for Space Name Change
 
 					var OrgsYml string
@@ -6038,7 +6034,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 								if ostype == "windows" {
 									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-									//((Get-Content -path OrgsList.yml -Raw) -replace 'orgtesttest','orgtest') | Set-Content -Path OrgsList.yml.test
 									stng := "((Get-Content -path" + " " + neworgfilepath + " -Raw) -replace '    - Name: " + SpaceOldName + "', '    - Name: " + SpaceNewName + "') | Set-Content -path " + neworgfilepath
 									value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
 									trimquotes := exec.Command("powershell", "-command", value)
@@ -6056,7 +6051,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 										//fmt.Println(changeyml, changeyml.Stdout)
 									}
 								} else {
-
 									neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 									stng := "sed -i 's/" + "    - Name: " + strings.TrimSpace(SpaceOldName) + "/" + "    - Name: " + strings.TrimSpace(SpaceNewName) + "/g' "+neworgfilepath
 									value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
@@ -6075,8 +6069,8 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								}
 							}
 						} else {
-							// Space state file missing, create state file
 
+							// Space state file missing, create state file
 							path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgstatedetails.OrgState.OrgGuid
 							getspacename := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							err = getspacename.Run()
@@ -6115,7 +6109,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									SpaceGuid    string
 								}
 
-								//spath := cpath + "/" + clustername + "-state/"
 								values := SpaceState{Org: OrgNewName, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
 
 								var templates *template.Template
@@ -6305,8 +6298,6 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
 								panic(err)
 							}
-							//mv := exec.Command("mv","output", neworgfilepath)
-							//err = mv.Run()
 							changeyml := exec.Command("sh", "-c",stng)
 							err = changeyml.Run()
 							if err != nil{
