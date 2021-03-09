@@ -5729,7 +5729,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-										panic(err)
+									//	panic(err)
 									}
 									mv := exec.Command("mv","output", neworgfilepath )
 									err = mv.Run()
@@ -5884,7 +5884,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
+							//panic(err)
 						}
 						mv := exec.Command("mv","output", olpath )
 						err = mv.Run()
@@ -5969,7 +5969,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
+						//	panic(err)
 						}
 						mv := exec.Command("mv","output", olpath )
 						err = mv.Run()
@@ -6074,7 +6074,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-										panic(err)
+									//	panic(err)
 									}
 									mv := exec.Command("mv","output", neworgfilepath)
 									err = mv.Run()
@@ -6316,7 +6316,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							err := trimquotes.Run()
 							if err != nil{
 								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-								panic(err)
+								//panic(err)
 							}
 							mv := exec.Command("mv","output", neworgfilepath)
 							err = mv.Run()
