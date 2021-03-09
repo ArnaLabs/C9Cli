@@ -5725,7 +5725,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									stng := "'s/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g'"
 									//value := "'s/\\"//g'"
 									//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-									trimquotes := exec.Command("tr", "-d", "\"", "< "+neworgfilepath, "> "+neworgfilepath)
+									trimquotes := exec.Command("tr", "-d", "'\"'", "<"+neworgfilepath, "> "+neworgfilepath)
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
@@ -5878,7 +5878,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						//fmt.Println(value)
 						//trimquotes := exec.Command("sed", "-i", value, olpath)
 						//trimquotes := exec.Command("tr", "-d", "\"", "<"+olpath)
-						trimquotes := exec.Command("tr", "-d", "\"", "< "+olpath, "> "+olpath)
+						trimquotes := exec.Command("tr", "-d", "'\"'", "<"+olpath, "> "+olpath)
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
@@ -5961,7 +5961,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						//value := "'s/\\"//g'"
 						//trimquotes := exec.Command("sed", "-i", value, olpath)
 						//trimquotes := exec.Command("tr", "-d", "\"", "<"+olpath)
-						trimquotes := exec.Command("tr", "-d", "\"", "< "+olpath, "> "+olpath)
+						trimquotes := exec.Command("tr", "-d", "'\"'", "<"+olpath, "> "+olpath)
 						err := trimquotes.Run()
 						if err != nil{
 							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
@@ -6064,7 +6064,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									stng := "'s/" + "    - Name: " + strings.TrimSpace(SpaceOldName) + "/" + "    - Name: " + strings.TrimSpace(SpaceNewName) + "/g'"
 									//value := "'s/\\"//g'"
 									//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-									trimquotes := exec.Command("tr", "-d", "\"", "< "+neworgfilepath, "> "+neworgfilepath)
+									trimquotes := exec.Command("tr", "-d", "'\"'", "<"+neworgfilepath, "> "+neworgfilepath)
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
@@ -6304,7 +6304,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							stng := "'s/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceOldName),"\n")+"/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceNewName), "\"")+"/g'"
 							//value := "'s/\\"//g'"
 							//trimquotes := exec.Command("sed", "-i", value, neworgfilepath)
-							trimquotes := exec.Command("tr", "-d", "\"", "< "+neworgfilepath, "> "+neworgfilepath)
+							trimquotes := exec.Command("tr", "-d", "'\"'", "<"+neworgfilepath, "> "+neworgfilepath)
 							err := trimquotes.Run()
 							if err != nil{
 								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
