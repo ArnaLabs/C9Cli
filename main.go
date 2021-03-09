@@ -5737,7 +5737,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									err = changeyml.Run()
 									if err != nil{
 										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-										panic(err)
+										//panic(err)
 									}
 								}
 							}
@@ -5892,7 +5892,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						err = changestr.Run()
 						if err != nil{
 							fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
-							panic(err)
+							//panic(err)
 						}
 					}
 
@@ -5977,7 +5977,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						err = changeyml.Run()
 						if err != nil{
 							fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-							panic(err)
+							//panic(err)
 						}
 					}
 
@@ -6054,13 +6054,13 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									err := trimquotes.Run()
 									if err != nil{
 										fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-										panic(err)
+										//panic(err)
 									}
 									changeyml := exec.Command("powershell", "-command", stng)
 									err = changeyml.Run()
 									if err != nil {
 										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-										panic(err)
+										//panic(err)
 									} else {
 										//fmt.Println(changeyml, changeyml.Stdout)
 									}
@@ -6082,7 +6082,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									err = changeyml.Run()
 									if err != nil {
 										fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-										panic(err)
+										//panic(err)
 									}
 								}
 							}
@@ -6324,7 +6324,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							err = changeyml.Run()
 							if err != nil{
 								fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-								panic(err)
+								//panic(err)
 							}
 						}
 					}
