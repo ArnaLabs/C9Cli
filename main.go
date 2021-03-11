@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -1858,11 +1858,12 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 				panic(err)
 			}
 
-			Audit := strings.ToLower(Orgs.SpaceAudit)
+			Audit := strings.ToLower(Orgs.UserAudit)
 			if Audit == "" {
 				Audit = "list"
 			}
 
+			fmt.Println("Audit: ", Audit)
 			if list.OrgList[z] == Orgs.Org.Name {
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -1901,6 +1902,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 								//var out bytes.Buffer
 
 								if InitClusterConfigVals.ClusterDetails.SetSpaceAuditor == true {
+									//fmt.Println(Audit)
 									path := "/v3/roles/?&types=space_auditor"+"&?space_guids="+outguid.String()
 									//path := "/v3/roles/?space_guids="+outguid.String()
 									spaceaudituserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
