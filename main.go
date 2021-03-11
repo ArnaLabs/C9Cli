@@ -1777,9 +1777,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 	var list List
 	var ProtectedOrgs ProtectedList
-	//var Orgs Orglist
-	//var spaceusrslist SpaceUsersListJson
-	//var usedetails UserDetailsJson
+
 
 	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
 	fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -1828,7 +1826,6 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 		fmt.Println(" ")
 		fmt.Println("Org: ", list.OrgList[z])
 		for p := 0; p < LenProtectedOrgs; p++ {
-			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[z])
 			if ProtectedOrgs.Org[p] == list.OrgList[z] {
 				count = 1
 			} else {
@@ -1903,8 +1900,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 								if InitClusterConfigVals.ClusterDetails.SetSpaceAuditor == true {
 									//fmt.Println(Audit)
-									path := "/v3/roles/?&types=space_auditor"+"&?space_guids="+outguid.String()
-									//path := "/v3/roles/?space_guids="+outguid.String()
+									path := "/v3/roles/?&types=space_auditor"+"&space_guids="+outguid.String()
 									spaceaudituserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
 									err := spaceaudituserslist.Run()
 									if err == nil {
@@ -1958,7 +1954,6 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 												if origin == "sso" {
 													if err == nil {
 														for q := 0; q < SpaceUsLenSSOAuditor; q++ {
-															//fmt.Println("SSO Space Audit Usr: ", strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]), ",", username)
 															if strings.TrimSpace(strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q])) == username {
 																spaceusrssoauditscount = 1
 															} else {
@@ -2107,7 +2102,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 								}
 
 								if InitClusterConfigVals.ClusterDetails.SetSpaceDeveloper == true {
-									path := "/v3/roles/?&types=space_developer"+"&?space_guids="+outguid.String()
+									path := "/v3/roles/?&types=space_developer"+"&space_guids="+outguid.String()
 									//path := "/v3/roles/?space_guids="+outguid.String()
 									spacedevuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacedevusrslist.json")
 									err := spacedevuserslist.Run()
@@ -2319,7 +2314,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 								}
 
 								if InitClusterConfigVals.ClusterDetails.SetSpaceManager == true{
-									path := "/v3/roles/?&types=space_manager"+"&?space_guids="+outguid.String()
+									path := "/v3/roles/?&types=space_manager"+"&space_guids="+outguid.String()
 									//path := "/v3/roles/?space_guids="+outguid.String()
 									spacemanuserslist := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacemanusrslist.json")
 									err := spacemanuserslist.Run()
