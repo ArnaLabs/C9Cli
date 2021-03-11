@@ -655,7 +655,7 @@ func SetupConnection(clustername string, pwd string, cpath string) error {
 	}
 	fmt.Printf("Endpoint: %v\n", InitClusterConfigVals.ClusterDetails.EndPoint)
 	fmt.Printf("User: %v\n", InitClusterConfigVals.ClusterDetails.User)
-	fmt.Printf("Pwd: %v\n", pwd)
+	//fmt.Printf("Pwd: %v\n", pwd)
 	fmt.Printf("Org: %v\n", InitClusterConfigVals.ClusterDetails.Org)
 	fmt.Printf("Space: %v\n", InitClusterConfigVals.ClusterDetails.Space)
 	//fmt.Println(InitClusterConfigVals.ClusterDetails.EndPoint)
@@ -663,12 +663,12 @@ func SetupConnection(clustername string, pwd string, cpath string) error {
 	cmd := exec.Command("cf", "login", "-a", InitClusterConfigVals.ClusterDetails.EndPoint, "-u", InitClusterConfigVals.ClusterDetails.User, "-p", pwd, "-o", InitClusterConfigVals.ClusterDetails.Org, "-s", InitClusterConfigVals.ClusterDetails.Space, "--skip-ssl-validation")
 	if _, err := cmd.Output(); err != nil{
 		fmt.Println("Connection failed")
-		fmt.Println("command: ", cmd)
+		//fmt.Println("command: ", cmd)
 		fmt.Println(cmd.Stdout, err)
 		panic(err)
 	} else {
 		//fmt.Println("Connection Passed")
-		fmt.Println("command: ", cmd)
+		//fmt.Println("command: ", cmd)
 		fmt.Println(cmd.Stdout)
 	}
 	return err
