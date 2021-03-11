@@ -1914,7 +1914,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 									}
 
 									var spaceauditusrslist SpaceUsersListJson
-									fileSpaceJson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_spaceusrslist.json")
+									fileSpaceJson, err := ioutil.ReadFile("DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
 									if err != nil {
 										fmt.Println(err)
 									}
