@@ -3498,19 +3498,19 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 								//fmt.Println("Space exists in state and platform")
 								spacename := spacedetailsguid.Resources[0].Name
+
 								if Orgs.Org.Spaces[j].Name == spacename {
 
 									SpaceGuidPull = spacedetailsguid.Resources[0].GUID
-
 									var spacedets SpaceListJson
-									//var spaceiso SpaceIsoJson
-									//var isoexistingdetails, isodetails IsoJson
-									if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
+
+									if err := json.Unmarshal(fileSpaceNameJson, &spacedets); err != nil {
 										panic(err)
 									}
 									spaceguid := spacedets.Resources[0].GUID
 									path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
 									getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+
 									err := getisoguid.Run() // it can be nill
 									if err == nil {
 										//fmt.Println(getspace, getspace.Stdout, getspace.Stderr)
@@ -3568,8 +3568,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									}
 									// check if iso defined in yaml exist in platform
 
-
-
 									if len(isodetails.Resources) == 0 {
 										// If some name is defined in YAML but that does/t exits
 										if segname == "" && isoguid == "" {
@@ -3599,7 +3597,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									} else {
 
 										if isodetails.Resources[0].GUID == isoguid {
-											fmt.Println(isodetails.Resources[0].GUID, isoguid)
+											//fmt.Println(isodetails.Resources[0].GUID, isoguid)
 
 											// iso guid defined yaml == iso attached to space
 											// Iso defined in YAML exist in platform
@@ -3608,14 +3606,13 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 										} else {
 											if isoguid == "" {
-
 												// Iso defined in YAML exist
 												// but Currently space is not binded to any Iso
 												// This is a new request, binding to isolation segment
 
 												fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
 												//fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
-												fmt.Println("Enabling Space Isolation Segment")
+												fmt.Println("Enabling Space Isolation Segment ")
 												fmt.Println("Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",", Orgs.Org.Spaces[j].IsolationSeg)
 												iso := exec.Command("cf", "enable-org-isolation", Orgs.Org.Name, Orgs.Org.Spaces[j].IsolationSeg)
 												if _, err := iso.Output(); err != nil {
@@ -3648,6 +3645,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									}
 
 								} else {
+
 									// Checking space name
 									fmt.Println("Resetting Space Name")
 									fmt.Println("- ", spacename)
@@ -3661,39 +3659,15 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										fmt.Println("err", renamespace, renamespace.Stdout, renamespace.Stderr)
 									}
 
-
 									// checking isolation segments
-									//spaceguid := spacedetailsname.Resources[0].GUID
-									//path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment" // get iso attached to space
-									//getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
-
-									//err := getisoguid.Run()
-									//if err == nil {
-									//	//fmt.Println(getisoguid, getisoguid.Stdout, getisoguid.Stderr)
-									//} else {
-									//	fmt.Println("err", getisoguid, getisoguid.Stdout, getisoguid.Stderr)
-									//}
-
-									//fileSpaceJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spaceisodetails.json")
-									//if err != nil {
-									//	fmt.Println(err)
-									//}
-
-									//var spaceiso SpaceIsoJson
-									//if err := json.Unmarshal(fileSpaceJson, &spaceiso); err != nil {
-									//	panic(err)
-									//}
-									//isoguid := spaceiso.Data.GUID //get existing isolation segment guid
-
 									////////////// From CF
 									// pulling if any isolation segment assigned to org
 
 									var spacedets SpaceListJson
-									//var spaceiso SpaceIsoJson
-									//var isoexistingdetails, isodetails IsoJson
-									if err := json.Unmarshal(fileSpaceJson, &spacedets); err != nil {
+									if err := json.Unmarshal(fileSpaceNameJson, &spacedets); err != nil {
 										panic(err)
 									}
+
 									spaceguid := spacedets.Resources[0].GUID
 									path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
 									getisoguid := exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
@@ -3753,7 +3727,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										panic(err)
 									}
 
-
 									// check if iso defined in yaml exist in platform
 									if len(isodetails.Resources) == 0 {
 										// If some name is defined in YAML but that does/t exits
@@ -3783,7 +3756,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										}
 									} else {
 										if isodetails.Resources[0].GUID == isoguid {
-											fmt.Println(isodetails.Resources[0].GUID, isoguid)
+											//fmt.Println(isodetails.Resources[0].GUID, isoguid)
 
 											// iso guid defined yaml == iso attached to space
 
@@ -3836,6 +3809,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 								fmt.Println("Missing State file, Please use org-init function to create state files")
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0 {
+
 								//fmt.Println("Creating Spaces")
 								fmt.Println("+ ", Orgs.Org.Spaces[j].Name)
 								CreateSpace := exec.Command("cf", "create-space", Orgs.Org.Spaces[j].Name, "-o", Orgs.Org.Name)
@@ -3906,7 +3880,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									SpaceGuid    string
 								}
 
-								//spath := cpath+"/"+clustername+"-state/"
 								values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
 
 								var templates *template.Template
