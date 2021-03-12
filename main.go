@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -2931,13 +2931,15 @@ func CreateOrUpdateQuotas(clustername string, cpath string, ostype string) error
 
 			fmt.Println("This is not Protected Quota")
 			var getquotas *exec.Cmd
-			path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\""
+			path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\" --output CreateOrUpdateQuotas_listquotas.json"
+
 			if ostype == "windows" {
-				getquotas = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
+				//path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\""
+				//getquotas = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
+				getquotas = exec.Command("powershell", "-command","cf", "curl", path)
 
 			} else {
-				getquotas = exec.Command("sh", "-c","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
-
+				getquotas = exec.Command("sh", "-c","cf", "curl", path)
 			}
 
 			if _, err := getquotas.Output(); err != nil {
