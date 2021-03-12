@@ -1086,7 +1086,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 					if ostype == "windows" {
 						spacelist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditSpaces_spacelist.json")
 					} else {
-						spacelist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditSpaces_spacelist.json")
+						spacelist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditSpaces_spacelist.json")
 					}
 
 					//var out bytes.Buffer
@@ -1335,7 +1335,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 								orgmanuserslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgmanusrslist.json")
 
 							} else {
-								orgmanuserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgmanusrslist.json")
+								orgmanuserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgmanusrslist.json")
 
 							}
 							err := orgmanuserslist.Run()
@@ -1380,7 +1380,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									if ostype == "windows" {
 										userdetails = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
 									} else {
-										userdetails = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
+										userdetails = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
 									}
 									//userdetails.Stdout = &out
 									err := userdetails.Run()
@@ -1556,7 +1556,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 							if ostype == "windows" {
 								orgaudituserslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgauditusrslist.json")
 							} else {
-								orgaudituserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgauditusrslist.json")
+								orgaudituserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_orgauditusrslist.json")
 							}
 
 							err := orgaudituserslist.Run()
@@ -1599,7 +1599,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									if ostype == "windows" {
 										userdetails = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
 									} else {
-										userdetails = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
+										userdetails = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteorAuditOrgUsers_usrdetails.json")
 									}
 									err := userdetails.Run()
 									fileusrdetlsjson, err := ioutil.ReadFile("DeleteorAuditOrgUsers_usrdetails.json")
@@ -1928,7 +1928,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 									if ostype == "windows" {
 										spaceaudituserslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
 									} else {
-										spaceaudituserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
+										spaceaudituserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spaceauditusrslist.json")
 									}
 
 									err := spaceaudituserslist.Run()
@@ -1969,7 +1969,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 												userdetails = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 
 											} else {
-												userdetails = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
+												userdetails = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 
 											}
 											//userdetails.Stdout = &out1
@@ -2144,7 +2144,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 										spacedevuserslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacedevusrslist.json")
 
 									} else {
-										spacedevuserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacedevusrslist.json")
+										spacedevuserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacedevusrslist.json")
 
 									}
 									err := spacedevuserslist.Run()
@@ -2186,7 +2186,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											if ostype == "windows" {
 												userdetails = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 											} else {
-												userdetails = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
+												userdetails = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 											}
 											//userdetails.Stdout = &out
 											err := userdetails.Run()
@@ -2366,7 +2366,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 									if ostype == "windows" {
 										spacemanuserslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacemanusrslist.json")
 									} else {
-										spacemanuserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacemanusrslist.json")
+										spacemanuserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_spacemanusrslist.json")
 									}
 									err := spacemanuserslist.Run()
 									if err == nil {
@@ -2406,7 +2406,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 												userdetails = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 
 											} else {
-												userdetails = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
+												userdetails = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "DeleteOrAuditSpaceUsers_usrdetails.json")
 
 											}
 											//userdetails.Stdout = &out
@@ -2776,7 +2776,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 	if ostype == "windows" {
 		check = exec.Command("powershell", "-command","Get-Content", path)
 	} else {
-		check = exec.Command("cat", path)
+		check = exec.Command("sh", "-c","cat", path)
 	}
 
 	if _, err := check.Output(); err != nil {
@@ -2791,7 +2791,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 			checkasg = exec.Command("powershell", "-command","cf", "curl", path, "--output", "DeleteOrAuditASGs_asg.json")
 
 		} else {
-			checkasg = exec.Command("cf", "curl", path, "--output", "DeleteOrAuditASGs_asg.json")
+			checkasg = exec.Command("sh", "-c","cf", "curl", path, "--output", "DeleteOrAuditASGs_asg.json")
 
 		}
 
@@ -2936,7 +2936,7 @@ func CreateOrUpdateQuotas(clustername string, cpath string, ostype string) error
 				getquotas = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
 
 			} else {
-				getquotas = exec.Command("cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
+				getquotas = exec.Command("sh", "-c","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
 
 			}
 
@@ -3194,7 +3194,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					getorgguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
 
 				} else {
-					getorgguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
+					getorgguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
 
 				}
 				err = getorgguid.Run()
@@ -3218,7 +3218,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				if ostype == "windows" {
 					getorgname = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
 				} else {
-					getorgname = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
+					getorgname = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
 
 				}
 				err = getorgname.Run()
@@ -3270,7 +3270,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						getquotaName = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
 
 					} else {
-						getquotaName = exec.Command("cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
+						getquotaName = exec.Command("sh", "-c","cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
 
 					}
 					err := getquotaName.Run()
@@ -3495,7 +3495,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 					getorg = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
 
 				} else {
-					getorg = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
+					getorg = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
 
 				}
 
@@ -3553,7 +3553,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								getspaceguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
 
 							} else {
-								getspaceguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
+								getspaceguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
 
 							}
 							err = getspaceguid.Run()
@@ -3579,7 +3579,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 							} else {
-								getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+								getspacename = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 							}
 							err = getspacename.Run()
@@ -3621,7 +3621,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										getisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									} else {
-										getisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+										getisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									}
 
@@ -3648,7 +3648,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									if ostype == "windows" {
 										existingisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									} else {
-										existingisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
+										existingisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									}
 									err = existingisoguid.Run()
 									if err == nil {
@@ -3674,7 +3674,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									if ostype == "windows" {
 										detailsisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 									} else {
-										detailsisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
+										detailsisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 									}
 
 									err = detailsisoguid.Run()
@@ -3800,7 +3800,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										getisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									} else {
-										getisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+										getisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									}
 									err := getisoguid.Run() // it can be nill
@@ -3827,7 +3827,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										existingisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 
 									} else {
-										existingisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
+										existingisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 
 									}
 									err = existingisoguid.Run()
@@ -3855,7 +3855,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										detailsisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 
 									} else {
-										detailsisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
+										detailsisoguid = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 
 									}
 									err = detailsisoguid.Run()
@@ -3996,7 +3996,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									} else {
-										getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+										getspacename = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									}
 									err = getspacename.Run()
@@ -4074,7 +4074,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							getspacelit = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
 
 						} else {
-							getspacelit = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
+							getspacelit = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
 
 						}
 						err := getspacelit.Run()
@@ -4201,7 +4201,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 				if ostype == "windows" {
 					getorg = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgdetails.json")
 				} else {
-					getorg = exec.Command("cf", "curl", path, "--output", "CreateOrUpdateOrgsUsers_orgdetails.json")
+					getorg = exec.Command("sh", "-c","cf", "curl", path, "--output", "CreateOrUpdateOrgsUsers_orgdetails.json")
 				}
 
 				//path := strings.TrimSpace("/v3/organizations?names="+Orgs.Org.Name)
@@ -4243,7 +4243,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 						if ostype == "windows" {
 							orguserslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
 						} else {
-							orguserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
+							orguserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrslist.json")
 						}
 						err := orguserslist.Run()
 						if err == nil {
@@ -4278,7 +4278,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
 									}
 									err := getspace.Run()
@@ -4307,7 +4307,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										}
 
 										err := orgusersdetailslist.Run()
@@ -4358,7 +4358,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 									if ostype == "windows" {
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 									err := getspace.Run()
 									if err == nil {
@@ -4386,7 +4386,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										}
 										err := orgusersdetailslist.Run()
 										if err == nil {
@@ -4436,7 +4436,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 									if ostype == "windows" {
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
 									err := getspace.Run()
@@ -4463,7 +4463,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 
 										}
 										err := orgusersdetailslist.Run()
@@ -4521,7 +4521,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
 									err := getspace.Run()
@@ -4550,7 +4550,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command( "powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										}
 
 										err := orgusersdetailslist.Run()
@@ -4603,7 +4603,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
 									err := getspace.Run()
@@ -4630,7 +4630,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 
 										}
 
@@ -4681,7 +4681,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 									if ostype == "windows" {
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									} else {
-										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
+										getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
 									err := getspace.Run()
@@ -4708,7 +4708,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 										if ostype == "windows" {
 											orgusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										} else {
-											orgusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
+											orgusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_orgusrsroledets.json")
 										}
 										err := orgusersdetailslist.Run()
 										if err == nil {
@@ -4856,7 +4856,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 				if ostype == "windows" {
 					getorg = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_orgdetails.json")
 				} else {
-					getorg = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_orgdetails.json")
+					getorg = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_orgdetails.json")
 				}
 
 				//var out bytes.Buffer
@@ -4896,7 +4896,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 						if ostype == "windows" {
 							getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpacesUsers_spacedetails.json")
 						} else {
-							getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpacesUsers_spacedetails.json")
+							getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpacesUsers_spacedetails.json")
 						}
 
 						err := getspace.Run()
@@ -4930,7 +4930,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 								if ostype == "windows" {
 									spaceuserslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrslist.json")
 								} else {
-									spaceuserslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrslist.json")
+									spaceuserslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrslist.json")
 								}
 								err := spaceuserslist.Run()
 								if err == nil {
@@ -4963,7 +4963,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -4993,7 +4993,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 
 											err := spaceusersdetailslist.Run()
@@ -5041,7 +5041,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5116,7 +5116,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5146,7 +5146,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 
 											err := spaceusersdetailslist.Run()
@@ -5203,7 +5203,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 
 										}
 
@@ -5234,7 +5234,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 											err := spaceusersdetailslist.Run()
 											if err == nil {
@@ -5281,7 +5281,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5310,7 +5310,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 											err := spaceusersdetailslist.Run()
 											if err == nil {
@@ -5357,7 +5357,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5385,7 +5385,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command( "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command( "sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 
 											err := spaceusersdetailslist.Run()
@@ -5441,7 +5441,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5469,7 +5469,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 
 											err := spaceusersdetailslist.Run()
@@ -5517,7 +5517,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5547,7 +5547,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 											if ostype == "windows" {
 												spaceusersdetailslist = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 											}
 											err := spaceusersdetailslist.Run()
 											if err == nil {
@@ -5596,7 +5596,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 										if ostype == "windows" {
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
+											getspace = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
 										err := getspace.Run()
@@ -5625,7 +5625,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 												spaceusersdetailslist = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 
 											} else {
-												spaceusersdetailslist = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
+												spaceusersdetailslist = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_spaceusrsroledets.json")
 
 											}
 											err := spaceusersdetailslist.Run()
@@ -5853,7 +5853,7 @@ func CreateOrUpdateASGs(Org string, Space string, asgpath string, ostype string)
 		check = exec.Command("powershell", "-command","Get-Content", path)
 		//check = exec.Command("type", path)
 	} else {
-		check = exec.Command("cat", path)
+		check = exec.Command("sh", "-c","cat", path)
 	}
 
 	//check := exec.Command("cat", path)
@@ -5950,7 +5950,7 @@ func CreateOrUpdateProtOrgAsg(clustername string, cpath string, ostype string) {
 		if ostype == "windows" {
 			check = exec.Command("powershell", "-command","Get-Content", ASGfile)
 		} else {
-			check = exec.Command("cat", ASGfile)
+			check = exec.Command("sh", "-c","cat", ASGfile)
 		}
 
 		if _, err := check.Output(); err != nil {
@@ -6051,7 +6051,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 		if ostype == "windows" {
 			checkfile = exec.Command("powershell", "-command","Get-Content", fullpath)
 		} else {
-			checkfile = exec.Command("cat", fullpath)
+			checkfile = exec.Command("sh", "-c","cat", fullpath)
 		}
 
 
@@ -6108,7 +6108,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						if ostype == "windows" {
 							checkfile = exec.Command("powershell", "-command","Get-Content", SpaceStateYml)
 						} else {
-							checkfile = exec.Command("cat", SpaceStateYml)
+							checkfile = exec.Command("sh", "-c","cat", SpaceStateYml)
 						}
 
 						if _, err := checkfile.Output(); err == nil{
@@ -6187,7 +6187,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							if ostype == "windows" {
 								getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							} else {
-								getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+								getspacename = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							}
 							err = getspacename.Run()
 							if err == nil {
@@ -6448,7 +6448,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						if ostype == "windows" {
 							checkfile = exec.Command("powershell", "-command", "Get-Content", SpaceStateYml)
 						} else {
-							checkfile = exec.Command("cat", SpaceStateYml)
+							checkfile = exec.Command("sh", "-c","cat", SpaceStateYml)
 						}
 
 						if _, err := checkfile.Output(); err == nil {
@@ -6526,7 +6526,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							if ostype == "windows" {
 								getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							} else {
-								getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+								getspacename = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							}
 							err = getspacename.Run()
 							if err == nil {
@@ -6691,7 +6691,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				if ostype == "windows" {
 					checkfile = exec.Command("powershell", "-command","Get-Content", SpaceStateYml)
 				} else {
-					checkfile = exec.Command("cat", SpaceStateYml)
+					checkfile = exec.Command("sh", "-c","cat", SpaceStateYml)
 				}
 
 				if _, err := checkfile.Output(); err == nil{
@@ -6783,7 +6783,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					if ostype == "windows" {
 						getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 					} else {
-						getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+						getspacename = exec.Command("sh", "-c","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 					}
 					err = getspacename.Run()
 					if err == nil {
