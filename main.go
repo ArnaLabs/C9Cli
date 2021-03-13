@@ -847,7 +847,6 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
 		if err != nil {
 			panic(err)
@@ -861,20 +860,17 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
 		if err != nil {
 			panic(err)
 		}
 		LenList = len(gitlist.OrgList)
+		Audit := strings.ToLower(gitlist.Audit)
+		if Audit == "" {
+			Audit = "list"
+		}
 	}
-
-
-	Audit := strings.ToLower(list.Audit)
-	if Audit == "" {
-		Audit = "list"
-	}
-
+	
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
@@ -4013,7 +4009,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									err = renamespace.Run()
 									if err == nil {
 										//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
-										
+
 										// Updating State file
 										orgguid := orgdetails.Resources[0].GUID
 
@@ -4057,7 +4053,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										if err != nil {
 											panic(err)
 										}
-										
+
 									} else {
 										fmt.Println("err", renamespace, renamespace.Stdout, renamespace.Stderr)
 									}
@@ -4300,7 +4296,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 							// Creating state file
 							if SpaceStateGuidLen != 0 {
-								
+
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0  {
