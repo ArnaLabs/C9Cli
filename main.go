@@ -3278,7 +3278,6 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -3424,6 +3423,46 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 							fmt.Println("err", renameorg, renameorg.Stdout, renameorg.Stderr)
 						}
 						//OrgGuidPull = orgdetailsguid.Resources[0].GUID
+						// Update State file
+						type OrgState struct {
+							OldName string `yaml:"OldName"`
+							NewName string `yaml:"NewName"`
+							OrgGuid    string `yaml:"OrgGuid"`
+						}
+
+						//spath := cpath+"/"+clustername+"-state/"
+						values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
+
+						var templates *template.Template
+						var allFiles []string
+
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						filename := "OrgGuid.tmpl"
+						fullPath := spath+"OrgGuid.tmpl"
+						if strings.HasSuffix(filename, ".tmpl") {
+							allFiles = append(allFiles, fullPath)
+						}
+
+						//fmt.Println(allFiles)
+						templates, err = template.ParseFiles(allFiles...)
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						s1 := templates.Lookup("OrgGuid.tmpl")
+						f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
+						if err != nil {
+							panic(err)
+						}
+
+						err = s1.Execute(f, values)
+						defer f.Close() // don't forget to close the file when finished.
+						if err != nil {
+							panic(err)
+						}
 					}
 
 					//Checking if Quota has changed
@@ -3504,9 +3543,11 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 				// Creating state file
 
-				if OrgStateGuidLen == 0 && OrgStateNameLen != 0 {
+				if OrgStateGuidLen != 0 {
 
-				} else {
+				} else if OrgStateGuidLen == 0 && OrgStateNameLen != 0 {
+
+				} else if  OrgStateGuidLen == 0 && OrgStateNameLen == 0{
 
 					type OrgState struct {
 						OldName string `yaml:"OldName"`
@@ -3562,7 +3603,6 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	if _, err := results.Output(); err != nil{
 		fmt.Println("command: ", results)
 		fmt.Println("Err: ", results.Stdout, err)
-
 	} else {
 		//fmt.Println("command: ", results)
 		fmt.Println(results.Stdout)
@@ -3973,6 +4013,51 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									err = renamespace.Run()
 									if err == nil {
 										//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+										
+										// Updating State file
+										orgguid := orgdetails.Resources[0].GUID
+
+										type SpaceState struct {
+											Org     string
+											OrgGuid string
+											OldSpaceName string
+											NewSpaceName string
+											SpaceGuid    string
+										}
+
+										values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
+
+										var templates *template.Template
+										var allFiles []string
+
+										if err != nil {
+											fmt.Println(err)
+										}
+
+										filename := "SpaceGuid.tmpl"
+										fullPath := spath+"SpaceGuid.tmpl"
+										if strings.HasSuffix(filename, ".tmpl") {
+											allFiles = append(allFiles, fullPath)
+										}
+
+										//fmt.Println(allFiles)
+										templates, err = template.ParseFiles(allFiles...)
+										if err != nil {
+											fmt.Println(err)
+										}
+
+										s1 := templates.Lookup("SpaceGuid.tmpl")
+										f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
+										if err != nil {
+											panic(err)
+										}
+
+										err = s1.Execute(f, values)
+										defer f.Close() // don't forget to close the file when finished.
+										if err != nil {
+											panic(err)
+										}
+										
 									} else {
 										fmt.Println("err", renamespace, renamespace.Stdout, renamespace.Stderr)
 									}
@@ -4214,9 +4299,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							}
 
 							// Creating state file
-							if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
+							if SpaceStateGuidLen != 0 {
+								
+							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 
-							} else {
+							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0  {
 
 								orgguid := orgdetails.Resources[0].GUID
 
