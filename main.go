@@ -838,7 +838,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 	var ProtectedOrgs ProtectedList
 	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	var ListYml string
+	var ListYml, Audit string
 	var  LenList int
 
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
@@ -852,6 +852,10 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 			panic(err)
 		}
 		LenList = len(list.OrgList)
+		Audit = strings.ToLower(list.Audit)
+		if Audit == "" {
+			Audit = "list"
+		}
 
 
 	} else {
@@ -865,12 +869,12 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 			panic(err)
 		}
 		LenList = len(gitlist.OrgList)
-		Audit := strings.ToLower(gitlist.Audit)
+		Audit = strings.ToLower(gitlist.Audit)
 		if Audit == "" {
 			Audit = "list"
 		}
 	}
-	
+
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
