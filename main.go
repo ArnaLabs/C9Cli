@@ -391,6 +391,13 @@ type List struct {
 	OrgList []string `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
+type GitList struct {
+	OrgList []struct {
+		Name string `yaml:"Name"`
+		Repo string `yaml:"Repo"`
+	} `yaml:"OrgList"`
+	Audit string `yaml:"Audit"`
+}
 type Orglist struct {
 	Org struct {
 		Name     string `yaml:"Name"`
@@ -447,6 +454,7 @@ type InitClusterConfigVals struct {
 		Org       string `yaml:"Org"`
 		Space     string `yaml:"Space"`
 		EnableASG bool   `yaml:"EnableASG"`
+		EnableGitSubTree bool	`yaml:"EnableGitSubTree"`
 		SetOrgAuditor bool	`yaml:"SetOrgAuditor"`
 		SetOrgManager bool	`yaml:"SetOrgManager"`
 		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
@@ -472,7 +480,7 @@ type SpaceStateYaml struct {
 }
 func main()  {
 
-	var endpoint, user, pwd, org, space, asg, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
+	var endpoint, user, pwd, org, space, asg, subtree, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
 	var ospath io.Writer
 
 	flag.StringVar(&endpoint, "e", "api.sys-domain", "Use with init operation, Provide PCF Endpoint")
@@ -481,6 +489,7 @@ func main()  {
 	flag.StringVar(&org, "o", "org", "Use with init operation, Provide Org")
 	flag.StringVar(&space, "s", "space", "Use with init operation, Provide Space")
 	flag.StringVar(&asg, "a", "true", "Use with init operation, Enable ASGs ?.")
+	flag.StringVar(&subtree, "st", "false", "Use with init operation, Enable Git Subtree ?.")
 	flag.StringVar(&orgaudit, "OrgAuditor", "false", "Use with init operation, Enable setting up OrgAuditors ?.")
 	flag.StringVar(&orgman, "OrgManager", "false", "Use with init operation, Enable setting up OrgManagers ?.")
 	flag.StringVar(&spaceaudit, "SpaceAuditor", "false", "Use with init operation, Enable setting up SpaceAuditors ?.")
@@ -537,7 +546,7 @@ func main()  {
 		fmt.Printf("EnableSpaceManager: %v\n", spaceman)
 		fmt.Printf("EnableSpaceDeveloper: %v\n", spacedev)
 		fmt.Printf("Path: %v\n", cpath)
-		Init(ClusterName, endpoint, user, org, space, asg, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev)
+		Init(ClusterName, endpoint, user, org, space, asg, subtree, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev)
 
 	} else if operation == "org-init" {
 
@@ -827,18 +836,40 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 
 	var list List
 	var ProtectedOrgs ProtectedList
+	var gitlist GitList
+	var InitClusterConfigVals InitClusterConfigVals
+	var ListYml string
+	var  LenList int
 
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
 	}
 
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-	LenList := len(list.OrgList)
+
 	Audit := strings.ToLower(list.Audit)
 	if Audit == "" {
 		Audit = "list"
@@ -901,9 +932,15 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 					var orgscount, orgstotalcount int
 
 					for q := 0; q < LenList; q++ {
-
+						var OrgName string
+						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+							OrgName = list.OrgList[i]
+						} else {
+							OrgName = gitlist.OrgList[i].Name
+							//RepoName = gitlist.OrgList[i].Name
+						}
 						//fmt.Println("Org: ", list.OrgList[q], ",", body.Resources[i].Name)
-						if list.OrgList[q] == body.Resources[i].Name {
+						if OrgName == body.Resources[i].Name {
 							orgscount = 1
 						} else {
 							orgscount = 0
@@ -986,21 +1023,40 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 
 	var list List
 	var ProtectedOrgs ProtectedList
+	var gitlist GitList
+	var InitClusterConfigVals InitClusterConfigVals
+	var ListYml string
+	var LenList int
+
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+	}
 
 	// Org List
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
-	var InitClusterConfigVals InitClusterConfigVals
 
 	//Config File
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
@@ -1027,17 +1083,22 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 	for i := 0; i < LenList; i++ {
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		var count, totalcount int
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -1050,9 +1111,9 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 			//fmt.Println("This is not Protected Org")
 
 			if ostype == "windows" {
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+				OrgsYml = cpath+"\\"+clustername+"\\"+OrgName+"\\Org.yml"
 			} else {
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+				OrgsYml = cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			}
 
 			var Orgs Orglist
@@ -1071,7 +1132,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 				Audit = "list"
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				var out bytes.Buffer
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
@@ -1218,24 +1279,40 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 	var list List
 	var ProtectedOrgs ProtectedList
-	//var Orgs Orglist
-	//var orgusrslist OrgUsersListJson
-	//var usedetails UserDetailsJson
-
+	var gitlist GitList
+	var InitClusterConfigVals InitClusterConfigVals
+	var ListYml string
+	var  LenList int
 
 	// Org List
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+
 	}
 
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
-	var InitClusterConfigVals InitClusterConfigVals
 
 	//Config File
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
@@ -1262,17 +1339,22 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 	for i := 0; i < LenList; i++ {
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		var count, totalcount int
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",",list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -1285,9 +1367,9 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 			//fmt.Println("This is not Protected Org")
 
 			if ostype == "windows" {
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+				OrgsYml = cpath+"\\"+clustername+"\\"+OrgName+"\\Org.yml"
 			} else {
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+				OrgsYml = cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			}
 
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -1307,7 +1389,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 				Audit = "list"
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				var out bytes.Buffer
 
@@ -1447,7 +1529,6 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 												}
 											}
 										} else if origin == "uaa" {
-
 											if err == nil {
 												for q := 0; q < OrgUsLenUAAManagers; q++ {
 
@@ -1804,22 +1885,40 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 	var list List
 	var ProtectedOrgs ProtectedList
-
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
+	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var ListYml string
+	var LenList int
 
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+	}
+
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -1844,16 +1943,20 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
-	LenList := len(list.OrgList)
-
 	for z := 0; z < LenList; z++ {
 
 		var count, totalcount int
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[z]
+		} else {
+			OrgName = gitlist.OrgList[z].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[z])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
-			if ProtectedOrgs.Org[p] == list.OrgList[z] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -1865,9 +1968,9 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 			var OrgsYml string
 			if ostype == "windows" {
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[z]+"\\Org.yml"
+				OrgsYml = cpath+"\\"+clustername+"\\"+OrgName+"\\Org.yml"
 			} else {
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[z]+"/Org.yml"
+				OrgsYml = cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			}
 
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -1888,7 +1991,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 			}
 
 			fmt.Println("Audit: ", Audit)
-			if list.OrgList[z] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
@@ -1996,7 +2099,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 												if origin == "sso" {
 													if err == nil {
 														for q := 0; q < SpaceUsLenSSOAuditor; q++ {
-															if strings.TrimSpace(strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q])) == username {
+															if strings.ToLower(strings.TrimSpace(strings.ToLower(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]))) == username {
 																spaceusrssoauditscount = 1
 															} else {
 																spaceusrssoauditscount = 0
@@ -2622,21 +2725,42 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 	//var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
+	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var ListYml string
+	var  LenList int
 
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+
+	}
+
+
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -2659,18 +2783,23 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 
 	for i := 0; i < LenList; i++ {
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		var count, totalcount int
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -2683,11 +2812,11 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 			//fmt.Println("This is not Protected Org")
 
 			if ostype == "windows" {
-				ASGPath = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\ASGs\\"
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+				ASGPath = cpath+"\\"+clustername+"\\"+OrgName+"\\ASGs\\"
+				OrgsYml = cpath+"\\"+clustername+"\\"+OrgName+"\\Org.yml"
 			} else {
-				ASGPath = cpath+"/"+clustername+"/"+list.OrgList[i]+"/ASGs/"
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+				ASGPath = cpath+"/"+clustername+"/"+OrgName+"/ASGs/"
+				OrgsYml = cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			}
 
 
@@ -2708,7 +2837,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 				Audit = "list"
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 				if _, err := guid.Output(); err == nil {
@@ -3117,20 +3246,35 @@ func CreateOrUpdateQuotas(clustername string, cpath string, ostype string) error
 func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 	var list List
+	var gitlist GitList
 	var ProtectedOrgs ProtectedList
-
+    var InitClusterConfigVals InitClusterConfigVals
+	var ListYml string
 	spath := cpath+"/"+clustername+"-state/"
 
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -3144,17 +3288,30 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
+	var LenList int
+	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		LenList = len(list.OrgList)
+	} else {
+		LenList = len(gitlist.OrgList)
+	}
+
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 	for i := 0; i < LenList; i++ {
 
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		var count, totalcount int
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//	fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -3164,7 +3321,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 		}
 		if totalcount == 0 {
 
-			OrgsYml := cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			OrgsYml := cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
 			if err != nil {
 				fmt.Println(err)
@@ -3176,9 +3333,9 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				panic(err)
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
-				fullpath := spath+list.OrgList[i]+"_OrgState.yml"
+				fullpath := spath+OrgName+"_OrgState.yml"
 				var OrgGuidPull string
 
 				// Getting Org Guid from State file
@@ -3416,23 +3573,41 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 	var ProtectedOrgs ProtectedList
 	var list List
+	var gitlist GitList
+	var InitClusterConfigVals InitClusterConfigVals
+	var ListYml string
+	var LenList int
 
 	spath := cpath+"/"+clustername+"-state/"
 
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+
 	}
 
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
 
-	var InitClusterConfigVals InitClusterConfigVals
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
-
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -3455,18 +3630,25 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
+
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
 
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -3478,9 +3660,9 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 			//fmt.Println("This is not Protected Org")
 			if ostype == "windows" {
-				OrgsYml = cpath + "\\" + clustername + "\\" + list.OrgList[i] + "\\Org.yml"
+				OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
 			} else {
-				OrgsYml = cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+				OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 			}
 
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -3494,7 +3676,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 				panic(err)
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 				var getorg *exec.Cmd
 				if ostype == "windows" {
 					path := "\""+"/v3/organizations?names=" + Orgs.Org.Name+"\""
@@ -4130,21 +4312,40 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 
 	var list List
 	var ProtectedOrgs ProtectedList
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
+	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var ListYml string
+	var  LenList int
 
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+	} else {
+
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+
+	}
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -4168,16 +4369,21 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 
 
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
-	LenList := len(list.OrgList)
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -4191,7 +4397,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 			//fmt.Println("test empty",Orgs)
 
 			var Orgs Orglist
-			OrgsYml := cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			OrgsYml := cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			//fmt.Println(OrgsYml)
 
 			fileOrgdetsYml, err := ioutil.ReadFile(OrgsYml)
@@ -4205,7 +4411,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 				panic(err)
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				var getorg *exec.Cmd
 				//fmt.Println(Orgs)
@@ -4803,21 +5009,36 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 
 	var ProtectedOrgs ProtectedList
 	var list List
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
+	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var ListYml string
+	var LenList int
 
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+	}
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -4830,7 +5051,6 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -4841,18 +5061,23 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 	}
 
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
-	LenList := len(list.OrgList)
 
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ", OrgName)
 
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -4862,7 +5087,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 		if totalcount == 0 {
 
 
-			OrgsYml := cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+			OrgsYml := cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
 
 			if err != nil {
@@ -4876,7 +5101,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 				panic(err)
 			}
 
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 
 				var getorg *exec.Cmd
 				if ostype == "windows" {
@@ -5748,21 +5973,42 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 	//var Orgs Orglist
 	var ProtectedOrgs ProtectedList
 	var list List
-
-	ListYml := cpath+"/"+clustername+"/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
-
+	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var ListYml string
+	var LenList int
 
+
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+
+	} else {
+		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+
+	}
+
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -5785,19 +6031,24 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 
 	for i := 0; i < LenList; i++ {
 
 		var count, totalcount int
-
+		var OrgName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i]
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			//RepoName = gitlist.OrgList[i].Name
+		}
 		fmt.Println(" ")
-		fmt.Println("Org: ", list.OrgList[i])
+		fmt.Println("Org: ",OrgName)
 		for p := 0; p < LenProtectedOrgs; p++ {
 			//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
-			if ProtectedOrgs.Org[p] == list.OrgList[i] {
+			if ProtectedOrgs.Org[p] == OrgName {
 				count = 1
 			} else {
 				count = 0
@@ -5809,11 +6060,11 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 			//fmt.Println("This is not Protected Org")
 
 			if ostype == "windows" {
-				ASGPath = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\ASGs\\"
-				OrgsYml = cpath+"\\"+clustername+"\\"+list.OrgList[i]+"\\Org.yml"
+				ASGPath = cpath+"\\"+clustername+"\\"+OrgName+"\\ASGs\\"
+				OrgsYml = cpath+"\\"+clustername+"\\"+OrgName+"\\Org.yml"
 			} else {
-				ASGPath = cpath+"/"+clustername+"/"+list.OrgList[i]+"/ASGs/"
-				OrgsYml = cpath+"/"+clustername+"/"+list.OrgList[i]+"/Org.yml"
+				ASGPath = cpath+"/"+clustername+"/"+OrgName+"/ASGs/"
+				OrgsYml = cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
 			}
 
 
@@ -5829,7 +6080,7 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 			if err != nil {
 				panic(err)
 			}
-			if list.OrgList[i] == Orgs.Org.Name {
+			if OrgName == Orgs.Org.Name {
 				guid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
 
 				if _, err := guid.Output(); err == nil {
@@ -6058,22 +6309,37 @@ func CreateOrUpdateProtOrgAsg(clustername string, cpath string, ostype string) {
 func OrgsInit(clustername string, cpath string, ostype string) error {
 
 	var list List
+	var gitlist GitList
 	var ProtectedOrgs ProtectedList
-	spath := cpath+"/"+clustername+"-state/"
-	ListYml := cpath + "/" + clustername + "/OrgsList.yml"
-	fileOrgYml, err := ioutil.ReadFile(ListYml)
-	if err != nil {
-		fmt.Println(err)
+	var InitClusterConfigVals InitClusterConfigVals
+
+	var ListYml string
+	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath + "/" + clustername + "/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		ListYml = cpath + "/" + clustername + "/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	err = yaml.Unmarshal([]byte(fileOrgYml), &list)
-	if err != nil {
-		panic(err)
-	}
+	spath := cpath+"/"+clustername+"-state/"
 
 	ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -6083,16 +6349,29 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 		panic(err)
 	}
 
-	LenList := len(list.OrgList)
+	var LenList int
+	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		LenList = len(list.OrgList)
+	} else {
+		LenList = len(gitlist.OrgList)
+	}
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 
 	// Org Renaming/Creating steps
 
 	for i := 0; i < LenList; i++ {
 
-		var checkfile *exec.Cmd
 
-		fullpath := spath+list.OrgList[i]+"_OrgState.yml"
+
+		var checkfile *exec.Cmd
+		var fullpath string
+
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			fullpath = spath+list.OrgList[i]+"_OrgState.yml"
+		} else {
+			fullpath = spath+gitlist.OrgList[i].Name+"_OrgState.yml"
+		}
+
 		OrgsStateYml := fullpath
 
 		if ostype == "windows" {
@@ -6104,7 +6383,16 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 		if _, err := checkfile.Output(); err == nil{
 			//fmt.Println("Statefile exist")
-			fmt.Println("Org: ", list.OrgList[i])
+			var OrgName, RepoName string
+			if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+				fmt.Println("Org: ", list.OrgList[i])
+				OrgName = list.OrgList[i]
+			} else {
+				fmt.Println("Org: ", gitlist.OrgList[i].Name)
+				fmt.Println("Repo: ", gitlist.OrgList[i].Repo)
+				OrgName = gitlist.OrgList[i].Name
+				RepoName = gitlist.OrgList[i].Repo
+			}
 			fmt.Println(checkfile.Stdout)
 			fileOrgStateYml, err := ioutil.ReadFile(OrgsStateYml)
 			if err != nil {
@@ -6119,6 +6407,20 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 			OrgNewName := orgstatedetails.OrgState.NewName
 			OrgOldName := orgstatedetails.OrgState.OldName
 
+			if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+				RepoPath := "https://humana@dev.azure.com/humana/DevOps/_git/"+RepoName
+				OrgPath := cpath + "/" + clustername + "/" + OrgName
+				errDir := exec.Command("git", "subtree", "pull", "--prefix", OrgPath, RepoPath, "master", "--squash", "-m", "Comment")
+				if errDir != nil {
+					log.Fatal(err)
+				} else {
+					fmt.Println("Pulling Org Repo: ", errDir, errDir.Stdout )
+				}
+
+			} else {
+
+			}
+
 			if OrgNewName == OrgOldName {
 
 				//Org Name is not changing
@@ -6129,9 +6431,11 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 					var OrgsYml string
 					if ostype == "windows" {
-						OrgsYml = cpath + "\\" + clustername + "\\" + list.OrgList[i] + "\\Org.yml"
+						//OrgsYml = cpath + "\\" + clustername + "\\" + list.OrgList[i] + "\\Org.yml"
+						OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
 					} else {
-						OrgsYml = cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+						//OrgsYml = cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+						OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 					}
 
 					fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -6149,7 +6453,8 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 					for j := 0; j < SpaceLen; j++ {
 
-						fullpath := spath+list.OrgList[i]+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
+						//fullpath := spath+list.OrgList[i]+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
+						fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
 						SpaceStateYml := fullpath
 
 						if ostype == "windows" {
@@ -6163,7 +6468,8 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 							// Space state file exist
 							// Check for space Rename
 
-							fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+							//fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+							fmt.Println("Org, Space: ",OrgName , Orgs.Org.Spaces[j].Name)
 							fmt.Println(checkfile.Stdout)
 							fileSpaceStateYml, err := ioutil.ReadFile(SpaceStateYml)
 							if err != nil {
@@ -6191,7 +6497,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								fmt.Println("+ Space", SpaceNewName)
 
 								if ostype == "windows" {
-								neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
+								neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 								stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+SpaceOldName+"', '    - Name: "+SpaceNewName+"') | Set-Content -path "+neworgfilepath
 								value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
 								trimquotes := exec.Command("powershell", "-command", value)
@@ -6210,7 +6516,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 									}
 								} else {
 									//sed 's/\"//g' file.txt
-								neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
+								neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 								stng := "sed -i 's/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g' "+neworgfilepath
 								value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
 								trimquotes := exec.Command("sh", "-c", value)
@@ -6256,11 +6562,11 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 							if SpaceStateNameLen == 0 {
 								// Space not yet created
-								fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 								fmt.Println("Space not created yet")
 							} else {
 								// creating missing state file
-								fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 								fmt.Println("Missing state file, creating state")
 
 								OrgGuidPull = orgstatedetails.OrgState.OrgGuid
@@ -6329,14 +6635,26 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				}
 
 				//checking if org name aleady exists in orglist.yml
-				for i := 0; i < LenList; i++ {
-					if list.OrgList[i] == OrgNewName {
-						count = 1
-					} else {
-						count = 0
+				if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+					for i := 0; i < LenList; i++ {
+						if list.OrgList[i] == OrgNewName {
+							count = 1
+						} else {
+							count = 0
+						}
+						totalcount = totalcount + count
 					}
-					totalcount = totalcount + count
+				} else {
+					for i := 0; i < LenList; i++ {
+						if gitlist.OrgList[i].Name == OrgNewName {
+							count = 1
+						} else {
+							count = 0
+						}
+						totalcount = totalcount + count
+					}
 				}
+
 
 				if totalcount == 0 {
 
@@ -6344,43 +6662,85 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					//fmt.Println("Changing org name in OrgList.yml")
 					//fmt.Println("Changing Org Name")
 
-					fmt.Println("- OrgList.yml", OrgOldName)
-					fmt.Println("+ OrgList.yml", OrgNewName)
+					fmt.Println("- OrgList", OrgOldName)
+					fmt.Println("+ OrgList", OrgNewName)
 
 					if ostype == "windows" {
-						olpath := cpath+"/"+clustername+"/OrgsList.yml"
-						stng := "((Get-Content -path"+" "+olpath+" -Raw) -replace '"+OrgOldName+"', '"+OrgNewName+"') | Set-Content -path "+olpath
-						value := "(Get-Content "+olpath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+olpath+" -Encoding UTF8"
-						trimquotes := exec.Command("powershell", "-command", value)
-						err := trimquotes.Run()
-						if err != nil{
-							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
-						}
-						changestr := exec.Command("powershell", "-command",stng)
-						err = changestr.Run()
-						if err != nil{
-							fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
-							panic(err)
+						var olpath string
+						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+							olpath = cpath+"/"+clustername+"/OrgsList.yml"
+							stng := "((Get-Content -path"+" "+olpath+" -Raw) -replace '"+OrgOldName+"', '"+OrgNewName+"') | Set-Content -path "+olpath
+							value := "(Get-Content "+olpath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+olpath+" -Encoding UTF8"
+							trimquotes := exec.Command("powershell", "-command", value)
+							err := trimquotes.Run()
+							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
+							changestr := exec.Command("powershell", "-command",stng)
+							err = changestr.Run()
+							if err != nil{
+								fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
+								panic(err)
+							} else {
+							}
 						} else {
-						}
-					} else {
-						olpath := cpath+"/"+clustername+"/OrgsList.yml"
-						stng := "sed -i 's/"+strings.TrimSpace(OrgOldName)+"/"+strings.TrimSpace(OrgNewName)+"/g' "+olpath
-						value := "sed -i 's/\\"+"\"//g' "+olpath
-						trimquotes := exec.Command("sh", "-c", value)
-						err := trimquotes.Run()
-						if err != nil{
-							fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							panic(err)
+							olpath = cpath+"/"+clustername+"/GitOrgsList.yml"
+							stng := "((Get-Content -path"+" "+olpath+" -Raw) -replace '  - Name: "+OrgOldName+"', '  - Name: "+OrgNewName+"') | Set-Content -path "+olpath
+							value := "(Get-Content "+olpath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+olpath+" -Encoding UTF8"
+							trimquotes := exec.Command("powershell", "-command", value)
+							err := trimquotes.Run()
+							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
+							changestr := exec.Command("powershell", "-command",stng)
+							err = changestr.Run()
+							if err != nil{
+								fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
+								panic(err)
+							} else {
+							}
 						}
 
-						changestr := exec.Command("sh", "-c",stng)
-						err = changestr.Run()
-						if err != nil{
-							fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
-							//panic(err)
+					} else {
+						var olpath string
+						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+							olpath = cpath+"/"+clustername+"/OrgsList.yml"
+							stng := "sed -i 's/"+strings.TrimSpace(OrgOldName)+"/"+strings.TrimSpace(OrgNewName)+"/g' "+olpath
+							value := "sed -i 's/\\"+"\"//g' "+olpath
+							trimquotes := exec.Command("sh", "-c", value)
+							err := trimquotes.Run()
+							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
+
+							changestr := exec.Command("sh", "-c",stng)
+							err = changestr.Run()
+							if err != nil{
+								fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
+								//panic(err)
+							}
+						} else {
+							olpath = cpath+"/"+clustername+"/GitOrgsList.yml"
+							stng := "sed -i 's/"+"  - Name: "+strings.TrimSpace(OrgOldName)+"/"+"  - Name: "+strings.TrimSpace(OrgNewName)+"/g' "+olpath
+							value := "sed -i 's/\\"+"\"//g' "+olpath
+							trimquotes := exec.Command("sh", "-c", value)
+							err := trimquotes.Run()
+							if err != nil{
+								fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
+								panic(err)
+							}
+
+							changestr := exec.Command("sh", "-c",stng)
+							err = changestr.Run()
+							if err != nil{
+								fmt.Println("err :", err, changestr, changestr.Stdout, changestr.Stderr)
+								//panic(err)
+							}
 						}
+
 					}
 
 					//changing org state filename
@@ -6447,7 +6807,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					} else {
 							fmt.Println(changeyml, changeyml.Stdout)
 					}
-				} else {
+				    } else {
 					neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
 					stng := "sed -i 's/"+"  Name: "+strings.TrimSpace(OrgOldName)+"/"+"  Name: "+strings.TrimSpace(OrgNewName)+"/g' "+neworgfilepath
 					value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
@@ -6595,11 +6955,11 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 							if SpaceStateNameLen == 0 {
 								// Space not yet created
-								fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 								fmt.Println("Space not created yet")
 							} else {
 								// creating missing state file
-								fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 								fmt.Println("Space found, creating state file")
 
 								OrgGuidPull = orgstatedetails.OrgState.OrgGuid
@@ -6649,7 +7009,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						}
 					}
 				} else {
-		fmt.Println("Org Name exist in config, can't be renamed")
+		fmt.Println("Org Name exist in Org's list, can't be renamed")
 		fmt.Println(" ")
 			}
 		}
@@ -6659,10 +7019,21 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 		// Creating State file for listed Orgs
 
 		var count, totalcount int
-		fmt.Println("Org: ", list.OrgList[i])
+		var OrgName, RepoName string
+		if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+			fmt.Println("Org: ", list.OrgList[i])
+			OrgName = list.OrgList[i]
+		} else {
+			fmt.Println("Org: ", gitlist.OrgList[i].Name)
+			fmt.Println("Repo: ", gitlist.OrgList[i].Repo)
+			OrgName = gitlist.OrgList[i].Name
+			RepoName = gitlist.OrgList[i].Repo
+		}
 		fmt.Println("Missing State file, Creating State files")
 		var out bytes.Buffer
-		pullguid := exec.Command("cf", "org", list.OrgList[i], "--guid")
+
+		//pullguid := exec.Command("cf", "org", list.OrgList[i], "--guid")
+		pullguid := exec.Command("cf", "org", OrgName, "--guid")
 		pullguid.Stdout = &out
 		err = pullguid.Run()
 		if err == nil {
@@ -6677,7 +7048,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 			}
 
 			//spath := cpath+"/"+clustername+"-state/"
-			values := OrgState{OldName: list.OrgList[i], NewName: list.OrgList[i], OrgGuid: OrgGuidPull}
+			values := OrgState{OldName: OrgName, NewName: OrgName, OrgGuid: OrgGuidPull}
 
 			var templates *template.Template
 			var allFiles []string
@@ -6699,7 +7070,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 			}
 
 			s1 := templates.Lookup("OrgGuid.tmpl")
-			f, err := os.Create(spath+list.OrgList[i]+"_OrgState.yml")
+			f, err := os.Create(spath+OrgName+"_OrgState.yml")
 			if err != nil {
 				panic(err)
 			}
@@ -6714,9 +7085,9 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 			var OrgsYml string
 			if ostype == "windows" {
-				OrgsYml = cpath + "\\" + clustername + "\\" + list.OrgList[i] + "\\Org.yml"
+				OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
 			} else {
-				OrgsYml = cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+				OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 			}
 
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
@@ -6733,7 +7104,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 			SpaceLen := len(Orgs.Org.Spaces)
 			for j := 0; j < SpaceLen; j++ {
 
-				fullpath := spath+list.OrgList[i]+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
+				fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
 				SpaceStateYml := fullpath
 
 				if ostype == "windows" {
@@ -6747,7 +7118,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					// Space state file exist
 					// Check for space Rename
 
-					fmt.Println("Org, Space: ", list.OrgList[i] , Orgs.Org.Spaces[j].Name )
+					fmt.Println("Org, Space: ", OrgName , Orgs.Org.Spaces[j].Name )
 					fmt.Println(checkfile.Stdout)
 					fileSpaceStateYml, err := ioutil.ReadFile(SpaceStateYml)
 					if err != nil {
@@ -6774,7 +7145,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						fmt.Println("+ Space", SpaceNewName)
 
 						if ostype == "windows" {
-							neworgfilepath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+							neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 							stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+strings.Trim(SpaceOldName,"\"")+"', '    - Name: "+strings.Trim(SpaceNewName,"\"")+"') | Set-Content -path "+neworgfilepath
 							value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
 							trimquotes := exec.Command("powershell", "-command", value)
@@ -6792,7 +7163,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								//fmt.Println(changeyml, changeyml.Stdout)
 							}
 						} else {
-							neworgfilepath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
+							neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 							stng := "sed -i 's/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceOldName),"\n")+"/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceNewName), "\"")+"/g' "+neworgfilepath
 							value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
 							trimquotes := exec.Command("sh", "-c",value)
@@ -6812,7 +7183,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				} else {
 					// Space state file missing, create state file
 
-					fullpath := spath+list.OrgList[i]+"_OrgState.yml"
+					fullpath := spath+OrgName+"_OrgState.yml"
 					var OrgGuidPull string
 
 					// Getting Org Guid from State file
@@ -6851,11 +7222,11 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 
 					SpaceStateNameLen := len(spacedetailsname.Resources)
 					if SpaceStateNameLen == 0 {
-						fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 						fmt.Println("Space not created yet")
 					} else {
 						OrgGuidPull = orgstatedetails.OrgState.OrgGuid
-						fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
+						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 						fmt.Println("Space found, creating state file")
 						// creating missing state file
 						spaceguidpull := spacedetailsname.Resources[0].GUID
@@ -6906,32 +7277,50 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				}
 			}
 		} else {
+
 			fmt.Println("Org does't exist, Creating config files")
 			for p := 0; p < LenProtectedOrgs; p++ {
 					//fmt.Println("Protected Org: ", ProtectedOrgs.Org[p])
-		    	if ProtectedOrgs.Org[p] == list.OrgList[i] {
+		    	if ProtectedOrgs.Org[p] == OrgName {
 						count = 1
 					} else {
 						count = 0
 					}
 					totalcount = totalcount + count
 				}
+
 				if totalcount == 0 {
 					//fmt.Println("This is not Protected Org")
 
-					mgmtpath := cpath + "/" + clustername + "/" + list.OrgList[i]
-					ASGPath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/ASGs/"
-					OrgsYml := cpath + "/" + clustername + "/" + list.OrgList[i] +"/Org.yml"
-					JsonPath := cpath + "/" + clustername + "/" + list.OrgList[i] + "/ASGs/" + "test_test.json"
+
+					mgmtpath := cpath + "/" + clustername + "/" + OrgName
+					ASGPath := cpath + "/" + clustername + "/" + OrgName + "/ASGs/"
+					OrgsYml := cpath + "/" + clustername + "/" + OrgName +"/Org.yml"
+					JsonPath := cpath + "/" + clustername + "/" + OrgName + "/ASGs/" + "test_test.json"
 
 					_, err = os.Stat(mgmtpath)
 					if os.IsNotExist(err) {
 
 						fmt.Println("Creating <cluster>/<Org> folder")
-						errDir := os.MkdirAll(mgmtpath, 0755)
-						if errDir != nil {
-							log.Fatal(err)
+
+						if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+							RepoPath := "https://humana@dev.azure.com/humana/DevOps/_git/"+RepoName
+							OrgPath := cpath + "/" + clustername + "/" + OrgName
+							errDir := exec.Command("git", "subtree", "add", "--prefix", OrgPath, RepoPath, "master", "--squash")
+							if errDir != nil {
+								log.Fatal(err)
+							}
+
+						} else {
+
+							errDir := os.MkdirAll(mgmtpath, 0755)
+							if errDir != nil {
+								log.Fatal(err)
+							}
+
 						}
+
+
 
 						var OrgTmp = `---
 Org:
@@ -7035,7 +7424,7 @@ ASGAudit:   list #delete/list`
 	}
 	return nil
 }
-func Init(clustername string, endpoint string, user string, org string, space string, asg string, cpath string, orgaudit string, orgman string, spaceaudit string, spaceman string, spacedev string) (err error) {
+func Init(clustername string, endpoint string, user string, org string, space string, asg string, subtree string, cpath string, orgaudit string, orgman string, spaceaudit string, spaceman string, spacedev string) (err error) {
 
 	type ClusterDetails struct {
 		EndPoint         string `yaml:"EndPoint"`
@@ -7043,6 +7432,7 @@ func Init(clustername string, endpoint string, user string, org string, space st
 		Org            string `yaml:"Org"`
 		Space string  `yaml:"Space"`
 		EnableASG     string `yaml:"EnableASG"`
+		EnableGitSubTree string	`yaml:"EnableGitSubTree"`
 		SetOrgAuditor string	`yaml:"SetOrgAuditor"`
 		SetOrgManager string	`yaml:"SetOrgManager"`
 		SetSpaceAuditor string	`yaml:"SetSpaceAuditor"`
@@ -7056,6 +7446,7 @@ func Init(clustername string, endpoint string, user string, org string, space st
 	QuotasYml := cpath+"/"+clustername+"/Quota.yml"
 	ProtectedResourcesYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	ListOrgsYml := cpath+"/"+clustername+"/OrgsList.yml"
+	GitListOrgsYml := cpath+"/"+clustername+"/GitOrgsList.yml"
 
 	_, err = os.Stat(mgmtpath)
 	if os.IsNotExist(err) {
@@ -7071,6 +7462,7 @@ ClusterDetails:
   Org: {{ .Org }}
   Space: {{ .Space }}
   EnableASG: {{ .EnableASG }}
+  EnableGitSubTree: {{ .EnableGitSubTree }}
   SetOrgAuditor: {{ .SetOrgAuditor }}
   SetOrgManager: {{ .SetOrgManager }}
   SetSpaceAuditor: {{ .SetSpaceAuditor }}
@@ -7081,7 +7473,7 @@ ClusterDetails:
 		err = ioutil.WriteFile(mgmtpath+"/config.tmpl", []byte(data), 0644)
 		check(err)
 
-		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev}
+		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev}
 
 		var templates *template.Template
 		var allFiles []string
@@ -7147,12 +7539,24 @@ OrgList:
   - Org-3
 Audit: list`
 
+		var GitSubTreeListTmp = `---
+OrgList:
+  - Name: Org-1
+    Repo: Org-1
+  - Name: Org-2
+    Repo: Org-2
+  - Name: Org-3
+    Repo: Org-3
+Audit: list`
+
 		fmt.Println("Creating <cluster>/ sample yaml files")
 		err = ioutil.WriteFile(QuotasYml, []byte(QuotasTmp), 0644)
 		check(err)
 		err = ioutil.WriteFile(ProtectedResourcesYml, []byte(ProtectedListTmp), 0644)
 		check(err)
 		err = ioutil.WriteFile(ListOrgsYml, []byte(ListTmp), 0644)
+		check(err)
+		err = ioutil.WriteFile(GitListOrgsYml, []byte(GitSubTreeListTmp), 0644)
 		check(err)
 
 		if errDir != nil {
