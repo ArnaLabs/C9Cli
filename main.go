@@ -2931,15 +2931,12 @@ func CreateOrUpdateQuotas(clustername string, cpath string, ostype string) error
 
 			fmt.Println("This is not Protected Quota")
 			var getquotas *exec.Cmd
-			path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\" --output CreateOrUpdateQuotas_listquotas.json"
-
 			if ostype == "windows" {
-				//path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\""
-				//getquotas = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
-				getquotas = exec.Command("powershell", "-command","cf", "curl", path)
-
+				path := "\""+"/v3/organization_quotas?names="+Quotas.Quota[i].Name+"\""
+				getquotas = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
 			} else {
-				getquotas = exec.Command("sh", "-c","cf", "curl", path)
+				path := "/v3/organization_quotas?names="+Quotas.Quota[i].Name
+				getquotas = exec.Command("cf", "curl", path, "--output", "CreateOrUpdateQuotas_listquotas.json")
 			}
 
 			if _, err := getquotas.Output(); err != nil {
@@ -2954,7 +2951,6 @@ func CreateOrUpdateQuotas(clustername string, cpath string, ostype string) error
 				if err := json.Unmarshal(fileQuotaJson, &quotalistjson); err != nil {
 					panic(err)
 				}
-
 				if len(quotalistjson.Resources) == 0 {
 
 					fmt.Println("Creating Quota")
