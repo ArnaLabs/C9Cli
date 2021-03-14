@@ -723,17 +723,18 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 		} else {
 
-			cmd := "eval $(ssh-agent -s)"
-			sshagent := exec.Command("sh", "-c", cmd)
-			if _, err := sshagent.Output(); err != nil{
-				fmt.Println("err",sshagent, sshagent.Stdout, sshagent.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
-			}
+			//cmd := "eval $(ssh-agent -s)"
+			//sshagent := exec.Command("sh", "-c", cmd)
+			//if _, err := sshagent.Output(); err != nil{
+			//	fmt.Println("err",sshagent, sshagent.Stdout, sshagent.Stderr)
+			//	log.Fatal(err)
+			//} else {
+			//	fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
+			//}
+			var cmd string
 			sshkey := sshkey
-			cmd = "ssh-add"
-			sshkeyadd := exec.Command(cmd, sshkey)
+			cmd = "eval $(ssh-agent -s) && ssh-add "+sshkey
+			sshkeyadd := exec.Command("sh", "-c", cmd)
 			if _, err := sshkeyadd.Output(); err != nil{
 				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
 				log.Fatal(err)
@@ -6657,7 +6658,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 					errDir = exec.Command("powershell", "-command", cmd)
 				} else {
-					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"+"\""
+					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
 				}
 				if _, err := errDir.Output(); err != nil{
@@ -6699,7 +6700,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
 					errDir = exec.Command("powershell", "-command", cmd)
 				} else {
-					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m C9Cli-bot"+"\""
+					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
 				}
 				if _, err := errDir.Output(); err != nil{
@@ -7620,7 +7621,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 								errDir = exec.Command("powershell", "-command", cmd)
 							} else {
-								cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"+"\""
+								cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash"+"\""
 								errDir = exec.Command("sh", "-c", cmd)
 							}
 							if _, err := errDir.Output(); err != nil{
