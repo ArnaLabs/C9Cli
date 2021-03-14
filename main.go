@@ -6653,7 +6653,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				//cmd := "git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 				//errDir := exec.Command("git", "subtree", "add", "--prefix", clustername+"/"+OrgName, RepoPath,"master", "--squash")
 				var errDir *exec.Cmd
-				RepoPath := "https://humana@dev.azure.com/humana/DevOps/_git/"+RepoName
+				RepoPath := RepoName
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 					errDir = exec.Command("powershell", "-command", cmd)
@@ -6695,7 +6695,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 				//	GitDir = cpath + "/.git"
 				//}
 				//errDir = exec.Command("git", "--git-dir="+GitDir, "subtree", "pull", "--prefix", OrgPath, RepoPath, "master", "--squash", "-m", "Comment")
-				RepoPath = "https://humana@dev.azure.com/humana/DevOps/_git/"+RepoName
+				RepoPath = RepoName
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
 					errDir = exec.Command("powershell", "-command", cmd)
@@ -7616,7 +7616,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 						} else {
 							//fmt.Println("test3")
 							var errDir *exec.Cmd
-							RepoPath := "https://humana@dev.azure.com/humana/DevOps/_git/"+RepoName
+							RepoPath := RepoName
 							if ostype == "windows" {
 								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 								errDir = exec.Command("powershell", "-command", cmd)
