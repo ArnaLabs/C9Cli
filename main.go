@@ -777,13 +777,21 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 		//	} else {
 		//		fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
 		//	}
-			cmd := "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
+			cmd := "cat /dev/zero | ssh-keygen -q -N ''"
+			sshinit := exec.Command("sh", "-c",cmd)
+			if _, err = sshinit.Output(); err != nil{
+				fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
+			}
+			cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
 			sshfingerprint := exec.Command("sh", "-c",cmd)
 				if _, err = sshfingerprint.Output(); err != nil{
 					fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
 					log.Fatal(err)
 				} else {
-					fmt.Println("Adding SSH Key: ", sshfingerprint, sshfingerprint.Stdout )
+					fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
 				}
 		}
 	}
