@@ -734,11 +734,41 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			//var cmd string
 			sshkey := sshkey
 			cmd1 := "eval $(ssh-agent -s)"
-			cmd2 := "ssh-add "+sshkey
-
-			sshkeyadd := exec.Command("sh", "-c", cmd1, cmd2)
+			cmd2 := "ssh-agent -s >ssh-agent-environment"
+			cmd3 := "chmod 700 ssh-agent-environment"
+			cmd4 := "./ssh-agent-environment"
+			cmd5 := "env SSH_AUTH_SOCK="+"$"+"SSH_AUTH_SOCK"
+			sshkeyadd := exec.Command("sh", "-c", cmd1)
 			if _, err := sshkeyadd.Output(); err != nil{
 				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setting up agent: ", sshkeyadd, sshkeyadd.Stdout )
+			}
+			sshkeyadd = exec.Command("sh", "-c",cmd2)
+			if _, err = sshkeyadd.Output(); err != nil{
+				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println(sshkeyadd, sshkeyadd.Stdout )
+			}
+			sshkeyadd = exec.Command("sh", "-c",cmd3)
+			if _, err = sshkeyadd.Output(); err != nil{
+				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println(sshkeyadd, sshkeyadd.Stdout )
+			}
+			sshkeyadd = exec.Command("sh", "-c",cmd4)
+			if _, err = sshkeyadd.Output(); err != nil{
+				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setting ENV: ", sshkeyadd, sshkeyadd.Stdout )
+			}
+			sshkeyadd = exec.Command("sh", "-c",cmd5, "ssh-add",sshkey)
+			if _, err = sshkeyadd.Output(); err != nil{
+				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
 				log.Fatal(err)
 			} else {
 				fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
