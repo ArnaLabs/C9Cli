@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -553,15 +553,15 @@ func main()  {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
-		OrgsInit(ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		OrgsInit(ClusterName, cpath, ostype, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "audit-quota"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteOrAuditQuotas (ClusterName, cpath)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 
 	} else if operation == "audit-org"{
@@ -569,42 +569,42 @@ func main()  {
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteorAuditOrgs (ClusterName, cpath)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "audit-space"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteorAuditSpaces (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	}  else if operation == "audit-org-user"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteorAuditOrgUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "audit-space-user"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteOrAuditSpaceUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "audit-space-asg"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		DeleteOrAuditSpacesASGs (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "create-org"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		CreateOrUpdateOrgs (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "create-quota" {
 
@@ -625,7 +625,7 @@ func main()  {
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
 		CreateOrUpdateSpaces (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else if operation == "create-space-user"{
 
@@ -659,7 +659,7 @@ func main()  {
 		CreateOrUpdateSpaces (ClusterName, cpath, ostype)
 		CreateOrUpdateSpacesASGs (ClusterName, cpath, ostype)
 		CreateOrUpdateSpaceUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath)
+		GitPush(ClusterName, ostype, cpath, sshkey)
 
 	} else {
 		fmt.Println("Provide Valid input operation")
@@ -732,52 +732,53 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			//	fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
 			//}
 			//var cmd string
-			sshkey := sshkey
-			cmd1 := "eval $(ssh-agent -s)"
-			cmd2 := "ssh-agent -s >ssh-agent-environment"
-			cmd3 := "chmod 700 ssh-agent-environment"
-			cmd4 := "./ssh-agent-environment"
-			cmd5 := "env SSH_AUTH_SOCK="+"$"+"SSH_AUTH_SOCK"
-			sshkeyadd := exec.Command("sh", "-c", cmd1)
-			if _, err := sshkeyadd.Output(); err != nil{
-				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setting up agent: ", sshkeyadd, sshkeyadd.Stdout )
-			}
-			sshkeyadd = exec.Command("sh", "-c",cmd2)
-			if _, err = sshkeyadd.Output(); err != nil{
-				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println(sshkeyadd, sshkeyadd.Stdout )
-			}
-			sshkeyadd = exec.Command("sh", "-c",cmd3)
-			if _, err = sshkeyadd.Output(); err != nil{
-				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println(sshkeyadd, sshkeyadd.Stdout )
-			}
-			sshkeyadd = exec.Command("sh", "-c",cmd4)
-			if _, err = sshkeyadd.Output(); err != nil{
-				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setting ENV: ", sshkeyadd, sshkeyadd.Stdout )
-			}
-			sshkeyadd = exec.Command("sh", "-c",cmd5, "ssh-add",sshkey)
-			if _, err = sshkeyadd.Output(); err != nil{
-				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
-			}
+		    // sshkey := sshkey
+
+			//cmd1 := "eval $(ssh-agent -s)"
+			//cmd2 := "ssh-agent -s >ssh-agent-environment"
+			//cmd3 := "chmod 700 ssh-agent-environment"
+			//cmd4 := "./ssh-agent-environment"
+			//cmd5 := "env SSH_AUTH_SOCK="+"$"+"SSH_AUTH_SOCK"
+			//sshkeyadd := exec.Command("sh", "-c", cmd1)
+			//if _, err := sshkeyadd.Output(); err != nil{
+			//	fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
+			//	log.Fatal(err)
+			//} else {
+			//	fmt.Println("Setting up agent: ", sshkeyadd, sshkeyadd.Stdout )
+			//}
+			//sshkeyadd = exec.Command("sh", "-c",cmd2)
+			//if _, err = sshkeyadd.Output(); err != nil{
+			//	fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+			//	log.Fatal(err)
+			//} else {
+			//	fmt.Println(sshkeyadd, sshkeyadd.Stdout )
+		//	}
+		//	sshkeyadd = exec.Command("sh", "-c",cmd3)
+		//	if _, err = sshkeyadd.Output(); err != nil{
+		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+		//		log.Fatal(err)
+		//	} else {
+		//		fmt.Println(sshkeyadd, sshkeyadd.Stdout )
+		//	}
+		//	sshkeyadd = exec.Command("sh", "-c",cmd4)
+		//	if _, err = sshkeyadd.Output(); err != nil{
+		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+		//		log.Fatal(err)
+		//	} else {
+		//		fmt.Println("Setting ENV: ", sshkeyadd, sshkeyadd.Stdout )
+		//	}
+		//	sshkeyadd = exec.Command("sh", "-c",cmd5, "ssh-add",sshkey)
+		//	if _, err = sshkeyadd.Output(); err != nil{
+		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
+		//		log.Fatal(err)
+		//	} else {
+		//		fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
+		//	}
 		}
 	}
 	return err
 }
-func GitPush(clustername string, ostype string, cpath string) error {
+func GitPush(clustername string, ostype string, cpath string, sshkey string) error {
 
 	var InitClusterConfigVals InitClusterConfigVals
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
@@ -805,14 +806,21 @@ func GitPush(clustername string, ostype string, cpath string) error {
 			cmd := "git -C "+cpath+" --git-dir=.git add ."
 			errDir = exec.Command("powershell", "-command", cmd)
 		} else {
-			cmd := "\""+"git -C "+cpath+" --git-dir=.git add ."+"\""
+			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git add .'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
+		}
+		if _, err := errDir.Output(); err != nil{
+			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+			fmt.Println("err",errDir, errDir.Stdout)
+			//log.Fatal(err)
+		} else {
+			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
 		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git commit -m 'Adding Cluster level updates'"
 			errDir = exec.Command("powershell", "-command", cmd)
 		} else {
-			cmd := "\""+"git -C "+cpath+" --git-dir=.git commit -m 'Adding Cluster level updates'"+"\""
+			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git commit -m 'Adding Cluster level updates'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
 		}
 		if _, err := errDir.Output(); err != nil{
@@ -826,7 +834,7 @@ func GitPush(clustername string, ostype string, cpath string) error {
 			cmd := "git -C "+cpath+" --git-dir=.git push"
 			errDir = exec.Command("powershell", "-command", cmd)
 		} else {
-			cmd := "\""+"git -C "+cpath+" --git-dir=.git push"+"\""
+			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git push'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
 		}
 		if _, err := errDir.Output(); err != nil{
@@ -6552,7 +6560,7 @@ func CreateOrUpdateProtOrgAsg(clustername string, cpath string, ostype string) {
 		fmt.Println("ASGs not enabled")
 	}
 }
-func OrgsInit(clustername string, cpath string, ostype string) error {
+func OrgsInit(clustername string, cpath string, ostype string, sshkey string) error {
 
 	var list List
 	var gitlist GitList
@@ -6690,7 +6698,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 					errDir = exec.Command("powershell", "-command", cmd)
 				} else {
-					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash"+"\""
+					cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
 				}
 				if _, err := errDir.Output(); err != nil{
@@ -6732,7 +6740,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
 					errDir = exec.Command("powershell", "-command", cmd)
 				} else {
-					cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot"+"\""
+					cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot'"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
 				}
 				if _, err := errDir.Output(); err != nil{
@@ -7653,7 +7661,7 @@ func OrgsInit(clustername string, cpath string, ostype string) error {
 								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 								errDir = exec.Command("powershell", "-command", cmd)
 							} else {
-								cmd := "\""+"git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash"+"\""
+								cmd := "\""+"" + "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
 								errDir = exec.Command("sh", "-c", cmd)
 							}
 							if _, err := errDir.Output(); err != nil{
