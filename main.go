@@ -731,10 +731,12 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			//} else {
 			//	fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
 			//}
-			var cmd string
+			//var cmd string
 			sshkey := sshkey
-			cmd = "eval $(ssh-agent -s) && ssh-add "+sshkey
-			sshkeyadd := exec.Command("sh", "-c", cmd)
+			cmd1 := "eval $(ssh-agent -s)"
+			cmd2 := "ssh-add "+sshkey
+
+			sshkeyadd := exec.Command("sh", "-c", cmd1, cmd2)
 			if _, err := sshkeyadd.Output(); err != nil{
 				fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
 				log.Fatal(err)
