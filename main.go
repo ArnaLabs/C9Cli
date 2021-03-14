@@ -830,7 +830,7 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		}
 		if _, err := errDir.Output(); err != nil{
 			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stdout)
+			fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 			//log.Fatal(err)
 		} else {
 			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
@@ -844,7 +844,7 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		}
 		if _, err := errDir.Output(); err != nil{
 			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stdout)
+			fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 			//log.Fatal(err)
 		} else {
 			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
@@ -7768,7 +7768,7 @@ ASGAudit:   list #delete/list`
 							}
 						} else {
 							//fmt.Println("test3")
-							
+
 							var errDir *exec.Cmd
 							RepoPath := RepoName
 							if ostype == "windows" {
@@ -7779,13 +7779,13 @@ ASGAudit:   list #delete/list`
 								errDir = exec.Command("sh", "-c", cmd)
 							}
 							if _, err := errDir.Output(); err != nil{
-								fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+								fmt.Println("err",errDir, errDir.Stdout)
 								//log.Fatal(err)
 							} else {
 								fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
 							}
 						}
-						
+
 					} else {
 						fmt.Println("<cluster>/<Org> exists, please manually edit file to make changes or provide new cluster name")
 					}
