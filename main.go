@@ -455,6 +455,7 @@ type InitClusterConfigVals struct {
 		Space     string `yaml:"Space"`
 		EnableASG bool   `yaml:"EnableASG"`
 		EnableGitSubTree bool `yaml:"EnableGitSubTree"`
+		GitHost string `yaml:"GitHost"`
 		SetOrgAuditor bool	`yaml:"SetOrgAuditor"`
 		SetOrgManager bool	`yaml:"SetOrgManager"`
 		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
@@ -480,7 +481,7 @@ type SpaceStateYaml struct {
 }
 func main()  {
 
-	var endpoint, user, pwd, org, space, asg, subtree, sshkey, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
+	var endpoint, user, pwd, org, space, asg, subtree, githost, sshkey, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
 	var ospath io.Writer
 
 	flag.StringVar(&endpoint, "e", "api.sys-domain", "Use with init operation, Provide PCF Endpoint")
@@ -498,6 +499,8 @@ func main()  {
 	flag.StringVar(&operation, "i", "", "Provide Operation to be performed: init, create-{org,space,org-user,space-user,quota, ")
 	flag.StringVar(&cpath, "k", ".", "Provide path to configs, i.e <cluster-name>, i.e, to config folder, use with all operations")
 	flag.StringVar(&sshkey, "sshkey", "ssh-key.rsa", "path to SSH Key if Submodule is enabled")
+	flag.StringVar(&githost, "githost", "githost.com", "Git Host to be added to knownfile")
+
 	//flag.StringVar(&statepath, "sp", "ssh-key", "Provide path to create/update state files, use with all operations")
 	flag.Parse()
 
@@ -547,7 +550,7 @@ func main()  {
 		fmt.Printf("EnableSpaceManager: %v\n", spaceman)
 		fmt.Printf("EnableSpaceDeveloper: %v\n", spacedev)
 		fmt.Printf("Path: %v\n", cpath)
-		Init(ClusterName, endpoint, user, org, space, asg, subtree,  cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev)
+		Init(ClusterName, endpoint, user, org, space, asg, subtree, githost, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev)
 
 	} else if operation == "org-init" {
 
@@ -774,6 +777,14 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 		//	} else {
 		//		fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
 		//	}
+			cmd := "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
+			sshfingerprint := exec.Command("sh", "-c",cmd)
+				if _, err = sshfingerprint.Output(); err != nil{
+					fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
+					log.Fatal(err)
+				} else {
+					fmt.Println("Adding SSH Key: ", sshfingerprint, sshfingerprint.Stdout )
+				}
 		}
 	}
 	return err
@@ -7793,7 +7804,7 @@ ASGAudit:   list #delete/list`
 	}
 	return nil
 }
-func Init(clustername string, endpoint string, user string, org string, space string, asg string, subtree string, cpath string, orgaudit string, orgman string, spaceaudit string, spaceman string, spacedev string) (err error) {
+func Init(clustername string, endpoint string, user string, org string, space string, asg string, subtree string, githost string, cpath string, orgaudit string, orgman string, spaceaudit string, spaceman string, spacedev string) (err error) {
 
 	type ClusterDetails struct {
 		EndPoint         string `yaml:"EndPoint"`
@@ -7802,6 +7813,7 @@ func Init(clustername string, endpoint string, user string, org string, space st
 		Space string  `yaml:"Space"`
 		EnableASG     string `yaml:"EnableASG"`
 		EnableGitSubTree string	`yaml:"EnableGitSubTree"`
+		GitHost string	`yaml:"GitHost"`
 		SetOrgAuditor string	`yaml:"SetOrgAuditor"`
 		SetOrgManager string	`yaml:"SetOrgManager"`
 		SetSpaceAuditor string	`yaml:"SetSpaceAuditor"`
@@ -7832,6 +7844,7 @@ ClusterDetails:
   Space: {{ .Space }}
   EnableASG: {{ .EnableASG }}
   EnableGitSubTree: {{ .EnableGitSubTree }}
+  GitHost: {{ .GitHost }}
   GitSSHKey: {{ .GitSSHKey }}
   SetOrgAuditor: {{ .SetOrgAuditor }}
   SetOrgManager: {{ .SetOrgManager }}
@@ -7843,7 +7856,7 @@ ClusterDetails:
 		err = ioutil.WriteFile(mgmtpath+"/config.tmpl", []byte(data), 0644)
 		check(err)
 
-		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree,  SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev}
+		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, GitHost: githost, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev}
 
 		var templates *template.Template
 		var allFiles []string
