@@ -6765,7 +6765,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				if _, err := errDir.Output(); err != nil{
 					fmt.Println("err",errDir, errDir.Stdout)
 					//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-					log.Fatal(err)
+					//log.Fatal(err)
 				} else {
 					fmt.Println("Pulling Org Repo: ", errDir, errDir.Stdout )
 				}
@@ -7654,7 +7654,6 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				if totalcount == 0 {
 					//fmt.Println("This is not Protected Org")
 
-
 					mgmtpath := cpath + "/" + clustername + "/" + OrgName
 					ASGPath := cpath + "/" + clustername + "/" + OrgName + "/ASGs/"
 					OrgsYml := cpath + "/" + clustername + "/" + OrgName +"/Org.yml"
@@ -7672,45 +7671,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 								log.Fatal(err)
 							}
 
-						} else {
-							//fmt.Println("test3")
-							var errDir *exec.Cmd
-							RepoPath := RepoName
-							if ostype == "windows" {
-								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
-								errDir = exec.Command("powershell", "-command", cmd)
-							} else {
-								cmd := "\""+"" + "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
-								errDir = exec.Command("sh", "-c", cmd)
-							}
-							if _, err := errDir.Output(); err != nil{
-								fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-								//log.Fatal(err)
-							} else {
-								fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
-							}
-							//cmd = "git -C "+cpath+" --git-dir=.git add ."
-							//if ostype == "windows" {
-							//	errDir = exec.Command("powershell", "-command", cmd)
-							//} else {
-							//	errDir = exec.Command("sh", "-c", cmd)
-							//}
-							//cmd = "git -C "+cpath+" --git-dir=.git commit -m 'Adding repo'"
-							//if ostype == "windows" {
-							//	errDir = exec.Command("powershell", "-command", cmd)
-							//} else {
-							//	errDir = exec.Command("sh", "-c", cmd)
-							//}
-							//if _, err := errDir.Output(); err != nil{
-							//	fmt.Println("err",errDir, errDir.Stdout)
-							//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-							//log.Fatal(err)
-							//} else {
-							//	fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
-							//}
-						}
-
-						var OrgTmp = `---
+							var OrgTmp = `---
 Org:
   Name:
   Quota:
@@ -7776,21 +7737,19 @@ SpaceAudit: list #delete/rename/list
 UserAudit:  list #unset/list
 ASGAudit:   list #delete/list`
 
-						fmt.Println("Creating <cluster>/<Org> sample yaml files")
-						err = ioutil.WriteFile(OrgsYml, []byte(OrgTmp), 0644)
-						check(err)
-					} else {
-						fmt.Println("<cluster>/<Org> exists, please manually edit file to make changes or provide new cluster name")
-					}
-					_, err = os.Stat(ASGPath)
-					if os.IsNotExist(err) {
-						errDir := os.MkdirAll(ASGPath, 0755)
-						if errDir != nil {
-							log.Fatal(err)
-							fmt.Println("<cluster>/<Org>/ASGs exist, please manually edit file to make changes or provide new cluster name")
-						} else {
-							fmt.Println("Creating <cluster>/<Org>/ASGs")
-							var AsgTmp = `---
+							fmt.Println("Creating <cluster>/<Org> sample yaml files")
+							err = ioutil.WriteFile(OrgsYml, []byte(OrgTmp), 0644)
+							check(err)
+
+							_, err = os.Stat(ASGPath)
+							if os.IsNotExist(err) {
+								errDir := os.MkdirAll(ASGPath, 0755)
+								if errDir != nil {
+									log.Fatal(err)
+									fmt.Println("<cluster>/<Org>/ASGs exist, please manually edit file to make changes or provide new cluster name")
+								} else {
+									fmt.Println("Creating <cluster>/<Org>/ASGs")
+									var AsgTmp = `---
 [
   {
     "protocol": "tcp",
@@ -7801,15 +7760,40 @@ ASGAudit:   list #delete/list`
   }
 ]`
 
-							fmt.Println("Creating <cluster>/<Org>/ASGs sample json file")
-							err = ioutil.WriteFile(JsonPath, []byte(AsgTmp), 0644)
-							check(err)
+									fmt.Println("Creating <cluster>/<Org>/ASGs sample json file")
+									err = ioutil.WriteFile(JsonPath, []byte(AsgTmp), 0644)
+									check(err)
+								}
+
+							}
+						} else {
+							//fmt.Println("test3")
+							
+							var errDir *exec.Cmd
+							RepoPath := RepoName
+							if ostype == "windows" {
+								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
+								errDir = exec.Command("powershell", "-command", cmd)
+							} else {
+								cmd := "\""+"" + "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
+								errDir = exec.Command("sh", "-c", cmd)
+							}
+							if _, err := errDir.Output(); err != nil{
+								fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+								//log.Fatal(err)
+							} else {
+								fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
+							}
 						}
+						
+					} else {
+						fmt.Println("<cluster>/<Org> exists, please manually edit file to make changes or provide new cluster name")
 					}
+				}
+					//
 				}
 			}
 		}
-	}
 	return nil
 }
 func Init(clustername string, endpoint string, user string, org string, space string, asg string, subtree string, githost string, cpath string, orgaudit string, orgman string, spaceaudit string, spaceman string, spacedev string) (err error) {
