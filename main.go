@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -830,7 +830,7 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		}
 		if _, err := errDir.Output(); err != nil{
 			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+			fmt.Println("err",errDir, errDir.Stdout)
 			//log.Fatal(err)
 		} else {
 			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
@@ -1024,7 +1024,16 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml, Audit string
 	var  LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -1118,9 +1127,9 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 					for q := 0; q < LenList; q++ {
 						var OrgName string
 						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-							OrgName = list.OrgList[i]
+							OrgName = list.OrgList[q]
 						} else {
-							OrgName = gitlist.OrgList[i].Name
+							OrgName = gitlist.OrgList[q].Name
 							//RepoName = gitlist.OrgList[i].Name
 						}
 						//fmt.Println("Org: ", list.OrgList[q], ",", body.Resources[i].Name)
@@ -1133,7 +1142,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 					}
 
 					if orgstotalcount == 0 {
-						fmt.Println("Org has not be listed in Orglist.yml: ")
+						fmt.Println("Org has not be listed in Orglist: ")
 						fmt.Println("Auditing Org: ", body.Resources[i].Name)
 
 						target := exec.Command("cf", "t", "-o", body.Resources[i].Name)
@@ -1211,7 +1220,16 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -1243,16 +1261,6 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 	// Org List
 
 	//Config File
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 	var OrgsYml string
 
 	//Protected Orgs
@@ -1467,7 +1475,16 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var  LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	// Org List
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
@@ -1499,16 +1516,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 
 	//Config File
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 	var OrgsYml string
 
 	//Protected Orgs
@@ -2073,7 +2081,16 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -2102,16 +2119,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 	}
 
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -2913,7 +2921,16 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var  LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -2944,16 +2961,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 
 
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 	var ASGPath, OrgsYml string
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
@@ -3436,7 +3444,16 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	var ListYml string
 	spath := cpath+"/"+clustername+"-state/"
 
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3804,7 +3821,16 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 	var LenList int
 
 	spath := cpath+"/"+clustername+"-state/"
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -3832,16 +3858,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 	}
 
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 	var OrgsYml string
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
@@ -5286,7 +5302,16 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var LenList int
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -5311,16 +5336,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 		LenList = len(gitlist.OrgList)
 	}
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
 
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -6251,7 +6267,16 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 	var ListYml string
 	var LenList int
 
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
 
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
@@ -6281,16 +6306,6 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 	}
 
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
 
 	var ASGPath, OrgsYml string
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
@@ -6641,6 +6656,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 
 
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
+
 
 	// Org Renaming/Creating steps
 
