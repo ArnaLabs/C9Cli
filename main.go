@@ -821,16 +821,23 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 
 	} else {
 		var errDir *exec.Cmd
+		var out bytes.Buffer
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git add ."
 			errDir = exec.Command("powershell", "-command", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		} else {
 			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git add .'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stdout)
+			fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+			//fmt.Println("err",errDir, errDir.Stdout)
 			//log.Fatal(err)
 		} else {
 			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
@@ -838,9 +845,15 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git commit -m 'Adding Cluster level updates'"
 			errDir = exec.Command("powershell", "-command", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		} else {
 			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git commit -m 'Adding Cluster level updates'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
 			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
@@ -852,13 +865,19 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git push"
 			errDir = exec.Command("powershell", "-command", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		} else {
 			cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git push'"+"\""
 			errDir = exec.Command("sh", "-c", cmd)
+			errDir.Stderr = &out
+			errDir.Stdout = &out
+			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stdout)
+			fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+			//fmt.Println("err",errDir, errDir.Stdout)
 			//log.Fatal(err)
 		} else {
 			fmt.Println("Adding Cluster Repo: ", errDir, errDir.Stdout )
@@ -6728,17 +6747,24 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				//cmd := "git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 				//errDir := exec.Command("git", "subtree", "add", "--prefix", clustername+"/"+OrgName, RepoPath,"master", "--squash")
 				var errDir *exec.Cmd
+				var out bytes.Buffer
 				RepoPath := RepoName
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 					errDir = exec.Command("powershell", "-command", cmd)
+					errDir.Stderr = &out
+					errDir.Stdout = &out
+					err = errDir.Run()
 				} else {
 					cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
+					errDir.Stderr = &out
+					errDir.Stdout = &out
+					err = errDir.Run()
 				}
 				if _, err := errDir.Output(); err != nil{
-					fmt.Println("err",errDir, errDir.Stdout)
-					//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+					//fmt.Println("err",errDir, errDir.Stdout)
+					fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 					//log.Fatal(err)
 				} else {
 					fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
@@ -6771,15 +6797,28 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				//}
 				//errDir = exec.Command("git", "--git-dir="+GitDir, "subtree", "pull", "--prefix", OrgPath, RepoPath, "master", "--squash", "-m", "Comment")
 				RepoPath = RepoName
+				//var out bytes.Buffer
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
 					errDir = exec.Command("powershell", "-command", cmd)
+					errDir.Stderr = &out
+					errDir.Stdout = &out
+					err = errDir.Run()
+					//ErrDir := out.String()
+					//OutDir := out.String()
+					//fmt.Println("err1",errDir, errDir.Stdout, ErrDir, OutDir)
+					//fmt.Println("err2",ErrDir)
+					//fmt.Println("err3",OutDir)
 				} else {
+					errDir.Stderr = &out
+					errDir.Stdout = &out
+					err = errDir.Run()
 					cmd := "\""+"ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot'"+"\""
 					errDir = exec.Command("sh", "-c", cmd)
 				}
 				if _, err := errDir.Output(); err != nil{
-					fmt.Println("err",errDir, errDir.Stdout)
+
+					fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 					//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 					//log.Fatal(err)
 				} else {
@@ -7786,16 +7825,24 @@ ASGAudit:   list #delete/list`
 							//fmt.Println("test3")
 
 							var errDir *exec.Cmd
+							var out bytes.Buffer
+
 							RepoPath := RepoName
 							if ostype == "windows" {
 								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 								errDir = exec.Command("powershell", "-command", cmd)
+								errDir.Stderr = &out
+								errDir.Stdout = &out
+								err = errDir.Run()
 							} else {
 								cmd := "\""+"" + "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"+"\""
 								errDir = exec.Command("sh", "-c", cmd)
+								errDir.Stderr = &out
+								errDir.Stdout = &out
+								err = errDir.Run()
 							}
 							if _, err := errDir.Output(); err != nil{
-								fmt.Println("err",errDir, errDir.Stdout)
+								fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 								//log.Fatal(err)
 							} else {
 								fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
