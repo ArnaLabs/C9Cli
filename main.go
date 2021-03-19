@@ -714,70 +714,44 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			} else {
 				fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
 			}
-			//sshkey := sshkey
-			//cmd = "ssh-add "+sshkey
-			//sshkeyadd := exec.Command("powershell", "-command", cmd)
-			//if _, err := sshkeyadd.Output(); err != nil{
-			//	fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-			//	log.Fatal(err)
-			//} else {
-			//	fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
-			//}
+
+			cmd = "git config --global user.email 'you@example.com'"
+			gitemail := exec.Command("powershell", "-command", cmd)
+			if _, err := gitemail.Output(); err != nil{
+				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
+			}
+			cmd = "git config --global user.name C9Cli"
+			gituser := exec.Command("powershell", "-command", cmd)
+			if _, err := gituser.Output(); err != nil{
+				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
+				log.Fatal(err)
+			} else {
+				
+				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
+			}
 
 		} else {
 
-			//cmd := "eval $(ssh-agent -s)"
-			//sshagent := exec.Command("sh", "-c", cmd)
-			//if _, err := sshagent.Output(); err != nil{
-			//	fmt.Println("err",sshagent, sshagent.Stdout, sshagent.Stderr)
-			//	log.Fatal(err)
-			//} else {
-			//	fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
-			//}
-			//var cmd string
-		    // sshkey := sshkey
-
-			//cmd1 := "eval $(ssh-agent -s)"
-			//cmd2 := "ssh-agent -s >ssh-agent-environment"
-			//cmd3 := "chmod 700 ssh-agent-environment"
-			//cmd4 := "./ssh-agent-environment"
-			//cmd5 := "env SSH_AUTH_SOCK="+"$"+"SSH_AUTH_SOCK"
-			//sshkeyadd := exec.Command("sh", "-c", cmd1)
-			//if _, err := sshkeyadd.Output(); err != nil{
-			//	fmt.Println("err",sshkeyadd, sshkeyadd.Stdout)
-			//	log.Fatal(err)
-			//} else {
-			//	fmt.Println("Setting up agent: ", sshkeyadd, sshkeyadd.Stdout )
-			//}
-			//sshkeyadd = exec.Command("sh", "-c",cmd2)
-			//if _, err = sshkeyadd.Output(); err != nil{
-			//	fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-			//	log.Fatal(err)
-			//} else {
-			//	fmt.Println(sshkeyadd, sshkeyadd.Stdout )
-		//	}
-		//	sshkeyadd = exec.Command("sh", "-c",cmd3)
-		//	if _, err = sshkeyadd.Output(); err != nil{
-		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-		//		log.Fatal(err)
-		//	} else {
-		//		fmt.Println(sshkeyadd, sshkeyadd.Stdout )
-		//	}
-		//	sshkeyadd = exec.Command("sh", "-c",cmd4)
-		//	if _, err = sshkeyadd.Output(); err != nil{
-		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-		//		log.Fatal(err)
-		//	} else {
-		//		fmt.Println("Setting ENV: ", sshkeyadd, sshkeyadd.Stdout )
-		//	}
-		//	sshkeyadd = exec.Command("sh", "-c",cmd5, "ssh-add",sshkey)
-		//	if _, err = sshkeyadd.Output(); err != nil{
-		//		fmt.Println("err",sshkeyadd, sshkeyadd.Stdout, sshkeyadd.Stderr)
-		//		log.Fatal(err)
-		//	} else {
-		//		fmt.Println("Adding SSH Key: ", sshkeyadd, sshkeyadd.Stdout )
-		//	}
-			cmd := "cat /dev/zero | ssh-keygen -q -N ''"
+			cmd:= "git config --global user.email 'you@example.com'"
+			gitemail := exec.Command("ssh", "-c", cmd)
+			if _, err := gitemail.Output(); err != nil{
+				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
+			}
+			cmd = "git config --global user.name C9Cli"
+			gituser := exec.Command("ssh", "-c", cmd)
+			if _, err := gituser.Output(); err != nil{
+				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
+			}
+			cmd = "cat /dev/zero | ssh-keygen -q -N ''"
 			sshinit := exec.Command("sh", "-c",cmd)
 			if _, err = sshinit.Output(); err != nil{
 				fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
