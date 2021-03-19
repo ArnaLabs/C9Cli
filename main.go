@@ -735,7 +735,7 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 		} else {
 
-			
+
 			cmd := "cat /dev/zero | ssh-keygen -q -N ''"
 			sshinit := exec.Command("sh", "-c",cmd)
 			if _, err = sshinit.Output(); err != nil{
@@ -767,7 +767,7 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 				log.Fatal(err)
 			} else {
 				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
-			}	
+			}
 		}
 	}
 	return err
@@ -792,6 +792,28 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 	} else {
 		var errDir *exec.Cmd
 		var out bytes.Buffer
+		if ostype == "windows" {
+			cmd := "git -C "+cpath+" --git-dir=.git checkout master"
+			errDir = exec.Command("powershell", "-command", cmd)
+			errDir.Stderr = &out
+			//errDir.Stdout = &out
+			err = errDir.Run()
+		} else {
+			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git checkout master'"
+			errDir = exec.Command("sh", "-c", cmd)
+			errDir.Stderr = &out
+			//errDir.Stdout = &out
+			err = errDir.Run()
+		}
+		if _, err := errDir.Output(); err != nil{
+			fmt.Println("err",errDir, errDir.Stderr)
+			//fmt.Println("err",errDir, errDir.Stdout)
+			//log.Fatal(err)
+			out.Reset()
+		} else {
+			fmt.Println("Checkout Master: ", errDir, out.String() )
+			out.Reset()
+		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git pull"
 			errDir = exec.Command("powershell", "-command", cmd)
