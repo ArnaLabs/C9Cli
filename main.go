@@ -388,20 +388,24 @@ type Quotalist struct {
 	Audit string `yaml:"Audit"`
 }
 type List struct {
-	OrgList []string `yaml:"OrgList"`
+	OrgList []struct {
+		Name string `yaml:"Name"`
+		Quota string `yaml:"Quota"`
+	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type GitList struct {
 	OrgList []struct {
 		Name string `yaml:"Name"`
 		Repo string `yaml:"Repo"`
+		Quota string `yaml:"Quota"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type Orglist struct {
 	Org struct {
 		Name     string `yaml:"Name"`
-		Quota    string `yaml:"Quota"`
+		//Quota    string `yaml:"Quota"`
 		OrgUsers struct {
 			LDAP struct {
 				OrgManagers []string `yaml:"OrgManagers"`
@@ -1188,7 +1192,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 					for q := 0; q < LenList; q++ {
 						var OrgName string
 						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-							OrgName = list.OrgList[q]
+							OrgName = list.OrgList[q].Name
 						} else {
 							OrgName = gitlist.OrgList[q].Name
 							//RepoName = gitlist.OrgList[i].Name
@@ -1341,7 +1345,7 @@ func DeleteorAuditSpaces(clustername string, cpath string, ostype string) error 
 	for i := 0; i < LenList; i++ {
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -1599,7 +1603,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 	for i := 0; i < LenList; i++ {
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -2203,7 +2207,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 		var count, totalcount int
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[z]
+			OrgName = list.OrgList[z].Name
 		} else {
 			OrgName = gitlist.OrgList[z].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -3044,7 +3048,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 	for i := 0; i < LenList; i++ {
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -3563,12 +3567,14 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 	for i := 0; i < LenList; i++ {
 
-		var OrgName string
+		var OrgName, QuotaName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
+			QuotaName = list.OrgList[i].Quota
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
+			QuotaName = gitlist.OrgList[i].Quota
 		}
 		var count, totalcount int
 		fmt.Println(" ")
@@ -3755,12 +3761,12 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					if err := json.Unmarshal(fileNameJson, &body); err != nil {
 						panic(err)
 					}
-					if body.Resources[0].Name != Orgs.Org.Quota {
+					if body.Resources[0].Name != QuotaName {
 						fmt.Println("quota -", body.Resources[0].Name)
-						fmt.Println("quota +", Orgs.Org.Quota)
+						fmt.Println("quota +", QuotaName)
 
 						fmt.Println("Updating Org quota")
-						SetQuota := exec.Command("cf", "set-quota", Orgs.Org.Name, Orgs.Org.Quota)
+						SetQuota := exec.Command("cf", "set-quota", Orgs.Org.Name, QuotaName)
 						if _, err := SetQuota.Output(); err != nil{
 							fmt.Println("command: ", SetQuota)
 							fmt.Println("Err: ", SetQuota.Stdout, err)
@@ -3786,12 +3792,12 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						//	fmt.Println("command: ", createorg)
 						fmt.Println(createorg.Stdout)
 					}
-					attachquota := exec.Command("cf", "set-quota", Orgs.Org.Name, Orgs.Org.Quota)
+					attachquota := exec.Command("cf", "set-quota", Orgs.Org.Name, QuotaName)
 					fmt.Println("Attaching Quota")
-					if Orgs.Org.Quota == ""{
-						Orgs.Org.Quota = "default"
+					if QuotaName == ""{
+						QuotaName = "default"
 					}
-					fmt.Println("+", Orgs.Org.Quota)
+					fmt.Println("+", QuotaName)
 					if _, err := attachquota.Output(); err != nil{
 						fmt.Println("command: ", attachquota)
 						fmt.Println("Err: ", attachquota.Stdout, err)
@@ -3944,7 +3950,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -4727,7 +4733,7 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 		var count, totalcount int
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -5420,7 +5426,7 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 		var count, totalcount int
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -6391,7 +6397,7 @@ func CreateOrUpdateSpacesASGs(clustername string, cpath string, ostype string) e
 		var count, totalcount int
 		var OrgName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			//RepoName = gitlist.OrgList[i].Name
@@ -6727,7 +6733,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 	for i := 0; i < LenList; i++ {
 		var OrgName, RepoName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-			OrgName = list.OrgList[i]
+			OrgName = list.OrgList[i].Name
 			//fmt.Println("Org: ", OrgName)
 		} else {
 			OrgName = gitlist.OrgList[i].Name
@@ -7103,7 +7109,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				//checking if org name aleady exists in orglist.yml
 				if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 					for i := 0; i < LenList; i++ {
-						if list.OrgList[i] == OrgNewName {
+						if list.OrgList[i].Name == OrgNewName {
 							count = 1
 						} else {
 							count = 0
@@ -7488,7 +7494,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 			var OrgName, RepoName string
 			if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
 				fmt.Println("Org: ", list.OrgList[i])
-				OrgName = list.OrgList[i]
+				OrgName = list.OrgList[i].Name
 			} else {
 				fmt.Println("Org: ", gitlist.OrgList[i].Name)
 				fmt.Println("Repo: ", gitlist.OrgList[i].Repo)
@@ -8024,19 +8030,25 @@ DefaultRunningSecurityGroup: default_security_group`
 
 		var ListTmp = `---
 OrgList:
-  - Org-1
-  - Org-2
-  - Org-3
+  - Name: Org-1
+    Quota: 
+  - Name: Org-2
+    Quota:
+  - Name: Org-3
+    Quota:
 Audit: list`
 
 		var GitSubTreeListTmp = `---
 OrgList:
   - Name: Org-1
     Repo: Org-1
+    Quota:
   - Name: Org-2
     Repo: Org-2
+    Quota:
   - Name: Org-3
     Repo: Org-3
+    Quota:
 Audit: list`
 
 		fmt.Println("Creating <cluster>/ sample yaml files")
