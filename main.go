@@ -729,29 +729,14 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
 				log.Fatal(err)
 			} else {
-				
+
 				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
 			}
 
 		} else {
 
-			cmd:= "git config --global user.email 'you@example.com'"
-			gitemail := exec.Command("ssh", "-c", cmd)
-			if _, err := gitemail.Output(); err != nil{
-				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
-			}
-			cmd = "git config --global user.name C9Cli"
-			gituser := exec.Command("ssh", "-c", cmd)
-			if _, err := gituser.Output(); err != nil{
-				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
-			}
-			cmd = "cat /dev/zero | ssh-keygen -q -N ''"
+			
+			cmd := "cat /dev/zero | ssh-keygen -q -N ''"
 			sshinit := exec.Command("sh", "-c",cmd)
 			if _, err = sshinit.Output(); err != nil{
 				fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
@@ -767,6 +752,22 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 				} else {
 					fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
 				}
+			cmd = "git config --global user.email 'you@example.com'"
+			gitemail := exec.Command("sh", "-c", cmd)
+			if _, err := gitemail.Output(); err != nil{
+				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
+			}
+			cmd = "git config --global user.name C9Cli"
+			gituser := exec.Command("sh", "-c", cmd)
+			if _, err := gituser.Output(); err != nil{
+				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
+				log.Fatal(err)
+			} else {
+				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
+			}	
 		}
 	}
 	return err
