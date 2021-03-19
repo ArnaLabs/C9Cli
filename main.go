@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -704,6 +704,7 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 	} else {
 		// setup git eval
+
 		if ostype == "windows" {
 
 			cmd := "start-ssh-agent.cmd"
@@ -768,6 +769,30 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			} else {
 				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
 			}
+		}
+		var out bytes.Buffer
+		var errDir *exec.Cmd
+		if ostype == "windows" {
+			cmd := "git -C "+cpath+" --git-dir=.git checkout master"
+			errDir = exec.Command("powershell", "-command", cmd)
+			errDir.Stderr = &out
+			//errDir.Stdout = &out
+			err = errDir.Run()
+		} else {
+			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git checkout master'"
+			errDir = exec.Command("sh", "-c", cmd)
+			errDir.Stderr = &out
+			//errDir.Stdout = &out
+			err = errDir.Run()
+		}
+		if _, err := errDir.Output(); err != nil{
+			fmt.Println("err",errDir, errDir.Stderr)
+			//fmt.Println("err",errDir, errDir.Stdout)
+			//log.Fatal(err)
+			out.Reset()
+		} else {
+			fmt.Println("Checkout Master: ", errDir, out.String() )
+			out.Reset()
 		}
 	}
 	return err
