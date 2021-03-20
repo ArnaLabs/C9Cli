@@ -728,6 +728,25 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 	}
 
+	if ostype == "windows" {
+		cmd := "git clone -q -b "+gitbranch+" "+gitrepo
+		errDir = exec.Command("powershell", "-command", cmd)
+		errDir.Stderr = &out
+
+	} else {
+		cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git clone -q -b "+gitbranch+" "+gitrepo+"'"
+		errDir = exec.Command("sh", "-c", cmd)
+		errDir.Stderr = &out
+
+	}
+	if _, err := errDir.Output(); err != nil{
+		fmt.Println("err",errDir, errDir.Stderr)
+		out.Reset()
+	} else {
+		fmt.Println("Cloning GitRepo: ", errDir, out.String() )
+		out.Reset()
+	}
+
 	ConfigFile := strings.TrimSpace(cpath+"/"+clustername+"/config.yml")
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
@@ -772,27 +791,6 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 		} else {
 			fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
 		}
-	}
-
-	if ostype == "windows" {
-		cmd := "git clone -b "+gitbranch+" "+gitrepo
-		errDir = exec.Command("powershell", "-command", cmd)
-		errDir.Stderr = &out
-		//errDir.Stdout = &out
-		//err = errDir.Run()
-	} else {
-		cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git clone -b "+gitbranch+" "+gitrepo+"'"
-		errDir = exec.Command("sh", "-c", cmd)
-		errDir.Stderr = &out
-		//errDir.Stdout = &out
-		//err = errDir.Run()
-	}
-	if _, err := errDir.Output(); err != nil{
-		fmt.Println("err",errDir, errDir.Stderr)
-		out.Reset()
-	} else {
-		fmt.Println("Cloning GitRepo: ", errDir, out.String() )
-		out.Reset()
 	}
 
 	if ostype == "windows" {
