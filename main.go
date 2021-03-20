@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -485,7 +485,7 @@ type SpaceStateYaml struct {
 }
 func main()  {
 
-	var endpoint, user, pwd, org, space, asg, subtree, githost, sshkey, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
+	var endpoint, user, pwd, org, space, asg, subtree, githost, sshkey, gitrepo, gitbranch, operation, cpath, orgaudit, orgman, spaceaudit, spaceman, spacedev, ostype string
 	var ospath io.Writer
 
 	flag.StringVar(&endpoint, "e", "api.sys-domain", "Use with init operation, Provide PCF Endpoint")
@@ -501,16 +501,43 @@ func main()  {
 	flag.StringVar(&spaceman, "SpaceManager", "false", "Use with init operation, Enable setting up SpaceManagers ?.")
 	flag.StringVar(&spacedev, "SpaceDeveloper", "false", "Use with init operation, Enable setting up SpaceDevelopers ?.")
 	flag.StringVar(&operation, "i", "", "Provide Operation to be performed: init, create-{org,space,org-user,space-user,quota, ")
-	flag.StringVar(&cpath, "k", ".", "Provide path to configs, i.e <cluster-name>, i.e, to config folder, use with all operations")
 	flag.StringVar(&sshkey, "sshkey", "ssh-key.rsa", "path to SSH Key if Submodule is enabled")
 	flag.StringVar(&githost, "githost", "githost.com", "Git Host to be added to knownfile")
-
+	flag.StringVar(&gitrepo, "gr", "githost.com", "Provide SSH Git Repo")
+	flag.StringVar(&gitbranch, "gb", "master", "Provide Git Branch")
 	//flag.StringVar(&statepath, "sp", "ssh-key", "Provide path to create/update state files, use with all operations")
+	//flag.StringVar(&cpath, "k", ".", "Provide path to configs, i.e <cluster-name>, i.e, to config folder, use with all operations")
+
 	flag.Parse()
-
 	ClusterName := strings.ReplaceAll(endpoint, ".", "-")
-
 	fmt.Printf("Operation: %v\n", operation)
+
+	// Pull repo name
+	// git rev-parse --show-toplevel
+	var out bytes.Buffer
+	var errDir *exec.Cmd
+	if ostype == "windows" {
+		//fmt.Println(gitrepo)
+		cmd := gitrepo+".Split('/')[-1].Replace('.git', '')"
+		errDir = exec.Command("powershell", "-command", cmd)
+		//errDir.Stderr = &out
+		errDir.Stdout = &out
+		errDir.Run()
+		cpath = strings.TrimSpace(out.String())
+		cpath = strings.TrimSpace(cpath)
+		fmt.Printf("Repo: %v\n", cpath)
+	} else {
+		//fmt.Println(gitrepo)
+		cmd := "basename "+gitrepo
+		errDir = exec.Command("sh", "-c", cmd)
+		//errDir.Stderr = &out
+		errDir.Stdout = &out
+		errDir.Run()
+		cpath = strings.TrimSpace(out.String())
+		cpath = strings.TrimSpace(cpath)
+		fmt.Printf("Repo: %v\n", cpath)
+	}
+
 
 	oscmd := exec.Command("cmd", "/C","echo","%systemdrive%%homepath%")
 	if _, err := oscmd.Output(); err != nil{
@@ -548,6 +575,8 @@ func main()  {
 		fmt.Printf("Org: %v\n", org)
 		fmt.Printf("Space: %v\n", space)
 		fmt.Printf("EnableASG: %v\n", asg)
+		fmt.Printf("EnableGitSubTree: %v\n", &subtree)
+		fmt.Printf("GitHost: %v\n", &githost)
 		fmt.Printf("EnableOrgAuditor: %v\n", orgaudit)
 		fmt.Printf("EnableOrgManager: %v\n", orgman)
 		fmt.Printf("EnableSpaceAuditor: %v\n", spaceaudit)
@@ -559,106 +588,106 @@ func main()  {
 	} else if operation == "org-init" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		OrgsInit(ClusterName, cpath, ostype, sshkey)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "audit-quota"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteOrAuditQuotas (ClusterName, cpath)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 
 	} else if operation == "audit-org"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteorAuditOrgs (ClusterName, cpath)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "audit-space"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteorAuditSpaces (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	}  else if operation == "audit-org-user"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteorAuditOrgUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "audit-space-user"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteOrAuditSpaceUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "audit-space-asg"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		DeleteOrAuditSpacesASGs (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "create-org"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateOrgs (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "create-quota" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateQuotas(ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
 
 	} else if operation == "create-org-user" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateOrgUsers(ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
 
 	} else if operation == "create-space"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateSpaces (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else if operation == "create-space-user"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateSpaceUsers (ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
 
 	} else if operation == "create-protected-org-asg"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateProtOrgAsg (ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
 
 	} else if operation == "create-space-asg"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateSpacesASGs (ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
 
 	}else if operation == "create-all" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
-		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype)
+		SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		CreateOrUpdateProtOrgAsg (ClusterName, cpath, ostype)
 		CreateOrUpdateQuotas(ClusterName, cpath, ostype)
 		CreateOrUpdateOrgs (ClusterName, cpath, ostype)
@@ -666,32 +695,142 @@ func main()  {
 		CreateOrUpdateSpaces (ClusterName, cpath, ostype)
 		CreateOrUpdateSpacesASGs (ClusterName, cpath, ostype)
 		CreateOrUpdateSpaceUsers (ClusterName, cpath, ostype)
-		GitPush(ClusterName, ostype, cpath, sshkey)
+		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
 	} else {
 		fmt.Println("Provide Valid input operation")
 	}
 }
-func SetupConnection(clustername string, pwd string, cpath string, sshkey string, ostype string) error {
+func SetupConnection(clustername string, pwd string, cpath string, sshkey string, ostype string, gitrepo string, gitbranch string) error {
 
-	var InitClusterConfigVals InitClusterConfigVals
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	//Git Clone
+	fmt.Printf("Git Repo: %v\n", gitrepo)
+	fmt.Printf("Git Branch: %v\n", gitbranch)
+	var out bytes.Buffer
+	var errDir *exec.Cmd
 
+
+	//fmt.Println(InitClusterConfigVals.ClusterDetails.EndPoint)
+	//fmt.Printf("Pwd: %v\n", pwd)
+
+	if ostype == "windows" {
+
+		cmd := "start-ssh-agent.cmd"
+		sshagent := exec.Command("powershell", "-command", cmd)
+		if _, err := sshagent.Output(); err != nil{
+			fmt.Println("err",sshagent, sshagent.Stdout, sshagent.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
+		}
+
+	} else {
+
+	}
+
+	if ostype == "windows" {
+		cmd := "git clone -b "+gitbranch+" "+gitrepo
+		errDir = exec.Command("powershell", "-command", cmd)
+		errDir.Stderr = &out
+		//errDir.Stdout = &out
+		//err = errDir.Run()
+	} else {
+		cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git clone -b "+gitbranch+" "+gitrepo+"'"
+		errDir = exec.Command("sh", "-c", cmd)
+		errDir.Stderr = &out
+		//errDir.Stdout = &out
+		//err = errDir.Run()
+	}
+	if _, err := errDir.Output(); err != nil{
+		fmt.Println("err",errDir, errDir.Stderr)
+		out.Reset()
+	} else {
+		fmt.Println("Cloning GitRepo: ", errDir, out.String() )
+		out.Reset()
+	}
+
+	if ostype == "windows" {
+		cmd := "git config --global user.email 'you@example.com'"
+		gitemail := exec.Command("powershell", "-command", cmd)
+		if _, err := gitemail.Output(); err != nil{
+			fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
+		}
+		cmd = "git config --global user.name C9Cli"
+		gituser := exec.Command("powershell", "-command", cmd)
+		if _, err := gituser.Output(); err != nil{
+			fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
+		}
+	} else {
+		cmd := "git config --global user.email 'you@example.com'"
+		gitemail := exec.Command("sh", "-c", cmd)
+		if _, err := gitemail.Output(); err != nil{
+			fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
+		}
+		cmd = "git config --global user.name C9Cli"
+		gituser := exec.Command("sh", "-c", cmd)
+		if _, err := gituser.Output(); err != nil{
+			fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
+		}
+	}
+
+	ConfigFile := strings.TrimSpace(cpath+"/"+clustername+"/config.yml")
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
+
 		fmt.Println(err)
 	}
 
+	var InitClusterConfigVals InitClusterConfigVals
 	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("Endpoint: %v\n", InitClusterConfigVals.ClusterDetails.EndPoint)
 	fmt.Printf("User: %v\n", InitClusterConfigVals.ClusterDetails.User)
-	//fmt.Printf("Pwd: %v\n", pwd)
 	fmt.Printf("Org: %v\n", InitClusterConfigVals.ClusterDetails.Org)
 	fmt.Printf("Space: %v\n", InitClusterConfigVals.ClusterDetails.Space)
-	//fmt.Println(InitClusterConfigVals.ClusterDetails.EndPoint)
+	fmt.Printf("EnableASG: %v\n", InitClusterConfigVals.ClusterDetails.EnableASG)
+	fmt.Printf("GitHost: %v\n", InitClusterConfigVals.ClusterDetails.GitHost)
+	fmt.Printf("SetOrgAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgAuditor)
+	fmt.Printf("SetOrgManager: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgManager)
+	fmt.Printf("SetSpaceAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceAuditor)
+	fmt.Printf("SetSpaceManager: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceManager)
+	fmt.Printf("SetSpaceDeveloper: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceDeveloper)
+
+	if ostype == "windows" {
+
+	} else {
+
+		cmd := "cat /dev/zero | ssh-keygen -q -N ''"
+		sshinit := exec.Command("sh", "-c",cmd)
+		if _, err := sshinit.Output(); err != nil{
+			fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
+		}
+		cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
+		sshfingerprint := exec.Command("sh", "-c",cmd)
+		if _, err = sshfingerprint.Output(); err != nil{
+			fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
+		}
+	}
+
 
 	cmd := exec.Command("cf", "login", "-a", InitClusterConfigVals.ClusterDetails.EndPoint, "-u", InitClusterConfigVals.ClusterDetails.User, "-p", pwd, "-o", InitClusterConfigVals.ClusterDetails.Org, "-s", InitClusterConfigVals.ClusterDetails.Space, "--skip-ssl-validation")
 	if _, err := cmd.Output(); err != nil{
@@ -704,104 +843,14 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 		//fmt.Println("command: ", cmd)
 		fmt.Println(cmd.Stdout)
 	}
-	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 
-	} else {
+	//if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+	//} else {
 		// setup git eval
-
-		if ostype == "windows" {
-
-			cmd := "start-ssh-agent.cmd"
-			sshagent := exec.Command("powershell", "-command", cmd)
-			if _, err := sshagent.Output(); err != nil{
-				fmt.Println("err",sshagent, sshagent.Stdout, sshagent.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup SSH Agent: ", sshagent, sshagent.Stdout )
-			}
-
-			cmd = "git config --global user.email 'you@example.com'"
-			gitemail := exec.Command("powershell", "-command", cmd)
-			if _, err := gitemail.Output(); err != nil{
-				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
-			}
-			cmd = "git config --global user.name C9Cli"
-			gituser := exec.Command("powershell", "-command", cmd)
-			if _, err := gituser.Output(); err != nil{
-				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
-				log.Fatal(err)
-			} else {
-
-				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
-			}
-
-		} else {
-
-
-			cmd := "cat /dev/zero | ssh-keygen -q -N ''"
-			sshinit := exec.Command("sh", "-c",cmd)
-			if _, err = sshinit.Output(); err != nil{
-				fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
-			}
-			cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
-			sshfingerprint := exec.Command("sh", "-c",cmd)
-				if _, err = sshfingerprint.Output(); err != nil{
-					fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
-					log.Fatal(err)
-				} else {
-					fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
-				}
-			cmd = "git config --global user.email 'you@example.com'"
-			gitemail := exec.Command("sh", "-c", cmd)
-			if _, err := gitemail.Output(); err != nil{
-				fmt.Println("err",gitemail, gitemail.Stdout, gitemail.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup Git Email: ", gitemail, gitemail.Stdout )
-			}
-			cmd = "git config --global user.name C9Cli"
-			gituser := exec.Command("sh", "-c", cmd)
-			if _, err := gituser.Output(); err != nil{
-				fmt.Println("err",gituser, gituser.Stdout, gituser.Stderr)
-				log.Fatal(err)
-			} else {
-				fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
-			}
-		}
-		var out bytes.Buffer
-		var errDir *exec.Cmd
-		if ostype == "windows" {
-			cmd := "git -C "+cpath+" --git-dir=.git checkout master"
-			errDir = exec.Command("powershell", "-command", cmd)
-			errDir.Stderr = &out
-			//errDir.Stdout = &out
-			err = errDir.Run()
-		} else {
-			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git checkout master'"
-			errDir = exec.Command("sh", "-c", cmd)
-			errDir.Stderr = &out
-			//errDir.Stdout = &out
-			err = errDir.Run()
-		}
-		if _, err := errDir.Output(); err != nil{
-			fmt.Println("err",errDir, errDir.Stderr)
-			//fmt.Println("err",errDir, errDir.Stdout)
-			//log.Fatal(err)
-			out.Reset()
-		} else {
-			fmt.Println("Checkout Master: ", errDir, out.String() )
-			out.Reset()
-		}
-	}
+	//}
 	return err
 }
-func GitPush(clustername string, ostype string, cpath string, sshkey string) error {
+func GitPush(clustername string, ostype string, cpath string, sshkey string, gitbranch string) error {
 
 	var InitClusterConfigVals InitClusterConfigVals
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
@@ -816,116 +865,115 @@ func GitPush(clustername string, ostype string, cpath string, sshkey string) err
 		panic(err)
 	}
 
-	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 
 	} else {
 		var errDir *exec.Cmd
 		var out bytes.Buffer
 		if ostype == "windows" {
-			cmd := "git -C "+cpath+" --git-dir=.git checkout master"
+			cmd := "git -C "+cpath+" --git-dir=.git checkout "+gitbranch
 			errDir = exec.Command("powershell", "-command", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		} else {
-			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git checkout master'"
+			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git checkout "+gitbranch+"'"
 			errDir = exec.Command("sh", "-c", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			fmt.Println("err",errDir, errDir.Stderr)
-			//fmt.Println("err",errDir, errDir.Stdout)
-			//log.Fatal(err)
+			fmt.Println(errDir, errDir.Stderr)
 			out.Reset()
 		} else {
-			fmt.Println("Checkout Master: ", errDir, out.String() )
+			fmt.Println("Checkout Master: ", errDir, out.String(), errDir.Stdout)
 			out.Reset()
 		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git pull"
 			errDir = exec.Command("powershell", "-command", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		} else {
 			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git pull'"
 			errDir = exec.Command("sh", "-c", cmd)
 			errDir.Stderr = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			fmt.Println("err",errDir,errDir.Stderr)
+			fmt.Println(errDir,errDir.Stderr)
 			out.Reset()
 		} else {
-			fmt.Println("Pulling Repo: ", errDir, out.String() )
+			fmt.Println("Pulling Repo: ", errDir, out.String(), errDir.Stdout )
 			out.Reset()
 		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git add ."
 			errDir = exec.Command("powershell", "-command", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		} else {
 			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git add .'"
 			errDir = exec.Command("sh", "-c", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			fmt.Println("err",errDir,errDir.Stderr)
+			fmt.Println(errDir,errDir.Stderr)
 			out.Reset()
-			//fmt.Println("err",errDir, errDir.Stdout)
+			//fmt.Println(errDir, out.String(),errDir.Stdout)
 			//log.Fatal(err)
 		} else {
-			fmt.Println("Adding Changes: ", errDir, out.String() )
+			fmt.Println("Adding Changes: ", errDir, out.String(),errDir.Stdout )
 			out.Reset()
 		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git commit -m 'Adding-Cluster-Updates'"
 			errDir = exec.Command("powershell", "-command", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		} else {
 			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git commit -m Adding-Cluster-Updates'"
 			errDir = exec.Command("sh", "-c", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
 			//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-			fmt.Println("err",errDir, errDir.Stderr)
+			fmt.Println(errDir, errDir.Stderr)
 			out.Reset()
 			//log.Fatal(err)
 		} else {
-			fmt.Println("Adding Commits: ", errDir, out.String() )
+			fmt.Println("Adding Commits: ", errDir, out.String(), errDir.Stdout )
 			out.Reset()
 		}
 		if ostype == "windows" {
 			cmd := "git -C "+cpath+" --git-dir=.git push"
 			errDir = exec.Command("powershell", "-command", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		} else {
 			cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git push'"
 			errDir = exec.Command("sh", "-c", cmd)
 			errDir.Stderr = &out
-			//errDir.Stdout = &out
+			errDir.Stdout = &out
 			err = errDir.Run()
 		}
 		if _, err := errDir.Output(); err != nil{
-			fmt.Println("err",errDir, errDir.Stderr)
+			fmt.Println(errDir, errDir.Stderr)
 			//fmt.Println("err",errDir, errDir.Stdout)
 			//log.Fatal(err)
 			out.Reset()
 		} else {
-			fmt.Println("Pushing Changes: ", errDir, out.String() )
+			fmt.Println("Pushing Changes: ", errDir, out.String(), errDir.Stdout )
 			out.Reset()
 		}
 	}
@@ -6790,107 +6838,56 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 
 
 			} else {
-				//resethead := exec.Command("git", "reset", "heard")
-				//resethead.Run()
-				//fmt.Println("test0")
-				//var GitDir string
-				//cmd := "git --git-dir="+GitDir+" --work-tree="+cpath+" subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
-				//cmd := "git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
-				//errDir := exec.Command("git", "subtree", "add", "--prefix", clustername+"/"+OrgName, RepoPath,"master", "--squash")
-				var errDir *exec.Cmd
+					var errDir *exec.Cmd
 				var out bytes.Buffer
 				RepoPath := RepoName
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 					errDir = exec.Command("powershell", "-command", cmd)
 					errDir.Stderr = &out
-					//errDir.Stdout = &out
+					errDir.Stdout = &out
 					err = errDir.Run()
 				} else {
 					cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"
 					errDir = exec.Command("sh", "-c", cmd)
 					errDir.Stderr = &out
-					//errDir.Stdout = &out
+					errDir.Stdout = &out
 					err = errDir.Run()
 				}
 				if _, err := errDir.Output(); err != nil{
 					//fmt.Println("err",errDir, errDir.Stdout)
-					fmt.Println("err",errDir, errDir.Stderr)
+					fmt.Println(errDir, errDir.Stderr)
 					out.Reset()
 					//log.Fatal(err)
 				} else {
-					fmt.Println("Adding Org Repo: ", errDir, out.String())
+					fmt.Println("Adding Org Repo: ", errDir, out.String(), errDir.Stdout)
 					out.Reset()
 				}
-				//cmd = "git -C "+cpath+" --git-dir=.git add ."
-				//if ostype == "windows" {
-				//	errDir = exec.Command("powershell", "-command", cmd)
-				//} else {
-				//	errDir = exec.Command("sh", "-c", cmd)
-				//}
-				//cmd = "git -C "+cpath+" --git-dir=.git commit -m 'Adding repo'"
-				//if ostype == "windows" {
-				//	errDir = exec.Command("powershell", "-command", cmd)
-				//} else {
-				//	errDir = exec.Command("sh", "-c", cmd)
-				//}
-				//if _, err := errDir.Output(); err != nil{
-				//fmt.Println("err",errDir, errDir.Stdout)
-				//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
-				//log.Fatal(err)
-				//} else {
-				//	fmt.Println("Adding Org Repo: ", errDir, errDir.Stdout )
-				//}
-				//fmt.Println("test1")
-				//OrgPath = cpath + "/" + clustername + "/" + OrgName
-				//if ostype == "windows" {
-				//	GitDir = cpath + "\\"+".git"
-				//} else {
-				//	GitDir = cpath + "/.git"
-				//}
-				//errDir = exec.Command("git", "--git-dir="+GitDir, "subtree", "pull", "--prefix", OrgPath, RepoPath, "master", "--squash", "-m", "Comment")
 				RepoPath = RepoName
-				//var out bytes.Buffer
 				if ostype == "windows" {
 					cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
 					errDir = exec.Command("powershell", "-command", cmd)
 					errDir.Stderr = &out
-					//errDir.Stdout = &out
+					errDir.Stdout = &out
 					err = errDir.Run()
-					//ErrDir := out.String()
-					//OutDir := out.String()
-					//fmt.Println("err1",errDir, errDir.Stdout, ErrDir, OutDir)
-					//fmt.Println("err2",ErrDir)
-					//fmt.Println("err3",OutDir)
+
 				} else {
 					cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot'"
 					errDir = exec.Command("sh", "-c", cmd)
 					errDir.Stderr = &out
-					//errDir.Stdout = &out
+					errDir.Stdout = &out
 					err = errDir.Run()
 				}
 				if _, err := errDir.Output(); err != nil{
 
-					fmt.Println("err",errDir, errDir.Stderr)
+					fmt.Println(errDir, errDir.Stderr)
 					out.Reset()
 					//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
 					//log.Fatal(err)
 				} else {
-					fmt.Println("Pulling Org Repo: ", errDir, out.String() )
+					fmt.Println("Pulling Org Repo: ", errDir, out.String(), errDir.Stdout )
 					out.Reset()
 				}
-				//cmd = "git -C "+cpath+" --git-dir=.git add ."
-				//if ostype == "windows" {
-				//	errDir = exec.Command("powershell", "-command", cmd)
-				//} else {
-				//	errDir = exec.Command("sh", "-c", cmd)
-				//}
-				//cmd = "git -C "+cpath+" --git-dir=.git commit -m 'pulling repo'"
-				//if ostype == "windows" {
-				//	errDir = exec.Command("powershell", "-command", cmd)
-				//} else {
-				//	errDir = exec.Command("sh", "-c", cmd)
-				//}
 			}
 
 			if OrgNewName == OrgOldName {
@@ -7888,21 +7885,21 @@ ASGAudit:   list #delete/list`
 								cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
 								errDir = exec.Command("powershell", "-command", cmd)
 								errDir.Stderr = &out
-								//errDir.Stdout = &out
+								errDir.Stdout = &out
 								err = errDir.Run()
 							} else {
 								cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"
 								errDir = exec.Command("sh", "-c", cmd)
 								errDir.Stderr = &out
-								//errDir.Stdout = &out
+								errDir.Stdout = &out
 								err = errDir.Run()
 							}
 							if _, err := errDir.Output(); err != nil{
-								fmt.Println("err",errDir, errDir.Stderr)
+								fmt.Println(errDir, errDir.Stderr)
 								//log.Fatal(err)
 								out.Reset()
 							} else {
-								fmt.Println("Adding Org Repo: ", errDir, out.String() )
+								fmt.Println("Adding Org Repo: ", errDir, out.String(), errDir.Stdout )
 								out.Reset()
 							}
 						}
