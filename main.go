@@ -735,13 +735,13 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
 		}
 
-		cmd = "echo -e 'StrictHostKeyChecking no' >> ~/.ssh/config"
+		cmd = "echo 'StrictHostKeyChecking no' >> ~/.ssh/config"
 		nofg := exec.Command("sh", "-c",cmd)
 		if _, err := nofg.Output(); err != nil{
 			fmt.Println("err",nofg, nofg.Stdout, nofg.Stderr)
 			log.Fatal(err)
 		} else {
-			fmt.Println("SSH init: ", nofg, nofg.Stdout )
+			fmt.Println(nofg, nofg.Stdout )
 		}
 	}
 
