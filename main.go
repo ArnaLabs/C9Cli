@@ -728,6 +728,52 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 	}
 
+	ConfigFile := strings.TrimSpace(cpath+"/"+clustername+"/config.yml")
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+
+		fmt.Println(err)
+	}
+
+	var InitClusterConfigVals InitClusterConfigVals
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Endpoint: %v\n", InitClusterConfigVals.ClusterDetails.EndPoint)
+	fmt.Printf("User: %v\n", InitClusterConfigVals.ClusterDetails.User)
+	fmt.Printf("Org: %v\n", InitClusterConfigVals.ClusterDetails.Org)
+	fmt.Printf("Space: %v\n", InitClusterConfigVals.ClusterDetails.Space)
+	fmt.Printf("EnableASG: %v\n", InitClusterConfigVals.ClusterDetails.EnableASG)
+	fmt.Printf("GitHost: %v\n", InitClusterConfigVals.ClusterDetails.GitHost)
+	fmt.Printf("SetOrgAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgAuditor)
+	fmt.Printf("SetOrgManager: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgManager)
+	fmt.Printf("SetSpaceAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceAuditor)
+	fmt.Printf("SetSpaceManager: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceManager)
+	fmt.Printf("SetSpaceDeveloper: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceDeveloper)
+
+	if ostype == "windows" {
+
+	} else {
+
+		cmd := "cat /dev/zero | ssh-keygen -q -N ''"
+		sshinit := exec.Command("sh", "-c",cmd)
+		if _, err := sshinit.Output(); err != nil{
+			fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
+		}
+		cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
+		sshfingerprint := exec.Command("sh", "-c",cmd)
+		if _, err = sshfingerprint.Output(); err != nil{
+			fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
+		}
+	}
+
 	if ostype == "windows" {
 		cmd := "git clone -b "+gitbranch+" "+gitrepo
 		errDir = exec.Command("powershell", "-command", cmd)
@@ -784,53 +830,6 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 			fmt.Println("Setup Git User: ", gituser, gituser.Stdout )
 		}
 	}
-
-	ConfigFile := strings.TrimSpace(cpath+"/"+clustername+"/config.yml")
-	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
-	if err != nil {
-
-		fmt.Println(err)
-	}
-
-	var InitClusterConfigVals InitClusterConfigVals
-	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Endpoint: %v\n", InitClusterConfigVals.ClusterDetails.EndPoint)
-	fmt.Printf("User: %v\n", InitClusterConfigVals.ClusterDetails.User)
-	fmt.Printf("Org: %v\n", InitClusterConfigVals.ClusterDetails.Org)
-	fmt.Printf("Space: %v\n", InitClusterConfigVals.ClusterDetails.Space)
-	fmt.Printf("EnableASG: %v\n", InitClusterConfigVals.ClusterDetails.EnableASG)
-	fmt.Printf("GitHost: %v\n", InitClusterConfigVals.ClusterDetails.GitHost)
-	fmt.Printf("SetOrgAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgAuditor)
-	fmt.Printf("SetOrgManager: %v\n", InitClusterConfigVals.ClusterDetails.SetOrgManager)
-	fmt.Printf("SetSpaceAuditor: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceAuditor)
-	fmt.Printf("SetSpaceManager: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceManager)
-	fmt.Printf("SetSpaceDeveloper: %v\n", InitClusterConfigVals.ClusterDetails.SetSpaceDeveloper)
-
-	if ostype == "windows" {
-
-	} else {
-
-		cmd := "cat /dev/zero | ssh-keygen -q -N ''"
-		sshinit := exec.Command("sh", "-c",cmd)
-		if _, err := sshinit.Output(); err != nil{
-			fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
-			log.Fatal(err)
-		} else {
-			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
-		}
-		cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
-		sshfingerprint := exec.Command("sh", "-c",cmd)
-		if _, err = sshfingerprint.Output(); err != nil{
-			fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
-			log.Fatal(err)
-		} else {
-			fmt.Println("Adding host to knowhosts: ", sshfingerprint, sshfingerprint.Stdout )
-		}
-	}
-
 
 	cmd := exec.Command("cf", "login", "-a", InitClusterConfigVals.ClusterDetails.EndPoint, "-u", InitClusterConfigVals.ClusterDetails.User, "-p", pwd, "-o", InitClusterConfigVals.ClusterDetails.Org, "-s", InitClusterConfigVals.ClusterDetails.Space, "--skip-ssl-validation")
 	if _, err := cmd.Output(); err != nil{
