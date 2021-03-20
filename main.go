@@ -726,6 +726,23 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 	} else {
 
+		cmd := "cat /dev/zero | ssh-keygen -q -N ''"
+		sshinit := exec.Command("sh", "-c",cmd)
+		if _, err := sshinit.Output(); err != nil{
+			fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
+		}
+
+		cmd = "echo -e 'StrictHostKeyChecking no' >> ~/.ssh/config"
+		nofg := exec.Command("sh", "-c",cmd)
+		if _, err := nofg.Output(); err != nil{
+			fmt.Println("err",nofg, nofg.Stdout, nofg.Stderr)
+			log.Fatal(err)
+		} else {
+			fmt.Println("SSH init: ", nofg, nofg.Stdout )
+		}
 	}
 
 	if ostype == "windows" {
@@ -775,15 +792,7 @@ func SetupConnection(clustername string, pwd string, cpath string, sshkey string
 
 	} else {
 
-		cmd := "cat /dev/zero | ssh-keygen -q -N ''"
-		sshinit := exec.Command("sh", "-c",cmd)
-		if _, err := sshinit.Output(); err != nil{
-			fmt.Println("err",sshinit, sshinit.Stdout, sshinit.Stderr)
-			log.Fatal(err)
-		} else {
-			fmt.Println("SSH init: ", sshinit, sshinit.Stdout )
-		}
-		cmd = "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
+		cmd := "ssh-keyscan -H "+InitClusterConfigVals.ClusterDetails.GitHost+" > ~/.ssh/known_hosts"
 		sshfingerprint := exec.Command("sh", "-c",cmd)
 		if _, err = sshfingerprint.Output(); err != nil{
 			fmt.Println("err",sshfingerprint, sshfingerprint.Stdout, sshfingerprint.Stderr)
