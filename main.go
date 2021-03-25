@@ -466,6 +466,7 @@ type InitClusterConfigVals struct {
 		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
 		SetSpaceManager bool	`yaml:"SetSpaceManager"`
 		SetSpaceDeveloper bool	`yaml:"SetSpaceDeveloper"`
+		SSOProvider string `yaml:"SSOProvider"`
 	} `yaml:"ClusterDetails"`
 }
 type OrgStateYaml struct {
@@ -1797,7 +1798,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									} else {
 										username := usedetails.Resources[0].Username
 										origin := usedetails.Resources[0].Origin
-										if origin == "sso" {
+										SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
+										if origin == SSOProvider {
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOManagers; q++ {
 
@@ -2015,7 +2017,8 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 									} else {
 										username := usedetails.Resources[0].Username
 										origin := usedetails.Resources[0].Origin
-										if origin == "sso" {
+										SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
+										if origin == SSOProvider {
 											if err == nil {
 												for q := 0; q < OrgUsLenSSOAuditor; q++ {
 													//fmt.Println("SSO Audit Usr: ", strings.ToLower(Orgs.Org.OrgUsers.SSO.OrgAuditors[q]), ",", username)
@@ -2410,7 +2413,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											} else {
 												username := usedetails.Resources[0].Username
 												origin := usedetails.Resources[0].Origin
-												if origin == "sso" {
+												SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
+												if origin == SSOProvider {
 													if err == nil {
 														for q := 0; q < SpaceUsLenSSOAuditor; q++ {
 															if strings.TrimSpace(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[q]) == username {
@@ -2629,7 +2633,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											} else {
 												username := usedetails.Resources[0].Username
 												origin := usedetails.Resources[0].Origin
-												if origin == "sso" {
+												SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
+												if origin == SSOProvider {
 													if err == nil {
 														for q := 0; q < SpaceUsLenSSODeveloper; q++ {
 
@@ -2852,7 +2857,8 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 											} else {
 												username := usedetails.Resources[0].Username
 												origin := usedetails.Resources[0].Origin
-												if origin == "sso" {
+												SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
+												if origin == SSOProvider {
 													if err == nil {
 														for q := 0; q < SpaceUsLenSSOMan; q++ {
 
@@ -4769,9 +4775,6 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 
 	}
 
-
-
-
 	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
@@ -5069,15 +5072,16 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 								}
 
 								SSOOrgManLen := len(Orgs.Org.OrgUsers.SSO.OrgManagers)
+								SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
 								for j := 0; j < SSOOrgManLen; j++ {
 
 									var getspace *exec.Cmd
 
 									if ostype == "windows" {
-										path := "\""+"/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgManagers[j] + "&origins=sso"+"\""
+										path := "\""+"/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgManagers[j] + "&origins="+SSOProvider+"\""
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									} else {
-										path := "/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgManagers[j] + "&origins=sso"
+										path := "/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgManagers[j] + "&origins="+SSOProvider
 										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
@@ -5319,15 +5323,16 @@ func CreateOrUpdateOrgUsers(clustername string, cpath string, ostype string) err
 								}
 
 								SSOOrgAudLen := len(Orgs.Org.OrgUsers.SSO.OrgAuditors)
+								SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
 								for j := 0; j < SSOOrgAudLen; j++ {
 
 									var getspace *exec.Cmd
 
 									if ostype == "windows" {
-										path := "\""+"/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgAuditors[j] + "&origins=sso"+"\""
+										path := "\""+"/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgAuditors[j] + "&origins="+SSOProvider+"\""
 										getspace = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									} else {
-										path := "/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgAuditors[j] + "&origins=sso"
+										path := "/v3/users/?usernames=" + Orgs.Org.OrgUsers.SSO.OrgAuditors[j] + "&origins="+SSOProvider
 										getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgsUsers_userguidfind.json")
 									}
 
@@ -5783,14 +5788,15 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 									}
 
 									SSOSpaceManLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers)
+									SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
 									for k := 0; k < SSOSpaceManLen; k++ {
 
 										var getspace *exec.Cmd
 										if ostype == "windows" {
-											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k] + "&origins=sso"+"\""
+											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k] + "&origins="+SSOProvider+"\""
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k] + "&origins=sso"
+											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceManagers[k] + "&origins="+SSOProvider
 											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
@@ -6029,14 +6035,15 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 									}
 
 									SSOSpaceAuditLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors)
+									SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
 									for k := 0; k < SSOSpaceAuditLen; k++ {
 
 										var getspace *exec.Cmd
 										if ostype == "windows" {
-											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k] + "&origins=sso"+"\""
+											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k] + "&origins="+SSOProvider+"\""
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k] + "&origins=sso"
+											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceAuditors[k] + "&origins="+SSOProvider
 											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
@@ -6273,15 +6280,16 @@ func CreateOrUpdateSpaceUsers(clustername string, cpath string, ostype string) e
 									}
 
 									SSOSpaceDevLen := len(Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers)
+									SSOProvider := InitClusterConfigVals.ClusterDetails.SSOProvider
 									for k := 0; k < SSOSpaceDevLen; k++ {
 
 										var getspace *exec.Cmd
 
 										if ostype == "windows" {
-											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k] + "&origins=sso"+"\""
+											path := "\""+"/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k] + "&origins="+SSOProvider+"\""
 											getspace = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										} else {
-											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k] + "&origins=sso"
+											path := "/v3/users/?usernames=" + Orgs.Org.Spaces[j].SpaceUsers.SSO.SpaceDevelopers[k] + "&origins="+SSOProvider
 											getspace = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaceUsers_userguidfind.json")
 										}
 
@@ -7940,6 +7948,7 @@ func Init(clustername string, endpoint string, user string, org string, space st
 		SetSpaceAuditor string	`yaml:"SetSpaceAuditor"`
 		SetSpaceManager string	`yaml:"SetSpaceManager"`
 		SetSpaceDeveloper string	`yaml:"SetSpaceDeveloper"`
+		SSOProvider string `yaml:"SSOProvider"`
 	}
 
 	// Cluster configs
@@ -7971,13 +7980,14 @@ ClusterDetails:
   SetOrgManager: {{ .SetOrgManager }}
   SetSpaceAuditor: {{ .SetSpaceAuditor }}
   SetSpaceManager: {{ .SetSpaceManager }}
-  SetSpaceDeveloper: {{ .SetSpaceDeveloper }}`
+  SetSpaceDeveloper: {{ .SetSpaceDeveloper }}
+  SSOProvider: {{ .SSOProvider }}`
 
 		// Create the file:
 		err = ioutil.WriteFile(mgmtpath+"/config.tmpl", []byte(data), 0644)
 		check(err)
 
-		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, GitHost: githost, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev}
+		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, GitHost: githost, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev, SSOProvider: "testsso"}
 
 		var templates *template.Template
 		var allFiles []string
