@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -520,6 +520,10 @@ func main()  {
 	var errDir *exec.Cmd
 	if ostype == "windows" {
 		//fmt.Println(gitrepo)
+		if gitrepo == "" {
+			fmt.Println("Please provide SSH Git Repo")
+			panic("")
+		}
 		cmd := gitrepo+".Split('/')[-1].Replace('.git', '')"
 		errDir = exec.Command("powershell", "-command", cmd)
 		//errDir.Stderr = &out
@@ -531,6 +535,10 @@ func main()  {
 	} else {
 		//fmt.Println(gitrepo)
 		cmd := "basename "+gitrepo
+		if gitrepo == "" {
+			fmt.Println("Please provide SSH Git Repo")
+			panic("")
+		}
 		errDir = exec.Command("sh", "-c", cmd)
 		//errDir.Stderr = &out
 		errDir.Stdout = &out
@@ -7975,6 +7983,7 @@ ClusterDetails:
   EnableASG: {{ .EnableASG }}
   EnableGitSubTree: {{ .EnableGitSubTree }}
   GitHost: {{ .GitHost }}
+  GitSSHKey: {{ .GitSSHKey }}
   SetOrgAuditor: {{ .SetOrgAuditor }}
   SetOrgManager: {{ .SetOrgManager }}
   SetSpaceAuditor: {{ .SetSpaceAuditor }}
