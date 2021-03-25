@@ -505,7 +505,7 @@ func main()  {
 	flag.StringVar(&operation, "i", "", "Provide Operation to be performed: init, create-{org,space,org-user,space-user,quota, ")
 	flag.StringVar(&sshkey, "sshkey", "ssh-key.rsa", "path to SSH Key if Submodule is enabled")
 	flag.StringVar(&githost, "githost", "githost.com", "Git Host to be added to knownfile")
-	flag.StringVar(&gitrepo, "gr", "githost.com", "Provide SSH Git Repo")
+	flag.StringVar(&gitrepo, "gr", "", "Provide SSH Git Repo")
 	flag.StringVar(&gitbranch, "gb", "master", "Provide Git Branch")
 	//flag.StringVar(&statepath, "sp", "ssh-key", "Provide path to create/update state files, use with all operations")
 	//flag.StringVar(&cpath, "k", ".", "Provide path to configs, i.e <cluster-name>, i.e, to config folder, use with all operations")
