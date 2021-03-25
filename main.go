@@ -7975,7 +7975,6 @@ ClusterDetails:
   EnableASG: {{ .EnableASG }}
   EnableGitSubTree: {{ .EnableGitSubTree }}
   GitHost: {{ .GitHost }}
-  GitSSHKey: {{ .GitSSHKey }}
   SetOrgAuditor: {{ .SetOrgAuditor }}
   SetOrgManager: {{ .SetOrgManager }}
   SetSpaceAuditor: {{ .SetSpaceAuditor }}
