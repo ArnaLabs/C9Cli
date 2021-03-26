@@ -534,7 +534,7 @@ func main()  {
 		fmt.Printf("Repo: %v\n", cpath)
 	} else {
 		//fmt.Println(gitrepo)
-		cmd := "basename "+gitrepo
+		cmd := "basename "+gitrepo+" | sed '/.git//g'"
 		if gitrepo == "" {
 			fmt.Println("Please provide SSH Git Repo")
 			panic("")
