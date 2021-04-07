@@ -446,6 +446,7 @@ type Orglist struct {
 	SpaceAudit string `yaml:"SpaceAudit"`
 	UserAudit string `yaml:"UserAudit"`
 	ASGAudit string `yaml:"ASGAudit"`
+	IsolationAudit string `yaml:"IsolationAudit"`
 }
 type ProtectedList struct {
 	Org   []string `yaml:"Org"`
@@ -469,6 +470,7 @@ type InitClusterConfigVals struct {
 		EnableSpaceAudit bool `yaml:"EnableSpaceAudit"`
 		EnableUserAudit bool `yaml:"EnableUserAudit"`
 		EnableASGAudit bool `yaml:"EnableASGAudit"`
+		EnableIsolationAudit bool `yaml:"EnableIsolationAudit"`
 		SSOProvider string `yaml:"SSOProvider"`
 	} `yaml:"ClusterDetails"`
 }
@@ -1777,7 +1779,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 							OrgManUsrLen := len(orgmanusrslist.Resources)
 
-							fmt.Println("Number of OrgManager Users currently exist in Org", Orgs.Org.Name, ":", OrgManUsrLen)
+							//fmt.Println("Number of OrgManager Users currently exist in Org", Orgs.Org.Name, ":", OrgManUsrLen)
 
 							if OrgManUsrLen != 0 {
 
@@ -2014,7 +2016,7 @@ func DeleteorAuditOrgUsers(clustername string, cpath string, ostype string) erro
 
 							OrgAuditUsrLen := len(orgauditusrslist.Resources)
 
-							fmt.Println("Number of OrgAuditor Users currently exist in Org", Orgs.Org.Name, ":", OrgAuditUsrLen)
+							//fmt.Println("Number of OrgAuditor Users currently exist in Org", Orgs.Org.Name, ":", OrgAuditUsrLen)
 
 							if OrgAuditUsrLen != 0 {
 								for i := 0; i < OrgAuditUsrLen; i++ {
@@ -2418,7 +2420,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 									SpaceAuditUsrLen := len(spaceauditusrslist.Resources)
 
-									fmt.Println("Number of Space Audit Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceAuditUsrLen)
+									//fmt.Println("Number of Space Audit Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceAuditUsrLen)
 
 									if SpaceAuditUsrLen != 0 {
 
@@ -2651,7 +2653,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 									SpaceDevUsrLen := len(spacedevusrslist.Resources)
 
-									fmt.Println("Number of Space Developer Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceDevUsrLen)
+									//fmt.Println("Number of Space Developer Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceDevUsrLen)
 
 									if SpaceDevUsrLen != 0 {
 
@@ -2889,7 +2891,7 @@ func DeleteOrAuditSpaceUsers(clustername string, cpath string, ostype string) er
 
 									SpaceManUsrLen := len(spacemanusrslist.Resources)
 
-									fmt.Println("Number of Space Developer Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceManUsrLen)
+									//fmt.Println("Number of Space Developer Users currently exist in Space",Orgs.Org.Spaces[j].Name,":", SpaceManUsrLen)
 
 									if SpaceManUsrLen != 0 {
 
@@ -3360,7 +3362,7 @@ func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, 
 					fmt.Println("DELETE!DELETE!")
 					fmt.Println("Unbinding running ASG: ", ASG)
 					if MasterASGAudit == true {
-						unbind := exec.Command("cf", "unbind-running-security-group", ASG, Org, Space, "--lifecycle", "running")
+						unbind := exec.Command("cf", "unbind-security-group", ASG, Org, Space, "--lifecycle", "running")
 						if _, err := unbind.Output(); err != nil {
 							fmt.Println("command: ", unbind)
 							fmt.Println("Err: ", unbind.Stdout, err)
@@ -4093,6 +4095,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
+	EnableIsolationAudit := InitClusterConfigVals.ClusterDetails.EnableIsolationAudit
 
 	for i := 0; i < LenList; i++ {
 
@@ -4362,22 +4365,34 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
 											fmt.Println("No Isolation segment exists with name: ", segname)
 										} else if segname == "" && isoguid != "" {
-											fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
-											fmt.Println("Removing Isolation Segment")
-											resetspace := exec.Command("cf", "reset-space-isolation-segment", Orgs.Org.Spaces[j].Name)
-											if _, err := resetspace.Output(); err != nil {
-												fmt.Println("command: ", resetspace)
-												fmt.Println("Err: ", resetspace.Stdout, err)
+
+											if strings.ToLower(Orgs.IsolationAudit) == "unbind" {
+												fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
+												fmt.Println("Removing Isolation Segment")
+												if EnableIsolationAudit == true {
+													resetspace := exec.Command("cf", "reset-space-isolation-segment", Orgs.Org.Spaces[j].Name)
+													if _, err := resetspace.Output(); err != nil {
+														fmt.Println("command: ", resetspace)
+														fmt.Println("Err: ", resetspace.Stdout, err)
+													} else {
+														fmt.Println("command: ", resetspace)
+														fmt.Println(resetspace.Stdout)
+													}
+												} else {
+													fmt.Println("IsolationSegment Audit flag is not enabled, please work with pcf operator to unbind")
+												}
+											} else if strings.ToLower(Orgs.IsolationAudit) == "list" {
+												fmt.Println("Unbind!Unbind!")
+												fmt.Println("isolation segment:", isoexistingdetails.Resources[0].Name)
+
 											} else {
-												fmt.Println("command: ", resetspace)
-												fmt.Println(resetspace.Stdout)
+												fmt.Println("Provide valid input")
 											}
 										}
 									} else {
 
 										if isodetails.Resources[0].GUID == isoguid {
 											//fmt.Println(isodetails.Resources[0].GUID, isoguid)
-
 											// iso guid defined yaml == iso attached to space
 											// Iso defined in YAML exist in platform
 											// Check if that is same as currectly binded
@@ -4385,6 +4400,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 										} else {
 											if isoguid == "" {
+									
 												// Iso defined in YAML exist
 												// but Currently space is not binded to any Iso
 												// This is a new request, binding to isolation segment
@@ -4411,18 +4427,15 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 												}
 
 											} else {
-
 												// Iso defined in YAML exist
 												// but Currently space is not binded to any Iso
 												// This is a change in request to remove isolation segment
-
 												fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
 												fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
 												fmt.Println("Currently doesn't support changing Isolation Segments, Please change isolation segment assigned to space manually")
 											}
 										}
 									}
-
 								} else {
 
 									// Checking space name
@@ -7952,7 +7965,8 @@ Org:
             - User3
 SpaceAudit: list #delete/rename/list
 UserAudit:  list #unset/list
-ASGAudit:   list #delete/list`
+ASGAudit:   list #delete/list
+IsolationAudit: list #unbind/list`
 
 							fmt.Println("Creating <cluster>/<Org> sample yaml files")
 							err = ioutil.WriteFile(OrgsYml, []byte(OrgTmp), 0644)
@@ -8040,6 +8054,7 @@ func Init(clustername string, endpoint string, user string, org string, space st
 		EnableSpaceAudit string `yaml:"EnableSpaceAudit"`
 		EnableUserAudit string `yaml:"EnableUserAudit"`
 		EnableASGAudit string `yaml:"EnableASGAudit"`
+		EnableIsolationAudit string `yaml:"EnableIsolationAudit"`
 		SSOProvider string `yaml:"SSOProvider"`
 	}
 
@@ -8075,13 +8090,14 @@ ClusterDetails:
   EnableSpaceAudit: {{ .EnableSpaceAudit }}
   EnableUserAudit: {{ .EnableUserAudit }}
   EnableASGAudit: {{ .EnableASGAudit }}
+  EnableIsolationAudit: {{ .EnableIsolationAudit }}
   SSOProvider: {{ .SSOProvider }}`
 
 		// Create the file:
 		err = ioutil.WriteFile(mgmtpath+"/config.tmpl", []byte(data), 0644)
 		check(err)
 
-		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, GitHost: githost, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev, SSOProvider: "testsso", EnableSpaceAudit: "false", EnableUserAudit: "false", EnableASGAudit: "false"}
+		values := ClusterDetails{EndPoint: endpoint, User: user, Org: org, Space: space, EnableASG: asg, EnableGitSubTree: subtree, GitHost: githost, SetOrgAuditor: orgaudit, SetOrgManager: orgman, SetSpaceAuditor: spaceaudit, SetSpaceManager: spaceman, SetSpaceDeveloper: spacedev, SSOProvider: "testsso", EnableSpaceAudit: "false", EnableUserAudit: "false", EnableASGAudit: "false", EnableIsolationAudit: "false"}
 
 		var templates *template.Template
 		var allFiles []string
