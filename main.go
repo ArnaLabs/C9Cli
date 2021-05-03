@@ -3847,46 +3847,47 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						}
 						//OrgGuidPull = orgdetailsguid.Resources[0].GUID
 						// Update State file
-						type OrgState struct {
-							OldName string `yaml:"OldName"`
-							NewName string `yaml:"NewName"`
-							OrgGuid    string `yaml:"OrgGuid"`
-						}
+						// Moved Below
+						////type OrgState struct {
+						////	OldName string `yaml:"OldName"`
+						////	NewName string `yaml:"NewName"`
+						////	OrgGuid    string `yaml:"OrgGuid"`
+						////}
 
 						//spath := cpath+"/"+clustername+"-state/"
-						values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
+						////values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
 
-						var templates *template.Template
-						var allFiles []string
+						////var templates *template.Template
+						////var allFiles []string
 
-						if err != nil {
-							fmt.Println(err)
-						}
+						////if err != nil {
+							////fmt.Println(err)
+						////}
 
-						filename := "OrgGuid.tmpl"
-						fullPath := spath+"OrgGuid.tmpl"
-						if strings.HasSuffix(filename, ".tmpl") {
-							allFiles = append(allFiles, fullPath)
-						}
+						////filename := "OrgGuid.tmpl"
+						////fullPath := spath+"OrgGuid.tmpl"
+						////if strings.HasSuffix(filename, ".tmpl") {
+							////allFiles = append(allFiles, fullPath)
+						////}
 
 						//fmt.Println(allFiles)
-						templates, err = template.ParseFiles(allFiles...)
-						if err != nil {
-							fmt.Println(err)
-						}
+						////templates, err = template.ParseFiles(allFiles...)
+						////if err != nil {
+							////fmt.Println(err)
+						////}
 
-						s1 := templates.Lookup("OrgGuid.tmpl")
-						f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
-						if err != nil {
+						////s1 := templates.Lookup("OrgGuid.tmpl")
+						////f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
+						////if err != nil {
 							panic(err)
 						}
 
-						err = s1.Execute(f, values)
-						defer f.Close() // don't forget to close the file when finished.
-						if err != nil {
-							panic(err)
-						}
-					}
+						////err = s1.Execute(f, values)
+						////defer f.Close() // don't forget to close the file when finished.
+						////if err != nil {
+							////panic(err)
+						////}
+					////}
 
 					//Checking if Quota has changed
 					var getquotaName *exec.Cmd
@@ -3927,7 +3928,12 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 							// fmt.Println(SetQuota.Stdout)
 						}
 					}
-					OrgGuidPull = orgdetailsguid.Resources[0].GUID
+					var out bytes.Buffer
+					pullguid := exec.Command("cf", "org", Orgs.Org.Name, "--guid")
+					pullguid.Stdout = &out
+					err = pullguid.Run()
+					OrgGuidPull = out.String()
+					out.Reset()
 
 				} else if OrgStateGuidLen == 0 && OrgStateNameLen != 0 {
 					fmt.Println("Missing State file, Please use org-init function to create state files")
@@ -3968,6 +3974,47 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				// Creating state file
 
 				if OrgStateGuidLen != 0 {
+
+						type OrgState struct {
+							OldName string `yaml:"OldName"`
+							NewName string `yaml:"NewName"`
+							OrgGuid    string `yaml:"OrgGuid"`
+						}
+
+						//spath := cpath+"/"+clustername+"-state/"
+						values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
+
+						var templates *template.Template
+						var allFiles []string
+
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						filename := "OrgGuid.tmpl"
+						fullPath := spath+"OrgGuid.tmpl"
+						if strings.HasSuffix(filename, ".tmpl") {
+							allFiles = append(allFiles, fullPath)
+						}
+
+						//fmt.Println(allFiles)
+						templates, err = template.ParseFiles(allFiles...)
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						s1 := templates.Lookup("OrgGuid.tmpl")
+						f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
+						if err != nil {
+							panic(err)
+						}
+
+						err = s1.Execute(f, values)
+						defer f.Close() // don't forget to close the file when finished.
+						if err != nil {
+							panic(err)
+						}
+
 
 				} else if OrgStateGuidLen == 0 && OrgStateNameLen != 0 {
 
@@ -4262,7 +4309,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 								if Orgs.Org.Spaces[j].Name == spacename {
 
-									SpaceGuidPull = spacedetailsguid.Resources[0].GUID
+									// Space Name Not changed
+									//SpaceGuidPull = spacedetailsguid.Resources[0].GUID
 									var spacedets SpaceListJson
 
 									if err := json.Unmarshal(fileSpaceNameJson, &spacedets); err != nil {
@@ -4295,9 +4343,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										panic(err)
 									}
 									isoguid := spaceiso.Data.GUID // will be null
+
 									// iso segment guid if noting specific it will be default
 									////
 									// Pulling isolation segment Name from Guid
+
 									var existingisoguid *exec.Cmd
 									if ostype == "windows" {
 										path := "\""+"/v3/isolation_segments?guids="+isoguid+"\""
@@ -4400,7 +4450,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 										} else {
 											if isoguid == "" {
-									
+
 												// Iso defined in YAML exist
 												// but Currently space is not binded to any Iso
 												// This is a new request, binding to isolation segment
@@ -4436,8 +4486,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											}
 										}
 									}
+								
 								} else {
 
+									// Space Name Changed
 									// Checking space name
 									fmt.Println("Resetting Space Name")
 									fmt.Println("- ", spacename)
@@ -4445,52 +4497,54 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
 									renamespace := exec.Command("cf", "curl", path)
 									err = renamespace.Run()
+									
+									// Moving it to below
+									
 									if err == nil {
 										//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
-
 										// Updating State file
-										orgguid := orgdetails.Resources[0].GUID
+										////orgguid := orgdetails.Resources[0].GUID
 
-										type SpaceState struct {
-											Org     string
-											OrgGuid string
-											OldSpaceName string
-											NewSpaceName string
-											SpaceGuid    string
-										}
+										////type SpaceState struct {
+											////Org     string
+											////OrgGuid string
+											////OldSpaceName string
+											////NewSpaceName string
+											////SpaceGuid    string
+										////}
 
-										values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
+										////values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
 
-										var templates *template.Template
-										var allFiles []string
+										////var templates *template.Template
+										////var allFiles []string
 
-										if err != nil {
-											fmt.Println(err)
-										}
+										////if err != nil {
+											////fmt.Println(err)
+										////}
 
-										filename := "SpaceGuid.tmpl"
-										fullPath := spath+"SpaceGuid.tmpl"
-										if strings.HasSuffix(filename, ".tmpl") {
-											allFiles = append(allFiles, fullPath)
-										}
+										////filename := "SpaceGuid.tmpl"
+										////fullPath := spath+"SpaceGuid.tmpl"
+										////if strings.HasSuffix(filename, ".tmpl") {
+											////allFiles = append(allFiles, fullPath)
+										////}
 
 										//fmt.Println(allFiles)
-										templates, err = template.ParseFiles(allFiles...)
-										if err != nil {
-											fmt.Println(err)
-										}
+										////templates, err = template.ParseFiles(allFiles...)
+										////if err != nil {
+											////fmt.Println(err)
+										////}
 
-										s1 := templates.Lookup("SpaceGuid.tmpl")
-										f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
-										if err != nil {
-											panic(err)
-										}
+										////s1 := templates.Lookup("SpaceGuid.tmpl")
+										////f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
+										////if err != nil {
+										////	panic(err)
+										////}
 
-										err = s1.Execute(f, values)
-										defer f.Close() // don't forget to close the file when finished.
-										if err != nil {
-											panic(err)
-										}
+										////err = s1.Execute(f, values)
+										////defer f.Close() // don't forget to close the file when finished.
+										////if err != nil {
+										////	panic(err)
+										////}
 
 									} else {
 										fmt.Println("err", renamespace, renamespace.Stdout, renamespace.Stderr)
@@ -4664,7 +4718,34 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										}
 									}
 								}
-								SpaceGuidPull = spacedetailsguid.Resources[0].GUID
+								
+								// Pulling Space GUID
+								var getspacename *exec.Cmd
+								if ostype == "windows" {
+									path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
+									getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+
+								} else {
+									path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid
+									getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+
+								}
+								err = getspacename.Run()
+								if err == nil {
+									//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+								} else {
+									fmt.Println("err", getspacename, getspacename.Stdout, getspacename.Stderr)
+								}
+								fileSpaceNameJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacedetails_name.json")
+								if err != nil {
+									fmt.Println(err)
+								}
+								var spacedetailsname SpaceListJson
+								if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
+									panic(err)
+								}
+								SpaceGuidPull = spacedetailsname.Resources[0].GUID
+								
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 								fmt.Println("Missing State file, Please use org-init function to create state files")
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0 {
@@ -4732,10 +4813,58 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								//SpaceGuidPull = spacedetailsguid.Resources[0].GUID
 							}
 
+							
+							
 							// Creating state file
 							if SpaceStateGuidLen != 0 {
+								
+									//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+									// Updating State file
+									orgguid := orgdetails.Resources[0].GUID
 
-							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
+									type SpaceState struct {
+										Org     string
+										OrgGuid string
+										OldSpaceName string
+										NewSpaceName string
+										SpaceGuid    string
+									}
+
+									values := SpaceState{Org: Orgs.Org.Name, OrgGuid: orgguid, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: SpaceGuidPull}
+
+									var templates *template.Template
+									var allFiles []string
+
+									if err != nil {
+										fmt.Println(err)
+									}
+
+									filename := "SpaceGuid.tmpl"
+									fullPath := spath+"SpaceGuid.tmpl"
+									if strings.HasSuffix(filename, ".tmpl") {
+										allFiles = append(allFiles, fullPath)
+									}
+
+									//fmt.Println(allFiles)
+									templates, err = template.ParseFiles(allFiles...)
+									if err != nil {
+										fmt.Println(err)
+									}
+
+									s1 := templates.Lookup("SpaceGuid.tmpl")
+									f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
+									if err != nil {
+										panic(err)
+									}
+
+									err = s1.Execute(f, values)
+									defer f.Close() // don't forget to close the file when finished.
+									if err != nil {
+										panic(err)
+									}
+
+
+								} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0  {
 
