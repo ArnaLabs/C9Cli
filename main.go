@@ -4502,10 +4502,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									// Moving it to below
 
 									if err == nil {
-											fmt.Println(getorg, getorg.Stdout, getorg.Stderr) 
-											
+											fmt.Println(renamespace, renamespace.Stdout, renamespace.Stderr)
+
 											// Updating State file
-										
+
 										////orgguid := orgdetails.Resources[0].GUID
 										////type SpaceState struct {
 											////Org     string
