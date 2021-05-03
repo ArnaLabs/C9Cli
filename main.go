@@ -4496,7 +4496,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									}
 
 								} else {
-									
+
 									if Orgs.Org.Spaces[j].Name == spacename {
 
 										fmt.Println("Space Name in Org.yml has not been renamed but has been changed in state file")
@@ -4737,12 +4737,12 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											}
 										}
 									}
-									
+
 								}
 
 								// Pulling Space GUID
 								var getspacename *exec.Cmd
-								
+
 								if ostype == "windows" {
 									path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
 									getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
@@ -4752,7 +4752,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 								}
-								
+
 								err = getspacename.Run()
 								if err == nil {
 									//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
@@ -4834,7 +4834,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 								//SpaceGuidPull = spacedetailsguid.Resources[0].GUID
 							}
-							
+
 							// Creating state file
 							if SpaceStateGuidLen != 0 {
 
@@ -7504,7 +7504,8 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 					}
 					//Changing Folder name
 					oldmgmtpath := cpath + "/" + clustername + "/" + OrgOldName
-					newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
+					//newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
+					newmgmtpath := cpath + "/" + clustername + "/" + OrgOldName+"_old"
 					fmt.Println("- ", oldmgmtpath)
 					fmt.Println("+ ", newmgmtpath)
 					if ostype == "windows" {
@@ -7523,6 +7524,56 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 							fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 						}
 					}
+					var errDir *exec.Cmd
+					var out bytes.Buffer
+
+					if ostype == "windows" {
+						cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoName+" master --squash"
+						errDir = exec.Command("powershell", "-command", cmd)
+						errDir.Stderr = &out
+						errDir.Stdout = &out
+						err = errDir.Run()
+					} else {
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoName+" master --squash'"
+						errDir = exec.Command("sh", "-c", cmd)
+						errDir.Stderr = &out
+						errDir.Stdout = &out
+						err = errDir.Run()
+					}
+					if _, err := errDir.Output(); err != nil{
+						//fmt.Println("err",errDir, errDir.Stdout)
+						fmt.Println(errDir, errDir.Stderr)
+						out.Reset()
+						//log.Fatal(err)
+					} else {
+						fmt.Println("Adding Org Repo: ", errDir, out.String(), errDir.Stdout)
+						out.Reset()
+					}
+					if ostype == "windows" {
+						cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoName+" master --squash -m pull-by-bot"
+						errDir = exec.Command("powershell", "-command", cmd)
+						errDir.Stderr = &out
+						errDir.Stdout = &out
+						err = errDir.Run()
+
+					} else {
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoName+" master --squash -m C9Cli-bot'"
+						errDir = exec.Command("sh", "-c", cmd)
+						errDir.Stderr = &out
+						errDir.Stdout = &out
+						err = errDir.Run()
+					}
+					if _, err := errDir.Output(); err != nil{
+
+						fmt.Println(errDir, errDir.Stderr)
+						out.Reset()
+						//fmt.Println("err",errDir, errDir.Stdout, errDir.Stderr)
+						//log.Fatal(err)
+					} else {
+						fmt.Println("Pulling Org Repo: ", errDir, out.String(), errDir.Stdout )
+						out.Reset()
+					}
+					
 					//Changing org name in Org.yml
 					//fmt.Println("- Org.yml", OrgOldName)
 					//fmt.Println("+ Org.yml", OrgNewName)
