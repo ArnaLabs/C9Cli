@@ -3833,7 +3833,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					orgname := orgdetailsguid.Resources[0].Name
 
 					if Orgs.Org.Name == orgname {
-						//OrgGuidPull = orgdetailsguid.Resources[0].GUID
+						OrgGuidPull = orgdetailsguid.Resources[0].GUID
 					} else {
 						fmt.Println("Resetting Org Name")
 						fmt.Println("- ", orgname)
@@ -3845,6 +3845,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						} else {
 							fmt.Println("err", renameorg, renameorg.Stdout, renameorg.Stderr)
 						}
+					
 						//OrgGuidPull = orgdetailsguid.Resources[0].GUID
 						// Update State file
 						// Moved Below
@@ -3879,15 +3880,15 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						////s1 := templates.Lookup("OrgGuid.tmpl")
 						////f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
 						////if err != nil {
-							panic(err)
-						}
+						////	panic(err)
+						////}
 
 						////err = s1.Execute(f, values)
 						////defer f.Close() // don't forget to close the file when finished.
 						////if err != nil {
 							////panic(err)
 						////}
-					////}
+					}
 
 					//Checking if Quota has changed
 					var getquotaName *exec.Cmd
@@ -4486,7 +4487,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											}
 										}
 									}
-								
+
 								} else {
 
 									// Space Name Changed
@@ -4497,9 +4498,9 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
 									renamespace := exec.Command("cf", "curl", path)
 									err = renamespace.Run()
-									
+
 									// Moving it to below
-									
+
 									if err == nil {
 										//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
 										// Updating State file
@@ -4718,7 +4719,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										}
 									}
 								}
-								
+
 								// Pulling Space GUID
 								var getspacename *exec.Cmd
 								if ostype == "windows" {
@@ -4745,7 +4746,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									panic(err)
 								}
 								SpaceGuidPull = spacedetailsname.Resources[0].GUID
-								
+
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 								fmt.Println("Missing State file, Please use org-init function to create state files")
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0 {
@@ -4813,11 +4814,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								//SpaceGuidPull = spacedetailsguid.Resources[0].GUID
 							}
 
-							
-							
+
+
 							// Creating state file
 							if SpaceStateGuidLen != 0 {
-								
+
 									//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
 									// Updating State file
 									orgguid := orgdetails.Resources[0].GUID
