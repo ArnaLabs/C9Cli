@@ -4495,8 +4495,12 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									fmt.Println("Resetting Space Name")
 									fmt.Println("- ", spacename)
 									fmt.Println("+ ", Orgs.Org.Spaces[j].Name)
-									path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
-									renamespace := exec.Command("cf", "curl", path)
+									var path string
+									//path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
+									//renamespace := exec.Command("cf", "curl", path)
+									//err = renamespace.Run()
+
+									renamespace := exec.Command("cf", "rename-space", spacename,  Orgs.Org.Spaces[j].Name)
 									err = renamespace.Run()
 
 									// Moving it to below
