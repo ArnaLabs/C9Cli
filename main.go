@@ -1,4 +1,5 @@
 package main
+
 import (
 	"bytes"
 	"encoding/json"
@@ -7797,7 +7798,8 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 								changestfile := exec.Command("sh", "-c", value)
 								err := changestfile.Run()
 								if err != nil{
-									panic(err)
+									fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
+									//panic(err)
 								} else {
 									fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
 								}
