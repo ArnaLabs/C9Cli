@@ -7750,7 +7750,7 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 
 			if SpaceLen != 0 {
 				for i := 0; i < SpaceLen; i++ {
-					
+
 					ExistingOrgName := spacelistjson.Resources[i].Name
 					fullpath := spath+OrgName+"_"+ExistingOrgName+"_SpaceState.yml"
 					SpaceStateYml := fullpath
@@ -7778,11 +7778,12 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 
 						if SpaceNewName == SpaceOldName {
 							// No space rename
-							
+
 						} else {
 
-							//Changing Folder name
-							oldstatepath := spath+OrgName+"_"+SpaceOldName+"_SpaceState.yml" 
+							fmt.Println("Space has been renamed")
+							//Changing File name
+							oldstatepath := spath+OrgName+"_"+SpaceOldName+"_SpaceState.yml"
 							//newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
 							newstatepath := spath+OrgName+"_"+SpaceNewName+"_SpaceState.yml"
 							fmt.Println("- ", oldstatepath)
@@ -7804,9 +7805,9 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 								}
 							}
 						}
-						
+
 					} else {
-						// state file does't exit
+						fmt.Println("SStatefile missing for space - Org, Space: ", OrgName, spacelistjson.Resources[i].Name)
 					}
 				}
 			}
@@ -7875,11 +7876,10 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 
 					if SpaceStateNameLen == 0 {
 						// Space not yet created or space name has been changed
-						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-						fmt.Println("Space not created yet")
-						
+						fmt.Println("Space not created yet - Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
+
 					} else {
-						
+
 						// creating missing state file
 						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
 						fmt.Println("Missing state file, creating state")
