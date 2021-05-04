@@ -1,5 +1,6 @@
 package main
 
+//import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -7794,11 +7795,12 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 									panic(err)
 								}
 							} else {
-								value := "\""+"mv "+oldstatepath+" "+newstatepath+"\""
-								changestfile := exec.Command("sh", "-c", value)
+								//value := "\""+"mv "+oldstatepath+" "+newstatepath+"\""
+								//changestfile := exec.Command("sh", "-c", value)
+								changestfile := exec.Command("mv", oldstatepath, newstatepath)
 								err := changestfile.Run()
 								if err != nil{
-									fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
+									fmt.Println("err", err, changestfile, changestfile.Stdout, changestfile.Stderr)
 									//panic(err)
 								} else {
 									fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
@@ -7806,7 +7808,7 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 							}
 						}
 					} else {
-						fmt.Println("SStatefile missing for space - Org, Space: ", OrgName, spacelistjson.Resources[i].Name)
+						fmt.Println("Statefile missing for space - Org, Space: ", OrgName, spacelistjson.Resources[i].Name)
 					}
 				}
 			}
