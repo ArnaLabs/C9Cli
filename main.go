@@ -625,6 +625,13 @@ func main()  {
 		DeleteorAuditOrgs (ClusterName, cpath)
 		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
+	} else if operation == "space-init" {
+
+	fmt.Printf("ClusterName: %v\n", ClusterName)
+	SetupConnection (ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
+	SpaceInit(ClusterName, cpath, ostype, sshkey)
+	GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
+
 	} else if operation == "audit-space"{
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
@@ -7126,21 +7133,14 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 		}
 
 		if _, err := checkfile.Output(); err == nil{
-			//fmt.Println("Statefile exist")
-			//var OrgName, RepoName string
+
 			if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
-				//	fmt.Println("Org: ", list.OrgList[i])
-				//	OrgName = list.OrgList[i]
-				//	fmt.Println("1")
 				fmt.Println("Org: ", OrgName)
 
 
 			} else {
-				//	fmt.Println("Org: ", OrgName)
-				//	fmt.Println("Repo: ", RepoName)
 				fmt.Println("Org: ", OrgName)
 				fmt.Println("Repo: ", RepoName)
-				//	fmt.Println("2")
 			}
 			fmt.Println(checkfile.Stdout)
 			fileOrgStateYml, err := ioutil.ReadFile(OrgsStateYml)
@@ -7166,195 +7166,6 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 				//checking if name is listed in protected orgs
 				//checking if name aleady exists in orglist.ymll
 
-				var OrgsYml string
-				if ostype == "windows" {
-					//OrgsYml = cpath + "\\" + clustername + "\\" + list.OrgList[i] + "\\Org.yml"
-					OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
-				} else {
-					//OrgsYml = cpath + "/" + clustername + "/" + list.OrgList[i] + "/Org.yml"
-					OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-				}
-
-				fileOrgYml, err := ioutil.ReadFile(OrgsYml)
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				var Orgs Orglist
-				err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
-				if err != nil {
-					panic(err)
-				}
-
-				SpaceLen := len(Orgs.Org.Spaces)
-
-				for j := 0; j < SpaceLen; j++ {
-
-					//fullpath := spath+list.OrgList[i]+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
-					fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
-					SpaceStateYml := fullpath
-
-					if ostype == "windows" {
-						checkfile = exec.Command("powershell", "-command","Get-Content", SpaceStateYml)
-					} else {
-						checkfile = exec.Command("cat", SpaceStateYml)
-					}
-
-					if _, err := checkfile.Output(); err == nil{
-
-						// Space state file exist
-						// Check for space Rename
-
-						//fmt.Println("Org, Space: ", list.OrgList[i], Orgs.Org.Spaces[j].Name)
-						//fmt.Println("Org, Space: ",OrgName , Orgs.Org.Spaces[j].Name)
-						//fmt.Println(checkfile.Stdout)
-						//fileSpaceStateYml, err := ioutil.ReadFile(SpaceStateYml)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-
-						//var spacestatedetails SpaceStateYaml
-						//err = yaml.Unmarshal([]byte(fileSpaceStateYml), &spacestatedetails)
-						//if err != nil {
-						//	panic(err)
-						//}
-
-						//SpaceNewName := spacestatedetails.SpaceState.NewSpaceName
-						//SpaceOldName := spacestatedetails.SpaceState.OldSpaceName
-
-						//if SpaceNewName == SpaceOldName {
-							// No change in Space Name
-						//} else {
-							// Change in Space Name
-							// Org Folder should exist as we have statefile
-						//	fmt.Println("Changing Space Name")
-						//	fmt.Println(" ")
-
-						//	fmt.Println("- Space", SpaceOldName)
-						//	fmt.Println("+ Space", SpaceNewName)
-
-						//	if ostype == "windows" {
-						//		neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-						//		stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+SpaceOldName+"', '    - Name: "+SpaceNewName+"') | Set-Content -path "+neworgfilepath
-						//		value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
-						//		trimquotes := exec.Command("powershell", "-command", value)
-						//		err := trimquotes.Run()
-						//		if err != nil{
-						//			fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-						//			panic(err)
-						//		}
-						//		changeyml := exec.Command("powershell", "-command",stng)
-						//		err = changeyml.Run()
-						//		if err != nil{
-						//			fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-						//			panic(err)
-						//		} else {
-						//			//fmt.Println(changeyml, changeyml.Stdout)
-						//		}
-						//	} else {
-								//sed 's/\"//g' file.txt
-							//	neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-							//	stng := "sed -i 's/"+"    - Name: "+strings.TrimSpace(SpaceOldName)+"/"+"    - Name: "+strings.TrimSpace(SpaceNewName)+"/g' "+neworgfilepath
-							//	value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
-							//	trimquotes := exec.Command("sh", "-c", value)
-							//	err := trimquotes.Run()
-							//	if err != nil{
-							//		fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-							//		panic(err)
-							//	}
-							//	changeyml := exec.Command("sh", "-c",stng)
-							//	err = changeyml.Run()
-							//	if err != nil{
-							//		fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-							//		panic(err)
-							//	}
-						//	}
-						//}
-					} else {
-						// Space state file missing, create state file
-						var getspacename *exec.Cmd
-						if ostype == "windows" {
-							path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid+"\""
-							getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-						} else {
-							path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid
-							getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-						}
-						err = getspacename.Run()
-						if err == nil {
-							//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
-						} else {
-							fmt.Println("err", getspacename, getspacename.Stdout, getspacename.Stderr)
-						}
-						fileSpaceNameJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacedetails_name.json")
-						if err != nil {
-							fmt.Println(err)
-						}
-						var spacedetailsname SpaceListJson
-						if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
-							panic(err)
-						}
-						OrgGuidPull := orgstatedetails.OrgState.OrgGuid
-						SpaceStateNameLen := len(spacedetailsname.Resources)
-
-						if SpaceStateNameLen == 0 {
-							// Space not yet created
-							fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-							fmt.Println("Space not created yet")
-						} else {
-							// creating missing state file
-							fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-							fmt.Println("Missing state file, creating state")
-
-							OrgGuidPull = orgstatedetails.OrgState.OrgGuid
-							spaceguidpull := spacedetailsname.Resources[0].GUID
-
-							type SpaceState struct {
-								Org     string `yaml:"Org"`
-								OrgGuid string `yaml:"OrgGuid"`
-								OldSpaceName string `yaml:"OldSpaceName"`
-								NewSpaceName string `yaml:"NewSpaceName"`
-								SpaceGuid    string `yaml:"SpaceGuid"`
-							}
-
-							//spath := cpath+"/"+clustername+"-state/"
-							values := SpaceState{Org: Orgs.Org.Name, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
-
-							var templates *template.Template
-							var allFiles []string
-
-							if err != nil {
-								fmt.Println(err)
-							}
-
-							filename := "SpaceGuid.tmpl"
-							fullPath := spath+"SpaceGuid.tmpl"
-							if strings.HasSuffix(filename, ".tmpl") {
-								allFiles = append(allFiles, fullPath)
-							}
-
-							//fmt.Println(allFiles)
-							templates, err = template.ParseFiles(allFiles...)
-							if err != nil {
-								fmt.Println(err)
-							}
-
-							s1 := templates.Lookup("SpaceGuid.tmpl")
-							f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
-							if err != nil {
-								panic(err)
-							}
-
-							err = s1.Execute(f, values)
-							defer f.Close() // don't forget to close the file when finished.
-							if err != nil {
-								panic(err)
-							}
-
-						}
-						// End Loop
-					}
-				}
 			} else {
 				fmt.Println("Changing Org Name")
 				fmt.Println(" ")
@@ -7395,8 +7206,8 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 
 				if totalcount == 0 {
 
-					//Changing org name in OrgList.yml
-					//fmt.Println("Changing org name in OrgList.yml")
+					//Changing org name in OrgList.yml or GitOrgList.yml
+					//fmt.Println("Changing org name in OrgList.yml or GitOrgList.yml")
 					//fmt.Println("Changing Org Name")
 
 					fmt.Println("- OrgList", OrgOldName)
@@ -7502,6 +7313,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 							fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
 						}
 					}
+
 					//Changing Folder name
 					oldmgmtpath := cpath + "/" + clustername + "/" + OrgOldName
 					//newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
@@ -7524,17 +7336,18 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 							fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 						}
 					}
+
 					var errDir *exec.Cmd
 					var out bytes.Buffer
 
 					if ostype == "windows" {
-						cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoName+" master --squash"
+						cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" master --squash"
 						errDir = exec.Command("powershell", "-command", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
 						err = errDir.Run()
 					} else {
-						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoName+" master --squash'"
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" master --squash'"
 						errDir = exec.Command("sh", "-c", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
@@ -7550,14 +7363,14 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 						out.Reset()
 					}
 					if ostype == "windows" {
-						cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoName+" master --squash -m pull-by-bot"
+						cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" master --squash -m pull-by-bot"
 						errDir = exec.Command("powershell", "-command", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
 						err = errDir.Run()
 
 					} else {
-						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoName+" master --squash -m C9Cli-bot'"
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" master --squash -m C9Cli-bot'"
 						errDir = exec.Command("sh", "-c", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
@@ -7573,228 +7386,9 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 						fmt.Println("Pulling Org Repo: ", errDir, out.String(), errDir.Stdout )
 						out.Reset()
 					}
-					
-					//Changing org name in Org.yml
-					//fmt.Println("- Org.yml", OrgOldName)
-					//fmt.Println("+ Org.yml", OrgNewName)
-					//if ostype == "windows" {
-					//	neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-					//	stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '  Name: "+OrgOldName+"', '  Name: "+OrgNewName+"') | Set-Content -path "+neworgfilepath
-					//	value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
-					//	trimquotes := exec.Command("powershell", "-command", value)
-					//	err := trimquotes.Run()
-					//	if err != nil{
-					//		fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//		panic(err)
-					//	}
-					//	changeyml := exec.Command("powershell", "-command",stng)
-					//	err = changeyml.Run()
-					//	if err != nil{
-					//		fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//		panic(err)
-					//	} else {
-					//		fmt.Println(changeyml, changeyml.Stdout)
-					//	}
-					//} else {
-					//	neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-					//	stng := "sed -i 's/"+"  Name: "+strings.TrimSpace(OrgOldName)+"/"+"  Name: "+strings.TrimSpace(OrgNewName)+"/g' "+neworgfilepath
-					//	value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
-					//	trimquotes := exec.Command("sh", "-c",value)
-					//	err := trimquotes.Run()
-					//	if err != nil{
-					//		fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//		panic(err)
-					//	}
-					//	changeyml := exec.Command("sh", "-c",stng)
-					//	err = changeyml.Run()
-					//	if err != nil{
-					//		fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//		panic(err)
-					//	} else {
-					//		fmt.Println(changeyml, changeyml.Stdout, changeyml.Stderr)
-					//	}
-					//}
+
 					// Checking for Space Name Change
 
-					var OrgsYml string
-					if ostype == "windows" {
-						OrgsYml = cpath + "\\" + clustername + "\\" + OrgNewName + "\\Org.yml"
-					} else {
-						OrgsYml = cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-					}
-
-					fileOrgYml, err := ioutil.ReadFile(OrgsYml)
-					if err != nil {
-						fmt.Println(err)
-					}
-
-					var Orgs Orglist
-					err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
-					if err != nil {
-						panic(err)
-					}
-
-					SpaceLen := len(Orgs.Org.Spaces)
-
-					for j := 0; j < SpaceLen; j++ {
-
-						fullpath := spath + OrgNewName + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml"
-						SpaceStateYml := fullpath
-
-						if ostype == "windows" {
-							checkfile = exec.Command("powershell", "-command", "Get-Content", SpaceStateYml)
-						} else {
-							checkfile = exec.Command("cat", SpaceStateYml)
-						}
-
-						if _, err := checkfile.Output(); err == nil {
-
-							// Space state file exist
-							// Check for space Rename
-
-							//fmt.Println("Org, Space: ", OrgNewName, Orgs.Org.Spaces[j].Name )
-							//fmt.Println(checkfile.Stdout)
-							//fileSpaceStateYml, err := ioutil.ReadFile(SpaceStateYml)
-							//if err != nil {
-							//	fmt.Println(err)
-							//}
-							//var spacestatedetails SpaceStateYaml
-							//err = yaml.Unmarshal([]byte(fileSpaceStateYml), &spacestatedetails)
-							//if err != nil {
-							//	panic(err)
-							//}
-
-							//SpaceNewName := spacestatedetails.SpaceState.NewSpaceName
-							//SpaceOldName := spacestatedetails.SpaceState.OldSpaceName
-							//if SpaceNewName == SpaceOldName {
-								// No change in Space Name
-							//} else {
-								// Change in Space Name
-								// Org Folder should exist as we have statefile
-					//          fmt.Println("Changing Space Name")
-					//			fmt.Println(" ")
-
-					//			fmt.Println("- Space", SpaceOldName)
-					//			fmt.Println("+ Space", SpaceNewName)
-
-					//			if ostype == "windows" {
-					//				neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-					//				stng := "((Get-Content -path" + " " + neworgfilepath + " -Raw) -replace '    - Name: " + SpaceOldName + "', '    - Name: " + SpaceNewName + "') | Set-Content -path " + neworgfilepath
-					//				value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
-					//				trimquotes := exec.Command("powershell", "-command", value)
-					//				err := trimquotes.Run()
-					//				if err != nil{
-					//					fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//					//panic(err)
-					//				}
-					//				changeyml := exec.Command("powershell", "-command", stng)
-					//				err = changeyml.Run()
-					//				if err != nil {
-					//					fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//					//panic(err)
-					//				} else {
-										//fmt.Println(changeyml, changeyml.Stdout)
-					//				}
-					//			} else {
-					//				neworgfilepath := cpath + "/" + clustername + "/" + OrgNewName + "/Org.yml"
-					//				stng := "sed -i 's/" + "    - Name: " + strings.TrimSpace(SpaceOldName) + "/" + "    - Name: " + strings.TrimSpace(SpaceNewName) + "/g' "+neworgfilepath
-					//				value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
-					//				trimquotes := exec.Command("sh", "-c",value)
-					//				err := trimquotes.Run()
-					//				if err != nil{
-					//					fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//					panic(err)
-					//				}
-					//				changeyml := exec.Command("sh", "-c", stng)
-					//				err = changeyml.Run()
-					//				if err != nil {
-					//					fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//					panic(err)
-					//				}
-					//			}
-					//		}
-						} else {
-
-							// Space state file missing, create state file
-							var getspacename *exec.Cmd
-							path := "\""+"/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgstatedetails.OrgState.OrgGuid+"\""
-							if ostype == "windows" {
-								getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-							} else {
-								getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-							}
-							err = getspacename.Run()
-							if err == nil {
-								//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
-							} else {
-								fmt.Println("err", path, getspacename, getspacename.Stdout, getspacename.Stderr)
-							}
-							fileSpaceNameJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacedetails_name.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							var spacedetailsname SpaceListJson
-							if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
-								panic(err)
-							}
-							OrgGuidPull := orgstatedetails.OrgState.OrgGuid
-							SpaceStateNameLen := len(spacedetailsname.Resources)
-
-							if SpaceStateNameLen == 0 {
-								// Space not yet created
-								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-								fmt.Println("Space not created yet")
-							} else {
-								// creating missing state file
-								fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-								fmt.Println("Space found, creating state file")
-
-								OrgGuidPull = orgstatedetails.OrgState.OrgGuid
-								spaceguidpull := spacedetailsname.Resources[0].GUID
-								type SpaceState struct {
-									Org     string
-									OrgGuid string
-									OldSpaceName string
-									NewSpaceName string
-									SpaceGuid    string
-								}
-
-								values := SpaceState{Org: OrgNewName, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
-
-								var templates *template.Template
-								var allFiles []string
-
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								filename := "SpaceGuid.tmpl"
-								fullPath := spath + "SpaceGuid.tmpl"
-								if strings.HasSuffix(filename, ".tmpl") {
-									allFiles = append(allFiles, fullPath)
-								}
-
-								//fmt.Println(allFiles)
-								templates, err = template.ParseFiles(allFiles...)
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								s1 := templates.Lookup("SpaceGuid.tmpl")
-								f, err := os.Create(spath + Orgs.Org.Name + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml")
-								if err != nil {
-									panic(err)
-								}
-
-								err = s1.Execute(f, values)
-								defer f.Close() // don't forget to close the file when finished.
-								if err != nil {
-									panic(err)
-								}
-							}
-							// End Loop
-						}
-					}
 				} else {
 					fmt.Println("Org Name exist in Org's list, can't be renamed")
 					fmt.Println(" ")
@@ -7872,199 +7466,6 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 
 				// Checking Space State file exists
 
-				var OrgsYml string
-				if ostype == "windows" {
-					OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
-				} else {
-					OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-				}
-
-				fileOrgYml, err := ioutil.ReadFile(OrgsYml)
-				if err != nil {
-					fmt.Println(err)
-				}
-
-				var Orgs Orglist
-				err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
-				if err != nil {
-					panic(err)
-				}
-
-				SpaceLen := len(Orgs.Org.Spaces)
-				for j := 0; j < SpaceLen; j++ {
-
-					fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
-					SpaceStateYml := fullpath
-
-					if ostype == "windows" {
-						checkfile = exec.Command("powershell", "-command","Get-Content", SpaceStateYml)
-					} else {
-						checkfile = exec.Command("cat", SpaceStateYml)
-					}
-
-					if _, err := checkfile.Output(); err == nil{
-
-						// Space state file exist
-						// Check for space Rename
-
-					//	fmt.Println("Org, Space: ", OrgName , Orgs.Org.Spaces[j].Name )
-					//	fmt.Println(checkfile.Stdout)
-					//	fileSpaceStateYml, err := ioutil.ReadFile(SpaceStateYml)
-					//	if err != nil {
-					//		fmt.Println(err)
-					//	}
-					//	var spacestatedetails SpaceStateYaml
-					//	err = yaml.Unmarshal([]byte(fileSpaceStateYml), &spacestatedetails)
-					//	if err != nil {
-					//		panic(err)
-					//	}
-
-					//	SpaceNewName := spacestatedetails.SpaceState.NewSpaceName
-					//	SpaceOldName := spacestatedetails.SpaceState.OldSpaceName
-
-					//	if SpaceNewName == SpaceOldName {
-							// No change in Space Name
-					//	} else {
-							// Change in Space Name
-							// Org Folder should exist as we have statefile
-					//		fmt.Println("Changing Space Name")
-					//		fmt.Println(" ")
-
-					//		fmt.Println("- Space", SpaceOldName)
-					//		fmt.Println("+ Space", SpaceNewName)
-
-					//		if ostype == "windows" {
-					//			neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-					//			stng := "((Get-Content -path"+" "+neworgfilepath+" -Raw) -replace '    - Name: "+strings.Trim(SpaceOldName,"\"")+"', '    - Name: "+strings.Trim(SpaceNewName,"\"")+"') | Set-Content -path "+neworgfilepath
-					//			value := "(Get-Content "+neworgfilepath+" -Encoding UTF8) | ForEach-Object {$_ -replace '\"',''}| Out-File "+neworgfilepath+" -Encoding UTF8"
-					//			trimquotes := exec.Command("powershell", "-command", value)
-					//			err := trimquotes.Run()
-					//			if err != nil{
-					//				fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//				panic(err)
-					//			}
-					//			changeyml := exec.Command("powershell", "-command",stng)
-					//			err = changeyml.Run()
-					//			if err != nil{
-					//				fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//				panic(err)
-					//			} else {
-					//				//fmt.Println(changeyml, changeyml.Stdout)
-					//			}
-					//		} else {
-					//			neworgfilepath := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
-					//			stng := "sed -i 's/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceOldName),"\n")+"/"+"    - Name: "+strings.Trim(strings.TrimSpace(SpaceNewName), "\"")+"/g' "+neworgfilepath
-					//			value := "sed -i 's/\\"+"\"//g' "+neworgfilepath
-					//			trimquotes := exec.Command("sh", "-c",value)
-					//			err := trimquotes.Run()
-					//			if err != nil{
-					//				fmt.Println("err :", err, trimquotes, trimquotes.Stdout, trimquotes.Stderr)
-					//				panic(err)
-					//			}
-					//			changeyml := exec.Command("sh", "-c",stng)
-					//			err = changeyml.Run()
-					//			if err != nil{
-					//				fmt.Println("err :", err, changeyml, changeyml.Stdout, changeyml.Stderr)
-					//				panic(err)
-					//			}
-					//		}
-					//	}
-					} else {
-						// Space state file missing, create state file
-
-						fullpath := spath+OrgName+"_OrgState.yml"
-						var OrgGuidPull string
-
-						// Getting Org Guid from State file
-						OrgsStateYml := fullpath
-						fileOrgStateYml, err := ioutil.ReadFile(OrgsStateYml)
-						if err != nil {
-							fmt.Println(err)
-						}
-						var orgstatedetails OrgStateYaml
-						err = yaml.Unmarshal([]byte(fileOrgStateYml), &orgstatedetails)
-						if err != nil {
-							panic(err)
-						}
-						var getspacename *exec.Cmd
-						if ostype == "windows" {
-							path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid+"\""
-							getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-						} else {
-							path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgstatedetails.OrgState.OrgGuid
-							getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
-						}
-						err = getspacename.Run()
-						if err == nil {
-							//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
-						} else {
-							fmt.Println("err", getspacename, getspacename.Stdout, getspacename.Stderr)
-						}
-						fileSpaceNameJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacedetails_name.json")
-						if err != nil {
-							fmt.Println(err)
-						}
-						var spacedetailsname SpaceListJson
-						if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
-							panic(err)
-						}
-
-						SpaceStateNameLen := len(spacedetailsname.Resources)
-						if SpaceStateNameLen == 0 {
-							fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-							fmt.Println("Space not created yet")
-						} else {
-							OrgGuidPull = orgstatedetails.OrgState.OrgGuid
-							fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
-							fmt.Println("Space found, creating state file")
-							// creating missing state file
-							spaceguidpull := spacedetailsname.Resources[0].GUID
-							OrgGuidPull = orgstatedetails.OrgState.OrgGuid
-
-							type SpaceState struct {
-								Org     string `yaml:"Org"`
-								OrgGuid string `yaml:"OrgGuid"`
-								OldSpaceName string `yaml:"OldSpaceName"`
-								NewSpaceName string `yaml:"NewSpaceName"`
-								SpaceGuid    string `yaml:"SpaceGuid"`
-							}
-
-							//spath := cpath+"/"+clustername+"-state/"
-							values := SpaceState{Org: Orgs.Org.Name, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
-
-							var templates *template.Template
-							var allFiles []string
-
-							if err != nil {
-								fmt.Println(err)
-							}
-
-							filename := "SpaceGuid.tmpl"
-							fullPath := spath+"SpaceGuid.tmpl"
-							if strings.HasSuffix(filename, ".tmpl") {
-								allFiles = append(allFiles, fullPath)
-							}
-
-							//fmt.Println(allFiles)
-							templates, err = template.ParseFiles(allFiles...)
-							if err != nil {
-								fmt.Println(err)
-							}
-
-							s1 := templates.Lookup("SpaceGuid.tmpl")
-							f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
-							if err != nil {
-								panic(err)
-							}
-
-							err = s1.Execute(f, values)
-							defer f.Close() // don't forget to close the file when finished.
-							if err != nil {
-								panic(err)
-							}
-						}
-					}
-				}
 			} else {
 
 				fmt.Println("Org does't exist, Creating config files")
@@ -8083,7 +7484,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 
 					mgmtpath := cpath + "/" + clustername + "/" + OrgName
 					ASGPath := cpath + "/" + clustername + "/" + OrgName + "/ASGs/"
-					OrgsYml := cpath + "/" + clustername + "/" + OrgName +"/Org.yml"
+					OrgsYml := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 					JsonPath := cpath + "/" + clustername + "/" + OrgName + "/ASGs/" + "test_test.json"
 
 					_, err = os.Stat(mgmtpath)
@@ -8198,39 +7599,242 @@ IsolationAudit: list #unbind/list`
 							}
 						} else {
 							//fmt.Println("test3")
-
-							//var errDir *exec.Cmd
-							//var out bytes.Buffer
-
-							//RepoPath := RepoName
-							//if ostype == "windows" {
-							//	cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
-							//	errDir = exec.Command("powershell", "-command", cmd)
-							//	errDir.Stderr = &out
-							//	errDir.Stdout = &out
-							//	err = errDir.Run()
-							//} else {
-							//	cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"
-							//	errDir = exec.Command("sh", "-c", cmd)
-							//	errDir.Stderr = &out
-							//	errDir.Stdout = &out
-							//	err = errDir.Run()
-							//}
-							//if _, err := errDir.Output(); err != nil{
-							//	fmt.Println(errDir, errDir.Stderr)
-								//log.Fatal(err)
-							//	out.Reset()
-							//} else {
-							//	fmt.Println("Adding Org Repo: ", errDir, out.String(), errDir.Stdout )
-							//	out.Reset()
-							//}
 						}
 					} else {
 						fmt.Println("<cluster>/<Org> exists, please manually edit file to make changes or provide new cluster name")
 					}
 				}
-				//
 			}
+		}
+	}
+	return nil
+}
+func SpaceInit(clustername string, cpath string, ostype string, sshkey string) error {
+
+	var list List
+	var gitlist GitList
+	var ProtectedOrgs ProtectedList
+	var InitClusterConfigVals InitClusterConfigVals
+	var LenList int
+
+	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
+	if err != nil {
+		panic(err)
+	}
+
+	var ListYml string
+
+	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath + "/" + clustername + "/OrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &list)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(list.OrgList)
+		//fmt.Println("abc")
+	} else {
+		ListYml = cpath + "/" + clustername + "/GitOrgsList.yml"
+		fileOrgYml, err := ioutil.ReadFile(ListYml)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		if err != nil {
+			panic(err)
+		}
+		LenList = len(gitlist.OrgList)
+		//fmt.Println("123")
+	}
+
+	spath := cpath+"/"+clustername+"-state/"
+
+	ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
+	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = yaml.Unmarshal([]byte(fileProtectedYml), &ProtectedOrgs)
+	if err != nil {
+		panic(err)
+	}
+
+	// Org Renaming/Creating steps
+
+	for i := 0; i < LenList; i++ {
+		var OrgName, RepoName string
+		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+			OrgName = list.OrgList[i].Name
+		} else {
+			OrgName = gitlist.OrgList[i].Name
+			RepoName = gitlist.OrgList[i].Repo
+		}
+		var checkfile *exec.Cmd
+		var fullpath string
+
+
+		fullpath = spath+OrgName+"_OrgState.yml"
+		OrgsStateYml := fullpath
+
+		if ostype == "windows" {
+			checkfile = exec.Command("powershell", "-command","Get-Content", fullpath)
+		} else {
+			checkfile = exec.Command("cat", fullpath)
+		}
+
+		if _, err := checkfile.Output(); err == nil{
+			if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
+
+				fmt.Println("Org: ", OrgName)
+
+			} else {
+     			fmt.Println("Org: ", OrgName)
+				fmt.Println("Repo: ", RepoName)
+			}
+			fmt.Println(checkfile.Stdout)
+			fileOrgStateYml, err := ioutil.ReadFile(OrgsStateYml)
+			if err != nil {
+				fmt.Println(err)
+			}
+			var orgstatedetails OrgStateYaml
+			err = yaml.Unmarshal([]byte(fileOrgStateYml), &orgstatedetails)
+			if err != nil {
+				panic(err)
+			}
+
+			// Org exist
+			// Checking Space
+
+			var OrgsYml string
+			if ostype == "windows" {
+				OrgsYml = cpath + "\\" + clustername + "\\" + OrgName + "\\Org.yml"
+			} else {
+				OrgsYml = cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
+			}
+
+			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			var Orgs Orglist
+			err = yaml.Unmarshal([]byte(fileOrgYml), &Orgs)
+			if err != nil {
+				panic(err)
+			}
+
+			SpaceLen := len(Orgs.Org.Spaces)
+
+			for j := 0; j < SpaceLen; j++ {
+
+				fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
+				SpaceStateYml := fullpath
+
+				if ostype == "windows" {
+					checkfile = exec.Command("powershell", "-command","Get-Content", SpaceStateYml)
+				} else {
+					checkfile = exec.Command("cat", SpaceStateYml)
+				}
+
+				if _, err := checkfile.Output(); err == nil{
+
+				} else {
+
+					// Space state file missing, create state file
+					var getspacename *exec.Cmd
+					if ostype == "windows" {
+						path := "\"" + "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgstatedetails.OrgState.OrgGuid + "\""
+						getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+					} else {
+						path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgstatedetails.OrgState.OrgGuid
+						getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+					}
+					err = getspacename.Run()
+					if err == nil {
+						//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
+					} else {
+						fmt.Println("err", getspacename, getspacename.Stdout, getspacename.Stderr)
+					}
+					fileSpaceNameJson, err := ioutil.ReadFile("CreateOrUpdateSpaces_spacedetails_name.json")
+					if err != nil {
+						fmt.Println(err)
+					}
+					var spacedetailsname SpaceListJson
+					if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
+						panic(err)
+					}
+					OrgGuidPull := orgstatedetails.OrgState.OrgGuid
+					SpaceStateNameLen := len(spacedetailsname.Resources)
+
+					if SpaceStateNameLen == 0 {
+						// Space not yet created
+						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
+						fmt.Println("Space not created yet")
+					} else {
+						// creating missing state file
+						fmt.Println("Org, Space: ", OrgName, Orgs.Org.Spaces[j].Name)
+						fmt.Println("Missing state file, creating state")
+
+						OrgGuidPull = orgstatedetails.OrgState.OrgGuid
+						spaceguidpull := spacedetailsname.Resources[0].GUID
+
+						type SpaceState struct {
+							Org          string `yaml:"Org"`
+							OrgGuid      string `yaml:"OrgGuid"`
+							OldSpaceName string `yaml:"OldSpaceName"`
+							NewSpaceName string `yaml:"NewSpaceName"`
+							SpaceGuid    string `yaml:"SpaceGuid"`
+						}
+
+						//spath := cpath+"/"+clustername+"-state/"
+						values := SpaceState{Org: Orgs.Org.Name, OrgGuid: OrgGuidPull, OldSpaceName: Orgs.Org.Spaces[j].Name, NewSpaceName: Orgs.Org.Spaces[j].Name, SpaceGuid: spaceguidpull}
+
+						var templates *template.Template
+						var allFiles []string
+
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						filename := "SpaceGuid.tmpl"
+						fullPath := spath + "SpaceGuid.tmpl"
+						if strings.HasSuffix(filename, ".tmpl") {
+							allFiles = append(allFiles, fullPath)
+						}
+
+						//fmt.Println(allFiles)
+						templates, err = template.ParseFiles(allFiles...)
+						if err != nil {
+							fmt.Println(err)
+						}
+
+						s1 := templates.Lookup("SpaceGuid.tmpl")
+						f, err := os.Create(spath + Orgs.Org.Name + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml")
+						if err != nil {
+							panic(err)
+						}
+
+						err = s1.Execute(f, values)
+						defer f.Close() // don't forget to close the file when finished.
+						if err != nil {
+							panic(err)
+						}
+
+					}
+				}
+			}
+		} else {
+		 fmt.Println("Org Statefile missing, please use Org init and then create-org function to create state file")
 		}
 	}
 	return nil
