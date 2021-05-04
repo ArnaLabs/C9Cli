@@ -1,5 +1,4 @@
 package main
-
 import (
 	"bytes"
 	"encoding/json"
@@ -7783,26 +7782,24 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 							fmt.Println("Space has been renamed")
 							//Changing File name
 							oldstatepath := spath+OrgName+"_"+SpaceOldName+"_SpaceState.yml"
-							//newmgmtpath := cpath + "/" + clustername + "/" + OrgNewName
 							newstatepath := spath+OrgName+"_"+SpaceNewName+"_SpaceState.yml"
 							fmt.Println("- ", oldstatepath)
 							fmt.Println("+ ", newstatepath)
+
 							if ostype == "windows" {
-								changefolderfile := exec.Command("powershell", "-command", "Rename-Item", oldstatepath, newstatepath)
-								err = changefolderfile.Run()
-								if err != nil {
-									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
+								changestfile := exec.Command("powershell", "-command", "mv", oldstatepath,newstatepath)
+								err := changestfile.Run()
+								if err != nil{
 									panic(err)
 								}
 							} else {
 								value := "mv"+" "+oldstatepath+" "+newstatepath
-								changefolderfile := exec.Command("sh", "-c", value)
-								err = changefolderfile.Run()
-								if err != nil {
-									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
+								changestfile := exec.Command("sh", "-c", value)
+								err := changestfile.Run()
+								if err != nil{
 									panic(err)
 								} else {
-									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
+									fmt.Println(changestfile, changestfile.Stdout, changestfile.Stderr)
 								}
 							}
 						}
