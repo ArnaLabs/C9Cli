@@ -7793,7 +7793,7 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 									panic(err)
 								}
 							} else {
-								value := "mv"+" "+oldstatepath+" "+newstatepath
+								value := "\""+"mv "+oldstatepath+" "+newstatepath+"\""
 								changestfile := exec.Command("sh", "-c", value)
 								err := changestfile.Run()
 								if err != nil{
