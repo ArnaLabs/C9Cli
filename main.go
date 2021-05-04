@@ -1,6 +1,5 @@
 package main
 
-//import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -7789,9 +7788,10 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 							fmt.Println("- ", oldstatepath)
 							fmt.Println("+ ", newstatepath)
 							if ostype == "windows" {
-								changefolderfile := exec.Command("powershell", "-command", "mv", oldstatepath, newstatepath)
+								changefolderfile := exec.Command("powershell", "-command", "Rename-Item", oldstatepath, newstatepath)
 								err = changefolderfile.Run()
 								if err != nil {
+									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 									panic(err)
 								}
 							} else {
@@ -7799,13 +7799,13 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 								changefolderfile := exec.Command("sh", "-c", value)
 								err = changefolderfile.Run()
 								if err != nil {
+									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 									panic(err)
 								} else {
 									fmt.Println(changefolderfile, changefolderfile.Stdout, changefolderfile.Stderr)
 								}
 							}
 						}
-
 					} else {
 						fmt.Println("SStatefile missing for space - Org, Space: ", OrgName, spacelistjson.Resources[i].Name)
 					}
