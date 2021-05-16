@@ -18,6 +18,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        binary_name: "K8Cli"
+        binary_name: "C9Cli"
         extra_files: LICENSE README.md
         pre_command: go get gopkg.in/yaml.v2
