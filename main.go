@@ -1,6 +1,6 @@
 package main
 
-//import "C"
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -399,6 +399,7 @@ type GitList struct {
 		Name string `yaml:"Name"`
 		Repo string `yaml:"Repo"`
 		Quota string `yaml:"Quota"`
+		Branch string `yaml:"Branch"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
@@ -7007,13 +7008,17 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 	// Org Renaming/Creating steps
 
 	for i := 0; i < LenList; i++ {
-		var OrgName, RepoName string
+		var OrgName, RepoName, BranchName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 			OrgName = list.OrgList[i].Name
 			//fmt.Println("Org: ", OrgName)
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			RepoName = gitlist.OrgList[i].Repo
+			BranchName = gitlist.OrgList[i].Repo
+			if BranchName == "" {
+				BranchName = "main"
+			}
 			//fmt.Println("Org: ", OrgName)
 			//fmt.Println("Repo: ", RepoName)
 		}
@@ -7038,13 +7043,13 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 			var out bytes.Buffer
 			RepoPath := RepoName
 			if ostype == "windows" {
-				cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash"
+				cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" "+BranchName+" --squash"
 				errDir = exec.Command("powershell", "-command", cmd)
 				errDir.Stderr = &out
 				errDir.Stdout = &out
 				err = errDir.Run()
 			} else {
-				cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash'"
+				cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" "+BranchName+" --squash'"
 				errDir = exec.Command("sh", "-c", cmd)
 				errDir.Stderr = &out
 				errDir.Stdout = &out
@@ -7061,14 +7066,14 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 			}
 			RepoPath = RepoName
 			if ostype == "windows" {
-				cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" master --squash -m pull-by-bot"
+				cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgName+"\""+" "+RepoPath+" "+BranchName+" --squash -m C9Cli-bot'"
 				errDir = exec.Command("powershell", "-command", cmd)
 				errDir.Stderr = &out
 				errDir.Stdout = &out
 				err = errDir.Run()
 
 			} else {
-				cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" master --squash -m C9Cli-bot'"
+				cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgName+" "+RepoPath+" "+BranchName+" --squash -m C9Cli-bot'"
 				errDir = exec.Command("sh", "-c", cmd)
 				errDir.Stderr = &out
 				errDir.Stdout = &out
@@ -7295,13 +7300,13 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 					var out bytes.Buffer
 
 					if ostype == "windows" {
-						cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" master --squash"
+						cmd := "git -C "+cpath+" --git-dir=.git subtree add --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" "+BranchName+" --squash"
 						errDir = exec.Command("powershell", "-command", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
 						err = errDir.Run()
 					} else {
-						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" master --squash'"
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree add --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" "+BranchName+" --squash'"
 						errDir = exec.Command("sh", "-c", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
@@ -7317,14 +7322,14 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 						out.Reset()
 					}
 					if ostype == "windows" {
-						cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" master --squash -m pull-by-bot"
+						cmd := "git -C "+cpath+" --git-dir=.git subtree pull --prefix "+"\""+ clustername + "/" + OrgNewName+"\""+" "+RepoName+" "+BranchName+" --squash -m C9Cli-bot"
 						errDir = exec.Command("powershell", "-command", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
 						err = errDir.Run()
 
 					} else {
-						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" master --squash -m C9Cli-bot'"
+						cmd := "ssh-agent bash -c 'ssh-add "+sshkey+"; git -C "+cpath+" --git-dir=.git subtree pull --prefix "+ clustername + "/" + OrgNewName+" "+RepoName+" "+BranchName+" --squash -m C9Cli-bot'"
 						errDir = exec.Command("sh", "-c", cmd)
 						errDir.Stderr = &out
 						errDir.Stdout = &out
@@ -8032,12 +8037,15 @@ OrgList:
   - Name: Org-1
     Repo: Org-1
     Quota:
+    Branch:
   - Name: Org-2
     Repo: Org-2
     Quota:
+    Branch:
   - Name: Org-3
     Repo: Org-3
     Quota:
+    Branch:
 Audit: list`
 
 		fmt.Println("Creating <cluster>/ sample yaml files")
