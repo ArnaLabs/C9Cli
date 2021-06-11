@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -7716,13 +7717,13 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 				panic(err)
 			}
 
-			SpaceLen := len(spacelistjson.Resources)
-			fmt.Println("Number of Spaces for Org",OrgName,":", SpaceLen)
+			SpaceLen1 := len(spacelistjson.Resources)
+			fmt.Println("Number of Spaces for Org",OrgName,":", SpaceLen1)
 
 
-			SpaceLen = len(Orgs.Org.Spaces)
+			SpaceLen2 := len(Orgs.Org.Spaces)
 
-			for j := 0; j < SpaceLen; j++ {
+			for j := 0; j < SpaceLen2; j++ {
 
 				fullpath := spath+OrgName+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
 				SpaceStateYml := fullpath
@@ -7824,8 +7825,9 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 
 			// checking rename
 
-			if SpaceLen != 0 {
-				for i := 0; i < SpaceLen; i++ {
+			if SpaceLen1 != 0 {
+
+				for i := 0; i < SpaceLen1; i++ {
 
 					ExistingOrgName := spacelistjson.Resources[i].Name
 					fullpath := spath+OrgName+"_"+ExistingOrgName+"_SpaceState.yml"
@@ -7836,7 +7838,6 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 					} else {
 						checkfile = exec.Command("cat", SpaceStateYml)
 					}
-
 					if _, err := checkfile.Output(); err == nil {
 						fmt.Println(checkfile.Stdout)
 						fileOrgStateYml, err := ioutil.ReadFile(SpaceStateYml)
@@ -7887,6 +7888,7 @@ func SpaceInit(clustername string, cpath string, ostype string, sshkey string) e
 						fmt.Println("Statefile missing for space - Org, Space: ", OrgName, spacelistjson.Resources[i].Name)
 					}
 				}
+
 			}
 
 		} else {
