@@ -7014,7 +7014,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			RepoName = gitlist.OrgList[i].Repo
-			BranchName = gitlist.OrgList[i].Repo
+			BranchName = gitlist.OrgList[i].Branch
 			if BranchName == "" {
 				BranchName = "main"
 			}
