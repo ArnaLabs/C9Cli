@@ -7010,7 +7010,7 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 		var OrgName, RepoName, BranchName string
 		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 			OrgName = list.OrgList[i].Name
-			//fmt.Println("Org: ", OrgName)
+			fmt.Println("Org: ", OrgName)
 		} else {
 			OrgName = gitlist.OrgList[i].Name
 			RepoName = gitlist.OrgList[i].Repo
@@ -7018,8 +7018,10 @@ func OrgsInit(clustername string, cpath string, ostype string, sshkey string) er
 			if BranchName == "" {
 				BranchName = "main"
 			}
-			//fmt.Println("Org: ", OrgName)
-			//fmt.Println("Repo: ", RepoName)
+			fmt.Println("Org: ", OrgName)
+			fmt.Println("Repo: ", RepoName)
+			fmt.Println("Branch: ", BranchName)
+
 		}
 		var checkfile *exec.Cmd
 		var fullpath string
