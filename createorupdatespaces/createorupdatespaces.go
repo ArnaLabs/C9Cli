@@ -8,8 +8,58 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"text/template"
 	"time"
 )
+
+type OrgListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID          string    `json:"guid"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		Name          string    `json:"name"`
+		Suspended     bool      `json:"suspended"`
+		Relationships struct {
+			Quota struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"quota"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+			Domains struct {
+				Href string `json:"href"`
+			} `json:"domains"`
+			DefaultDomain struct {
+				Href string `json:"href"`
+			} `json:"default_domain"`
+			Quota struct {
+				Href string `json:"href"`
+			} `json:"quota"`
+		} `json:"links"`
+		Metadata struct {
+			Labels struct {
+			} `json:"labels"`
+			Annotations struct {
+			} `json:"annotations"`
+		} `json:"metadata"`
+	} `json:"resources"`
+}
 type SpaceIsoJson struct {
 	Data struct {
 		GUID string `json:"guid"`
@@ -60,50 +110,50 @@ type IsoJson struct {
 	} `json:"resources"`
 }
 type ProtectedList struct {
-	Org   []string `yaml:"Org"`
-	Quota []string `yaml:"quota"`
+	Org                         []string `yaml:"Org"`
+	Quota                       []string `yaml:"quota"`
 	DefaultRunningSecurityGroup string   `yaml:"DefaultRunningSecurityGroup"`
 }
 type List struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
+		Name  string `yaml:"Name"`
 		Quota string `yaml:"Quota"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type GitList struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
-		Repo string `yaml:"Repo"`
-		Quota string `yaml:"Quota"`
+		Name   string `yaml:"Name"`
+		Repo   string `yaml:"Repo"`
+		Quota  string `yaml:"Quota"`
 		Branch string `yaml:"Branch"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type InitClusterConfigVals struct {
 	ClusterDetails struct {
-		EndPoint  string `yaml:"EndPoint"`
-		User      string `yaml:"User"`
-		Org       string `yaml:"Org"`
-		Space     string `yaml:"Space"`
-		EnableASG bool   `yaml:"EnableASG"`
-		EnableGitSubTree bool `yaml:"EnableGitSubTree"`
-		GitHost string `yaml:"GitHost"`
-		SetOrgAuditor bool	`yaml:"SetOrgAuditor"`
-		SetOrgManager bool	`yaml:"SetOrgManager"`
-		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
-		SetSpaceManager bool	`yaml:"SetSpaceManager"`
-		SetSpaceDeveloper bool	`yaml:"SetSpaceDeveloper"`
-		EnableSpaceAudit bool `yaml:"EnableSpaceAudit"`
-		EnableUserAudit bool `yaml:"EnableUserAudit"`
-		EnableASGAudit bool `yaml:"EnableASGAudit"`
-		EnableIsolationAudit bool `yaml:"EnableIsolationAudit"`
-		SSOProvider string `yaml:"SSOProvider"`
+		EndPoint             string `yaml:"EndPoint"`
+		User                 string `yaml:"User"`
+		Org                  string `yaml:"Org"`
+		Space                string `yaml:"Space"`
+		EnableASG            bool   `yaml:"EnableASG"`
+		EnableGitSubTree     bool   `yaml:"EnableGitSubTree"`
+		GitHost              string `yaml:"GitHost"`
+		SetOrgAuditor        bool   `yaml:"SetOrgAuditor"`
+		SetOrgManager        bool   `yaml:"SetOrgManager"`
+		SetSpaceAuditor      bool   `yaml:"SetSpaceAuditor"`
+		SetSpaceManager      bool   `yaml:"SetSpaceManager"`
+		SetSpaceDeveloper    bool   `yaml:"SetSpaceDeveloper"`
+		EnableSpaceAudit     bool   `yaml:"EnableSpaceAudit"`
+		EnableUserAudit      bool   `yaml:"EnableUserAudit"`
+		EnableASGAudit       bool   `yaml:"EnableASGAudit"`
+		EnableIsolationAudit bool   `yaml:"EnableIsolationAudit"`
+		SSOProvider          string `yaml:"SSOProvider"`
 	} `yaml:"ClusterDetails"`
 }
 type Orglist struct {
 	Org struct {
-		Name     string `yaml:"Name"`
+		Name string `yaml:"Name"`
 		//Quota    string `yaml:"Quota"`
 		OrgUsers struct {
 			LDAP struct {
@@ -122,7 +172,7 @@ type Orglist struct {
 		Spaces []struct {
 			Name         string `yaml:"Name"`
 			IsolationSeg string `yaml:"IsolationSeg"`
-			ASG string `yaml:"ASG"`
+			ASG          string `yaml:"ASG"`
 			SpaceUsers   struct {
 				LDAP struct {
 					SpaceManagers   []string `yaml:"SpaceManagers"`
@@ -142,12 +192,71 @@ type Orglist struct {
 			} `yaml:"SpaceUsers"`
 		} `yaml:"Spaces"`
 	} `yaml:"Org"`
-	SpaceAudit string `yaml:"SpaceAudit"`
-	UserAudit string `yaml:"UserAudit"`
-	ASGAudit string `yaml:"ASGAudit"`
+	SpaceAudit     string `yaml:"SpaceAudit"`
+	UserAudit      string `yaml:"UserAudit"`
+	ASGAudit       string `yaml:"ASGAudit"`
 	IsolationAudit string `yaml:"IsolationAudit"`
 }
-
+type SpaceStateYaml struct {
+	SpaceState struct {
+		Org          string `yaml:"Org"`
+		OrgGuid      string `yaml:"OrgGuid"`
+		OldSpaceName string `yaml:"OldSpaceName"`
+		NewSpaceName string `yaml:"NewSpaceName"`
+		SpaceGuid    string `yaml:"SpaceGuid"`
+	} `yaml:"SpaceState"`
+}
+type SpaceListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID          string    `json:"guid"`
+		CreatedAt     time.Time `json:"created_at"`
+		UpdatedAt     time.Time `json:"updated_at"`
+		Name          string    `json:"name"`
+		Relationships struct {
+			Organization struct {
+				Data struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"organization"`
+			Quota struct {
+				Data interface{} `json:"data"`
+			} `json:"quota"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+			Organization struct {
+				Href string `json:"href"`
+			} `json:"organization"`
+			Features struct {
+				Href string `json:"href"`
+			} `json:"features"`
+			ApplyManifest struct {
+				Href   string `json:"href"`
+				Method string `json:"method"`
+			} `json:"apply_manifest"`
+		} `json:"links"`
+		Metadata struct {
+			Labels struct {
+			} `json:"labels"`
+			Annotations struct {
+			} `json:"annotations"`
+		} `json:"metadata"`
+	} `json:"resources"`
+}
 
 func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error {
 
@@ -158,8 +267,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 	var ListYml string
 	var LenList int
 
-	spath := cpath+"/"+clustername+"-state/"
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	spath := cpath + "/" + clustername + "-state/"
+	ConfigFile := cpath + "/" + clustername + "/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -170,7 +279,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		panic(err)
 	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		ListYml = cpath + "/" + clustername + "/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -182,7 +291,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		LenList = len(list.OrgList)
 
 	} else {
-		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		ListYml = cpath + "/" + clustername + "/GitOrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -195,10 +304,9 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 	}
 
-
 	var OrgsYml string
 
-	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
 		fmt.Println(err)
@@ -209,7 +317,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		panic(err)
 	}
 
-
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
 	EnableIsolationAudit := InitClusterConfigVals.ClusterDetails.EnableIsolationAudit
 
@@ -218,7 +325,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 		var count, totalcount int
 
 		var OrgName string
-		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 			OrgName = list.OrgList[i].Name
 		} else {
 			OrgName = gitlist.OrgList[i].Name
@@ -259,8 +366,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 			if OrgName == Orgs.Org.Name {
 				var getorg *exec.Cmd
 				if ostype == "windows" {
-					path := "\""+"/v3/organizations?names=" + Orgs.Org.Name+"\""
-					getorg = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
+					path := "\"" + "/v3/organizations?names=" + Orgs.Org.Name + "\""
+					getorg = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_orgdetails.json")
 
 				} else {
 					path := "/v3/organizations?names=" + Orgs.Org.Name
@@ -297,9 +404,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 						for j := 0; j < SpaceLen; j++ {
 
-
 							//Getting Org Guid from state file
-							fullpath := spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml"
+							fullpath := spath + Orgs.Org.Name + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml"
 							var SpaceGuidPull string
 
 							SpaceStateYml := fullpath
@@ -314,15 +420,14 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							}
 							SpaceStateGuid := spacestatedetails.SpaceState.SpaceGuid
 
-
 							//Checking if space exist with Guid from State File
 							var getspaceguid *exec.Cmd
 							if ostype == "windows" {
-								path := "\""+"/v3/spaces?guids="+SpaceStateGuid+"\""
-								getspaceguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
+								path := "\"" + "/v3/spaces?guids=" + SpaceStateGuid + "\""
+								getspaceguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
 
 							} else {
-								path := "/v3/spaces?guids="+SpaceStateGuid
+								path := "/v3/spaces?guids=" + SpaceStateGuid
 								getspaceguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_guid.json")
 
 							}
@@ -341,14 +446,13 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								panic(err)
 							}
 
-
 							// Checking if space exist with space Name in Org
 							var getspacename *exec.Cmd
 							if ostype == "windows" {
-								path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
-								getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+								path := "\"" + "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid + "\""
+								getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 							} else {
-								path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid
+								path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
 								getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 							}
@@ -366,7 +470,6 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 							if err := json.Unmarshal(fileSpaceNameJson, &spacedetailsname); err != nil {
 								panic(err)
 							}
-
 
 							SpaceStateGuidLen := len(spacedetailsguid.Resources)
 							SpaceStateNameLen := len(spacedetailsname.Resources)
@@ -387,11 +490,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									spaceguid := spacedets.Resources[0].GUID
 									var getisoguid *exec.Cmd
 									if ostype == "windows" {
-										path := "\""+"/v3/spaces/"+spaceguid+"/relationships/isolation_segment"+"\""
-										getisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+										path := "\"" + "/v3/spaces/" + spaceguid + "/relationships/isolation_segment" + "\""
+										getisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									} else {
-										path := "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
+										path := "/v3/spaces/" + spaceguid + "/relationships/isolation_segment"
 										getisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									}
@@ -416,10 +519,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									// Pulling isolation segment Name from Guid
 									var existingisoguid *exec.Cmd
 									if ostype == "windows" {
-										path := "\""+"/v3/isolation_segments?guids="+isoguid+"\""
-										existingisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
+										path := "\"" + "/v3/isolation_segments?guids=" + isoguid + "\""
+										existingisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									} else {
-										path := "/v3/isolation_segments?guids="+isoguid
+										path := "/v3/isolation_segments?guids=" + isoguid
 										existingisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									}
 									err = existingisoguid.Run()
@@ -443,10 +546,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									var detailsisoguid *exec.Cmd
 									segname := Orgs.Org.Spaces[j].IsolationSeg
 									if ostype == "windows" {
-										path := "\""+"/v3/isolation_segments?names="+segname+"\""
-										detailsisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
+										path := "\"" + "/v3/isolation_segments?names=" + segname + "\""
+										detailsisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 									} else {
-										path := "/v3/isolation_segments?names="+segname
+										path := "/v3/isolation_segments?names=" + segname
 										detailsisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 									}
 
@@ -478,7 +581,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											// This is just for stdout
 											// Iso is asked in YAML but that is installed in platform
 											fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-											fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
+											fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",", segname)
 											fmt.Println("No Isolation segment exists with name: ", segname)
 										} else if segname == "" && isoguid != "" {
 
@@ -562,7 +665,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									//path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
 									//path := "v3/spaces/"+spacedetailsguid.Resources[0].GUID+"/?name="+Orgs.Org.Spaces[j].Name
 									//renamespace := exec.Command("cf", "curl", path)
-									renamespace := exec.Command("cf", "rename-space", spacename,  Orgs.Org.Spaces[j].Name)
+									renamespace := exec.Command("cf", "rename-space", spacename, Orgs.Org.Spaces[j].Name)
 
 									err = renamespace.Run()
 
@@ -579,10 +682,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 									//	var getspacename *exec.Cmd
 									if ostype == "windows" {
-										path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
-										getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+										path := "\"" + "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid + "\""
+										getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 									} else {
-										path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid
+										path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
 										getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									}
@@ -603,19 +706,17 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 										panic(err)
 									}
 
-
-
 									//	fmt.Println(fileSpaceNameJson)
 									//	fmt.Println(spacedets)
 
 									var getisoguid *exec.Cmd
 									spaceguid := spacedets.Resources[0].GUID
 									if ostype == "windows" {
-										path = "\""+"/v3/spaces/"+spaceguid+"/relationships/isolation_segment"+"\""
-										getisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
+										path = "\"" + "/v3/spaces/" + spaceguid + "/relationships/isolation_segment" + "\""
+										getisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									} else {
-										path = "/v3/spaces/"+spaceguid+"/relationships/isolation_segment"
+										path = "/v3/spaces/" + spaceguid + "/relationships/isolation_segment"
 										getisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spaceisodetails.json")
 
 									}
@@ -639,10 +740,10 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									// Pulling isolation segment Name from Guid
 									var existingisoguid *exec.Cmd
 									if ostype == "windows" {
-										path = "\""+"/v3/isolation_segments?guids="+isoguid+"\""
-										existingisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
+										path = "\"" + "/v3/isolation_segments?guids=" + isoguid + "\""
+										existingisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									} else {
-										path = "/v3/isolation_segments?guids="+isoguid
+										path = "/v3/isolation_segments?guids=" + isoguid
 										existingisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_existingisodetails.json")
 									}
 									err = existingisoguid.Run()
@@ -666,11 +767,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									segname := Orgs.Org.Spaces[j].IsolationSeg
 									var detailsisoguid *exec.Cmd
 									if ostype == "windows" {
-										path = "\""+"/v3/isolation_segments?names="+segname+"\""
-										detailsisoguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
+										path = "\"" + "/v3/isolation_segments?names=" + segname + "\""
+										detailsisoguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 
 									} else {
-										path = "/v3/isolation_segments?names="+segname
+										path = "/v3/isolation_segments?names=" + segname
 										detailsisoguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_isodetails.json")
 
 									}
@@ -702,7 +803,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 											// This is just for stdout
 											// Iso is asked in YAML but that is installed in platform
 											fmt.Println("+ isolation segment", Orgs.Org.Spaces[j].IsolationSeg)
-											fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",",segname)
+											fmt.Println("+ Org, Space, Isolation Segment: ", Orgs.Org.Name, ",", Orgs.Org.Spaces[j].Name, ",", segname)
 											fmt.Println("No Isolation segment exists with name: ", segname)
 										} else if segname == "" && isoguid != "" {
 											fmt.Println("- isolation segment", isoexistingdetails.Resources[0].Name)
@@ -770,11 +871,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									// Pulling Space GUID
 									var getspacename *exec.Cmd
 									if ostype == "windows" {
-										path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
-										getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+										path := "\"" + "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid + "\""
+										getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									} else {
-										path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid
+										path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
 										getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									}
@@ -834,11 +935,11 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 									// Pulling Space GUID
 									var getspacename *exec.Cmd
 									if ostype == "windows" {
-										path := "\""+"/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid+"\""
-										getspacename = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
+										path := "\"" + "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid + "\""
+										getspacename = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									} else {
-										path := "/v3/spaces?names="+Orgs.Org.Spaces[j].Name+"&organization_guids=" + orgguid
+										path := "/v3/spaces?names=" + Orgs.Org.Spaces[j].Name + "&organization_guids=" + orgguid
 										getspacename = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacedetails_name.json")
 
 									}
@@ -866,8 +967,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								orgguid := orgdetails.Resources[0].GUID
 
 								type SpaceState struct {
-									Org     string
-									OrgGuid string
+									Org          string
+									OrgGuid      string
 									OldSpaceName string
 									NewSpaceName string
 									SpaceGuid    string
@@ -883,7 +984,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 
 								filename := "SpaceGuid.tmpl"
-								fullPath := spath+"SpaceGuid.tmpl"
+								fullPath := spath + "SpaceGuid.tmpl"
 								if strings.HasSuffix(filename, ".tmpl") {
 									allFiles = append(allFiles, fullPath)
 								}
@@ -895,7 +996,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 
 								s1 := templates.Lookup("SpaceGuid.tmpl")
-								f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
+								f, err := os.Create(spath + Orgs.Org.Name + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml")
 								if err != nil {
 									panic(err)
 								}
@@ -908,13 +1009,13 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen != 0 {
 
-							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0  {
+							} else if SpaceStateGuidLen == 0 && SpaceStateNameLen == 0 {
 
 								orgguid := orgdetails.Resources[0].GUID
 
 								type SpaceState struct {
-									Org     string
-									OrgGuid string
+									Org          string
+									OrgGuid      string
 									OldSpaceName string
 									NewSpaceName string
 									SpaceGuid    string
@@ -930,7 +1031,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 
 								filename := "SpaceGuid.tmpl"
-								fullPath := spath+"SpaceGuid.tmpl"
+								fullPath := spath + "SpaceGuid.tmpl"
 								if strings.HasSuffix(filename, ".tmpl") {
 									allFiles = append(allFiles, fullPath)
 								}
@@ -942,7 +1043,7 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 								}
 
 								s1 := templates.Lookup("SpaceGuid.tmpl")
-								f, err := os.Create(spath+Orgs.Org.Name+"_"+Orgs.Org.Spaces[j].Name+"_SpaceState.yml")
+								f, err := os.Create(spath + Orgs.Org.Name + "_" + Orgs.Org.Spaces[j].Name + "_SpaceState.yml")
 								if err != nil {
 									panic(err)
 								}
@@ -957,8 +1058,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 						var getspacelit *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/spaces?organization_guids=" + orgguid+"\""
-							getspacelit = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
+							path := "\"" + "/v3/spaces?organization_guids=" + orgguid + "\""
+							getspacelit = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateSpaces_spacelist.json")
 
 						} else {
 							path := "/v3/spaces?organization_guids=" + orgguid
@@ -983,8 +1084,8 @@ func CreateOrUpdateSpaces(clustername string, cpath string, ostype string) error
 
 						noofspace := len(spacedets.Resources)
 						fmt.Println("Spaces: ")
-						for s := 0; s < noofspace; s ++ {
-							fmt.Println(" ",spacedets.Resources[s].Name)
+						for s := 0; s < noofspace; s++ {
+							fmt.Println(" ", spacedets.Resources[s].Name)
 						}
 					} else {
 						fmt.Println("err: ", target.Stdout, target.Stderr)
