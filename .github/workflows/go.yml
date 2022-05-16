@@ -21,6 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         go version
+        go mod init
         go get gopkg.in/yaml.v2
         go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
         
