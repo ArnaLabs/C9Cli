@@ -7,6 +7,53 @@ import (
 	"os/exec"
 )
 
+type ASGListJson struct {
+	Pagination struct {
+		TotalResults int `json:"total_results"`
+		TotalPages   int `json:"total_pages"`
+		First        struct {
+			Href string `json:"href"`
+		} `json:"first"`
+		Last struct {
+			Href string `json:"href"`
+		} `json:"last"`
+		Next     interface{} `json:"next"`
+		Previous interface{} `json:"previous"`
+	} `json:"pagination"`
+	Resources []struct {
+		GUID      string    `json:"guid"`
+		CreatedAt time.Time `json:"created_at"`
+		UpdatedAt time.Time `json:"updated_at"`
+		Name      string    `json:"name"`
+		Rules     []struct {
+			Destination string `json:"destination"`
+			Protocol    string `json:"protocol"`
+		} `json:"rules"`
+		GloballyEnabled struct {
+			Running bool `json:"running"`
+			Staging bool `json:"staging"`
+		} `json:"globally_enabled"`
+		Relationships struct {
+			RunningSpaces struct {
+				Data []struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"running_spaces"`
+			StagingSpaces struct {
+				Data []struct {
+					GUID string `json:"guid"`
+				} `json:"data"`
+			} `json:"staging_spaces"`
+		} `json:"relationships"`
+		Links struct {
+			Self struct {
+				Href string `json:"href"`
+			} `json:"self"`
+		} `json:"links"`
+	} `json:"resources"`
+}
+
+
 func DeleteOrAuditASGs(Org string, Space string, asgpath string, ostype string, audit string, ASGName string, MasterASGAudit bool) {
 
 	ASGPath := asgpath
