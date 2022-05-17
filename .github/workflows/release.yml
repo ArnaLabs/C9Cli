@@ -12,8 +12,8 @@ jobs:
         goos: [linux, windows, darwin]
         goarch: ["386", amd64]
     steps:
-    - uses: actions/checkout@v2
-    - uses: wangyoucao577/go-release-action@v1.14
+    - uses: actions/checkout@v3
+    - uses: wangyoucao577/go-release-action@v1.28
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
@@ -21,8 +21,4 @@ jobs:
         binary_name: "C9Cli"
         extra_files: LICENSE README.md
         pre_command: |
-          apt-get install --reinstall ca-certificates
-          apt-get install golang-go
-          go mod init github.com/ArnaLabs/C9Cli
           go get gopkg.in/yaml.v2
-          go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
