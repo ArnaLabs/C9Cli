@@ -20,4 +20,4 @@ jobs:
         goarch: ${{ matrix.goarch }}
         binary_name: "C9Cli"
         extra_files: LICENSE README.md
-        pre_command: go install gopkg.in/yaml.v2@latest GO111MODULE=on go mod init github.com/ArnaLabs/C9Cli
+        pre_command: go install gopkg.in/yaml.v2@latest go mod init github.com/ArnaLabs/C9Cli
