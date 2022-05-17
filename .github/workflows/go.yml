@@ -21,7 +21,6 @@ jobs:
     - name: Install dependencies
       run: |
         go version
-        go mod init github.com/ArnaLabs/C9Cli
         go get gopkg.in/yaml.v2
         go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
         
