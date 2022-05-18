@@ -11,6 +11,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/ArnaLabs/C9Cli/CreateOrUpdateProtOrgAsg"
 	"github.com/ArnaLabs/C9Cli/createorupdateorgs"
@@ -27,7 +28,7 @@ import (
 	"github.com/ArnaLabs/C9Cli/delorauditspaceusers"
 	"strings"
 	"text/template"
-	"time"
+	//"time"
 )
 
 type SpaceListJson struct {
@@ -100,7 +101,7 @@ type GitList struct {
 type Orglist struct {
 	Org struct {
 		Name string `yaml:"Name"`
-		//Quota    string `yaml:"Quota"`
+		ProtectedUsers []string `yaml:"ProtectedUsers"`
 		OrgUsers struct {
 			LDAP struct {
 				OrgManagers []string `yaml:"OrgManagers"`
