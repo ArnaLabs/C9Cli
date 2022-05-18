@@ -350,7 +350,7 @@ type GitList struct {
 type Orglist struct {
 	Org struct {
 		Name     string `yaml:"Name"`
-		//Quota    string `yaml:"Quota"`
+		ProtectedUsers []string `yaml:"ProtectedUsers"`
 		OrgUsers struct {
 			LDAP struct {
 				OrgManagers []string `yaml:"OrgManagers"`
@@ -445,6 +445,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
 	var  LenList int
+
 	ConfigFile := cpath+"/"+clustername+"/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
@@ -520,7 +521,9 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 			totalcount = totalcount + count
 		}
 
+
 		if totalcount == 0 {
+
 
 			//fmt.Println("This is not Protected Org")
 
@@ -544,6 +547,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 			if err != nil {
 				panic(err)
 			}
+			//ProtectedUsers := len(Orgs.Org.ProtectedUsers)
 
 			Audit := strings.ToLower(Orgs.ASGAudit)
 			if Audit == "" {
@@ -556,7 +560,6 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 				if _, err := guid.Output(); err == nil {
 
 					fmt.Println("command: ", guid)
-					//fmt.Println("Org exists: ", guid.Stdout)
 					SpaceLen := len(Orgs.Org.Spaces)
 
 					TargetOrg := exec.Command("cf", "t", "-o", Orgs.Org.Name)
@@ -569,6 +572,7 @@ func DeleteOrAuditSpacesASGs(clustername string, cpath string, ostype string) er
 					}
 
 					for j := 0; j < SpaceLen; j++ {
+
 
 						fmt.Println("Auditing Spaces ASGs")
 						guid = exec.Command("cf", "space", Orgs.Org.Spaces[j].Name, "--guid")
