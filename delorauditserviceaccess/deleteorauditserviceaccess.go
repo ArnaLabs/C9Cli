@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 )
+
 type pullserviceaccesslistjsin struct {
 	Pagination struct {
 		TotalResults int `yaml:"total_results"`
@@ -215,34 +216,34 @@ type List struct {
 }
 type Quotalist struct {
 	Quota []struct {
-		Name        string `yaml:"Name"`
-		MemoryLimit string `yaml:"memory_limit"`
-		AllowPaidPlans       bool `yaml:"allow_paid_plans"`
+		Name                 string `yaml:"Name"`
+		MemoryLimit          string `yaml:"memory_limit"`
+		AllowPaidPlans       bool   `yaml:"allow_paid_plans"`
 		AppInstanceLimit     string `yaml:"app_instance_limit"`
 		ServiceInstanceLimit string `yaml:"service_instance_limit"`
 		ServiceAccess        struct {
-			MySQL     []string `yaml:"MySQL"`
-			Shared_Redis     []string `yaml:"Shared_Redis"`
-			OnDemand_Redis     []string `yaml:"Ondemand_Redis"`
-			OnDemand_RabbitMQ  []string `yaml:"OnDemand_RabbitMQ"`
-			Scheduler []string `yaml:"Scheduler"`
-			ConfigServer []string `yaml:"ConfigServer"`
-			ServiceRegistry []string `yaml:"ServiceRegistry"`
+			MySQL             []string `yaml:"MySQL"`
+			Shared_Redis      []string `yaml:"Shared_Redis"`
+			OnDemand_Redis    []string `yaml:"Ondemand_Redis"`
+			OnDemand_RabbitMQ []string `yaml:"OnDemand_RabbitMQ"`
+			Scheduler         []string `yaml:"Scheduler"`
+			ConfigServer      []string `yaml:"ConfigServer"`
+			ServiceRegistry   []string `yaml:"ServiceRegistry"`
 		} `yaml:"ServiceAccess"`
 	} `yaml:"quota"`
-	Audit string `yaml:"Audit"`
+	Audit              string `yaml:"Audit"`
 	ServiceAccessAudit string `yaml:"ServiceAccessAudit"`
 }
 type ProtectedList struct {
-	Org   []string `yaml:"Org"`
-	Quota []string `yaml:"quota"`
+	Org                         []string `yaml:"Org"`
+	Quota                       []string `yaml:"quota"`
 	DefaultRunningSecurityGroup string   `yaml:"DefaultRunningSecurityGroup"`
 }
 type GitList struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
-		Repo string `yaml:"Repo"`
-		Quota string `yaml:"Quota"`
+		Name   string `yaml:"Name"`
+		Repo   string `yaml:"Repo"`
+		Quota  string `yaml:"Quota"`
 		Branch string `yaml:"Branch"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
@@ -352,7 +353,7 @@ type InitClusterConfigVals struct {
 	} `yaml:"ClusterDetails"`
 }
 
-func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string) error {
+func deleteorauditServiceAccess(clustername string, cpath string, ostype string) error {
 
 	var Quotas Quotalist
 	var GitOrgList GitList
@@ -361,7 +362,6 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 	var LenList int
 	var list List
 	var gitlist GitList
-
 
 	QuotaYml := cpath + "/" + clustername + "/Quota.yml"
 	fileQuotaYml, err := ioutil.ReadFile(QuotaYml)
@@ -452,10 +452,10 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "service_broker_names=dedicated-mysql-broker" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "service_broker_names=dedicated-mysql-broker"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -551,12 +551,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker"
@@ -585,42 +584,40 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.MySQL[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
-												if totalcount == 0 {
+													if totalcount == 0 {
 
-												if ServiceAccessAudit == "list" {
+														if ServiceAccessAudit == "list" {
 
-													fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
+															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
 
-												} else if ServiceAccessAudit == "delete" {
+														} else if ServiceAccessAudit == "delete" {
 
-													var getserviceguid *exec.Cmd
-													if ostype == "windows" {
-														//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-														getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
+															var getserviceguid *exec.Cmd
+															if ostype == "windows" {
+																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
+																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
+															} else {
+																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
+																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
+															}
+															err = getserviceguid.Run()
+															if err == nil {
+															} else {
+																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+															}
+
+														} else {
+
+															fmt.Println("please provide valid input for ServiceAccessAudit flag")
+
+														}
+
 													} else {
-														//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-														getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
+
 													}
-													err = getserviceguid.Run()
-													if err == nil {
-													} else {
-														fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-													}
-
-												} else {
-
-													fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
-												}
-
-
-
-													} else {
-
-												}
 												}
 											}
 										}
@@ -635,10 +632,10 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms]+"service_broker_names=redis-odb"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "service_broker_names=redis-odb" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms]+"service_broker_names=redis-odb"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "service_broker_names=redis-odb"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -734,12 +731,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb"
@@ -768,7 +764,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
@@ -799,8 +795,6 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 														}
 
-
-
 													} else {
 
 													}
@@ -813,16 +807,15 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 						}
 					}
 
-
 					LenRedisShared := len(Quotas.Quota[p].ServiceAccess.Shared_Redis)
 					for ms := 0; ms < LenRedisShared; LenRedisShared++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.Shared_Redis[ms]+"service_broker_names=p-redis"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] + "service_broker_names=p-redis" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.Shared_Redis[ms]+"service_broker_names=p-redis"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] + "service_broker_names=p-redis"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -918,12 +911,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=p-redis"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=p-redis" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=p-redis"
@@ -952,7 +944,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
@@ -983,8 +975,6 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 														}
 
-
-
 													} else {
 
 													}
@@ -1002,10 +992,10 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms]+"service_broker_names=rabbitmq-odb"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "service_broker_names=rabbitmq-odb" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms]+"service_broker_names=rabbitmq-odb"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "service_broker_names=rabbitmq-odb"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -1101,12 +1091,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb"
@@ -1135,7 +1124,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
@@ -1166,8 +1155,6 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 														}
 
-
-
 													} else {
 
 													}
@@ -1180,16 +1167,15 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 						}
 					}
 
-
 					Scheduler := len(Quotas.Quota[p].ServiceAccess.Scheduler)
 					for ms := 0; ms < Scheduler; Scheduler++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.Scheduler[ms]+"service_broker_names=scheduler-for-pcf"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Scheduler[ms] + "service_broker_names=scheduler-for-pcf" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.Scheduler[ms]+"service_broker_names=scheduler-for-pcf"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Scheduler[ms] + "service_broker_names=scheduler-for-pcf"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -1285,12 +1271,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scheduler-for-pcf"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scheduler-for-pcf" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scheduler-for-pcf"
@@ -1319,7 +1304,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.Scheduler[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
@@ -1367,10 +1352,10 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.ConfigServer[ms]+"service_broker_names=scs-service-broker"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ConfigServer[ms] + "service_broker_names=scs-service-broker" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.ConfigServer[ms]+"service_broker_names=scs-service-broker"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ConfigServer[ms] + "service_broker_names=scs-service-broker"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -1466,12 +1451,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"
@@ -1500,7 +1484,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.ConfigServer[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
@@ -1543,16 +1527,15 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 						}
 					}
 
-
 					lenserviceregistry := len(Quotas.Quota[p].ServiceAccess.ServiceRegistry)
 					for ms := 0; ms < lenserviceregistry; lenserviceregistry++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms]+"service_broker_names=scs-service-broker"+"\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] + "service_broker_names=scs-service-broker" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms]+"service_broker_names=scs-service-broker"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] + "service_broker_names=scs-service-broker"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -1648,12 +1631,11 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 											}
 											fmt.Println("Quota Name: ", getquotaguidval.Name)
 
-
 											/////
 
 											var pullseracclist *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"+"\""
+												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker" + "\""
 												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
 											} else {
 												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"
@@ -1682,7 +1664,7 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] {
 														count = 1
 													} else {
-														count =0
+														count = 0
 													}
 													totalcount = totalcount + count
 													if totalcount == 0 {
