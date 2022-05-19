@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+
 type OrgListJson struct {
 	Pagination struct {
 		TotalResults int `json:"total_results"`

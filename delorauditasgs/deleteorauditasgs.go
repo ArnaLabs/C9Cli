@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+
 type ASGListJson struct {
 	Pagination struct {
 		TotalResults int `json:"total_results"`
