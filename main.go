@@ -6,6 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ArnaLabs/C9Cli/CreateOrUpdateProtOrgAsg"
+	"github.com/ArnaLabs/C9Cli/createorupdateserviceaccess"
+	"github.com/ArnaLabs/C9Cli/delorauditserviceaccess"
 	"github.com/ArnaLabs/C9Cli/createorupdateorgs"
 	"github.com/ArnaLabs/C9Cli/createorupdateorgusers"
 	"github.com/ArnaLabs/C9Cli/createorupdatequotas"
