@@ -6,17 +6,17 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ArnaLabs/C9Cli/CreateOrUpdateProtOrgAsg"
-	"github.com/ArnaLabs/C9Cli/createorupdateserviceaccess"
-	"github.com/ArnaLabs/C9Cli/delorauditserviceaccess"
 	"github.com/ArnaLabs/C9Cli/createorupdateorgs"
 	"github.com/ArnaLabs/C9Cli/createorupdateorgusers"
 	"github.com/ArnaLabs/C9Cli/createorupdatequotas"
+	"github.com/ArnaLabs/C9Cli/createorupdateserviceaccess"
 	"github.com/ArnaLabs/C9Cli/createorupdatespaces"
 	"github.com/ArnaLabs/C9Cli/createorupdatespacesasgs"
 	"github.com/ArnaLabs/C9Cli/createorupdatespaceusers"
 	"github.com/ArnaLabs/C9Cli/delorauditorgs"
 	"github.com/ArnaLabs/C9Cli/delorauditorgusers"
 	"github.com/ArnaLabs/C9Cli/delorauditquotas"
+	//"github.com/ArnaLabs/C9Cli/delorauditserviceaccess"
 	"github.com/ArnaLabs/C9Cli/delorauditspaceasgs"
 	"github.com/ArnaLabs/C9Cli/delorauditspaces"
 	"github.com/ArnaLabs/C9Cli/delorauditspaceusers"
@@ -101,9 +101,9 @@ type GitList struct {
 }
 type Orglist struct {
 	Org struct {
-		Name string `yaml:"Name"`
+		Name           string   `yaml:"Name"`
 		ProtectedUsers []string `yaml:"ProtectedUsers"`
-		OrgUsers struct {
+		OrgUsers       struct {
 			LDAP struct {
 				OrgManagers []string `yaml:"OrgManagers"`
 				OrgAuditors []string `yaml:"OrgAuditors"`
@@ -364,13 +364,24 @@ func main() {
 		createorupdateorgs.CreateOrUpdateOrgs(ClusterName, cpath, ostype)
 		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
+	} else if operation == "enable-services-access" {
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
+		createorupdateserviceaccess.CreateOrUpdateServiceAccess(ClusterName, cpath, ostype)
+		//GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
+	} else if operation == "audit-services-access" {
+
+		fmt.Printf("ClusterName: %v\n", ClusterName)
+		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
+		//delorauditserviceaccess(ClusterName, cpath, ostype)
+		//GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 	} else if operation == "create-quota" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		createorupdatequotas.CreateOrUpdateQuotas(ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath)
-
 	} else if operation == "create-org-user" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
