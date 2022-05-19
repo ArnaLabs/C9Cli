@@ -16,7 +16,7 @@ import (
 	"github.com/ArnaLabs/C9Cli/delorauditorgs"
 	"github.com/ArnaLabs/C9Cli/delorauditorgusers"
 	"github.com/ArnaLabs/C9Cli/delorauditquotas"
-	//"github.com/ArnaLabs/C9Cli/delorauditserviceaccess"
+	"github.com/ArnaLabs/C9Cli/delorauditserviceaccess"
 	"github.com/ArnaLabs/C9Cli/delorauditspaceasgs"
 	"github.com/ArnaLabs/C9Cli/delorauditspaces"
 	"github.com/ArnaLabs/C9Cli/delorauditspaceusers"
@@ -374,7 +374,7 @@ func main() {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
-		//delorauditserviceaccess(ClusterName, cpath, ostype)
+		delorauditserviceaccess.DeleteorauditServiceAccess(ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 	} else if operation == "create-quota" {
 

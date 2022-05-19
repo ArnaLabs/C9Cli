@@ -353,7 +353,7 @@ type InitClusterConfigVals struct {
 	} `yaml:"ClusterDetails"`
 }
 
-func deleteorauditServiceAccess(clustername string, cpath string, ostype string) error {
+func DeleteorauditServiceAccess(clustername string, cpath string, ostype string) error {
 
 	var Quotas Quotalist
 	var GitOrgList GitList
