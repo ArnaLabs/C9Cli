@@ -15,23 +15,23 @@ import (
 
 type List struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
+		Name  string `yaml:"Name"`
 		Quota string `yaml:"Quota"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type GitList struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
-		Repo string `yaml:"Repo"`
-		Quota string `yaml:"Quota"`
+		Name   string `yaml:"Name"`
+		Repo   string `yaml:"Repo"`
+		Quota  string `yaml:"Quota"`
 		Branch string `yaml:"Branch"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type Orglist struct {
 	Org struct {
-		Name     string `yaml:"Name"`
+		Name string `yaml:"Name"`
 		//Quota    string `yaml:"Quota"`
 		OrgUsers struct {
 			LDAP struct {
@@ -50,7 +50,7 @@ type Orglist struct {
 		Spaces []struct {
 			Name         string `yaml:"Name"`
 			IsolationSeg string `yaml:"IsolationSeg"`
-			ASG string `yaml:"ASG"`
+			ASG          string `yaml:"ASG"`
 			SpaceUsers   struct {
 				LDAP struct {
 					SpaceManagers   []string `yaml:"SpaceManagers"`
@@ -70,35 +70,35 @@ type Orglist struct {
 			} `yaml:"SpaceUsers"`
 		} `yaml:"Spaces"`
 	} `yaml:"Org"`
-	SpaceAudit string `yaml:"SpaceAudit"`
-	UserAudit string `yaml:"UserAudit"`
-	ASGAudit string `yaml:"ASGAudit"`
+	SpaceAudit     string `yaml:"SpaceAudit"`
+	UserAudit      string `yaml:"UserAudit"`
+	ASGAudit       string `yaml:"ASGAudit"`
 	IsolationAudit string `yaml:"IsolationAudit"`
 }
 type ProtectedList struct {
-	Org   []string `yaml:"Org"`
-	Quota []string `yaml:"quota"`
+	Org                         []string `yaml:"Org"`
+	Quota                       []string `yaml:"quota"`
 	DefaultRunningSecurityGroup string   `yaml:"DefaultRunningSecurityGroup"`
 }
 type InitClusterConfigVals struct {
 	ClusterDetails struct {
-		EndPoint  string `yaml:"EndPoint"`
-		User      string `yaml:"User"`
-		Org       string `yaml:"Org"`
-		Space     string `yaml:"Space"`
-		EnableASG bool   `yaml:"EnableASG"`
-		EnableGitSubTree bool `yaml:"EnableGitSubTree"`
-		GitHost string `yaml:"GitHost"`
-		SetOrgAuditor bool	`yaml:"SetOrgAuditor"`
-		SetOrgManager bool	`yaml:"SetOrgManager"`
-		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
-		SetSpaceManager bool	`yaml:"SetSpaceManager"`
-		SetSpaceDeveloper bool	`yaml:"SetSpaceDeveloper"`
-		EnableSpaceAudit bool `yaml:"EnableSpaceAudit"`
-		EnableUserAudit bool `yaml:"EnableUserAudit"`
-		EnableASGAudit bool `yaml:"EnableASGAudit"`
-		EnableIsolationAudit bool `yaml:"EnableIsolationAudit"`
-		SSOProvider string `yaml:"SSOProvider"`
+		EndPoint             string `yaml:"EndPoint"`
+		User                 string `yaml:"User"`
+		Org                  string `yaml:"Org"`
+		Space                string `yaml:"Space"`
+		EnableASG            bool   `yaml:"EnableASG"`
+		EnableGitSubTree     bool   `yaml:"EnableGitSubTree"`
+		GitHost              string `yaml:"GitHost"`
+		SetOrgAuditor        bool   `yaml:"SetOrgAuditor"`
+		SetOrgManager        bool   `yaml:"SetOrgManager"`
+		SetSpaceAuditor      bool   `yaml:"SetSpaceAuditor"`
+		SetSpaceManager      bool   `yaml:"SetSpaceManager"`
+		SetSpaceDeveloper    bool   `yaml:"SetSpaceDeveloper"`
+		EnableSpaceAudit     bool   `yaml:"EnableSpaceAudit"`
+		EnableUserAudit      bool   `yaml:"EnableUserAudit"`
+		EnableASGAudit       bool   `yaml:"EnableASGAudit"`
+		EnableIsolationAudit bool   `yaml:"EnableIsolationAudit"`
+		SSOProvider          string `yaml:"SSOProvider"`
 	} `yaml:"ClusterDetails"`
 }
 type OrgStateYaml struct {
@@ -110,8 +110,8 @@ type OrgStateYaml struct {
 }
 type SpaceStateYaml struct {
 	SpaceState struct {
-		Org     string `yaml:"Org"`
-		OrgGuid string `yaml:"OrgGuid"`
+		Org          string `yaml:"Org"`
+		OrgGuid      string `yaml:"OrgGuid"`
 		OldSpaceName string `yaml:"OldSpaceName"`
 		NewSpaceName string `yaml:"NewSpaceName"`
 		SpaceGuid    string `yaml:"SpaceGuid"`
@@ -429,9 +429,9 @@ type ASGListJson struct {
 }
 type Quotalist struct {
 	Quota []struct {
-		Name        string `yaml:"Name"`
-		MemoryLimit string `yaml:"memory_limit"`
-		AllowPaidPlans       bool `yaml:"allow_paid_plans"`
+		Name                 string `yaml:"Name"`
+		MemoryLimit          string `yaml:"memory_limit"`
+		AllowPaidPlans       bool   `yaml:"allow_paid_plans"`
 		AppInstanceLimit     string `yaml:"app_instance_limit"`
 		ServiceInstanceLimit string `yaml:"service_instance_limit"`
 	} `yaml:"quota"`
@@ -445,9 +445,9 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	var ProtectedOrgs ProtectedList
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml string
-	spath := cpath+"/"+clustername+"-state/"
+	spath := cpath + "/" + clustername + "-state/"
 
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	ConfigFile := cpath + "/" + clustername + "/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -457,8 +457,8 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	if err != nil {
 		panic(err)
 	}
-	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true{
-		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		ListYml = cpath + "/" + clustername + "/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -468,7 +468,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 			panic(err)
 		}
 	} else {
-		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		ListYml = cpath + "/" + clustername + "/GitOrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -480,8 +480,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 		}
 	}
 
-
-	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
 		fmt.Println(err)
@@ -493,7 +492,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	}
 
 	var LenList int
-	if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 		LenList = len(list.OrgList)
 	} else {
 		LenList = len(gitlist.OrgList)
@@ -504,7 +503,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 	for i := 0; i < LenList; i++ {
 
 		var OrgName, QuotaName string
-		if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+		if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 			OrgName = list.OrgList[i].Name
 			QuotaName = list.OrgList[i].Quota
 		} else {
@@ -527,7 +526,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 		}
 		if totalcount == 0 {
 
-			OrgsYml := cpath+"/"+clustername+"/"+OrgName+"/Org.yml"
+			OrgsYml := cpath + "/" + clustername + "/" + OrgName + "/Org.yml"
 			fileOrgYml, err := ioutil.ReadFile(OrgsYml)
 			if err != nil {
 				fmt.Println(err)
@@ -541,7 +540,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 			if OrgName == Orgs.Org.Name {
 
-				fullpath := spath+OrgName+"_OrgState.yml"
+				fullpath := spath + OrgName + "_OrgState.yml"
 				var OrgGuidPull string
 
 				// Getting Org Guid from State file
@@ -560,10 +559,10 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				// Checking if org exist with Guid from State File
 				var getorgguid *exec.Cmd
 				if ostype == "windows" {
-					path := "\""+"/v3/organizations?guids="+OrgStateGuid+"\""
-					getorgguid = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
+					path := "\"" + "/v3/organizations?guids=" + OrgStateGuid + "\""
+					getorgguid = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
 				} else {
-					path := "/v3/organizations?guids="+OrgStateGuid
+					path := "/v3/organizations?guids=" + OrgStateGuid
 					getorgguid = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_guid.json")
 				}
 				err = getorgguid.Run()
@@ -585,10 +584,10 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				// Checking if org exist with Org Name
 				var getorgname *exec.Cmd
 				if ostype == "windows" {
-					path := "\""+"/v3/organizations?names="+Orgs.Org.Name+"\""
-					getorgname = exec.Command("powershell", "-command","cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
+					path := "\"" + "/v3/organizations?names=" + Orgs.Org.Name + "\""
+					getorgname = exec.Command("powershell", "-command", "cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
 				} else {
-					path := "/v3/organizations?names="+Orgs.Org.Name
+					path := "/v3/organizations?names=" + Orgs.Org.Name
 					getorgname = exec.Command("cf", "curl", strings.TrimSpace(path), "--output", "CreateOrUpdateOrgs_orgdetails_name.json")
 				}
 				err = getorgname.Run()
@@ -609,7 +608,6 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 				OrgStateGuidLen := len(orgdetailsguid.Resources)
 				OrgStateNameLen := len(orgdetailsname.Resources)
 
-
 				if OrgStateGuidLen != 0 {
 					//fmt.Println("Org exists in state and platform")
 					//Checking if Org name has changed
@@ -622,66 +620,23 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						fmt.Println("Resetting Org Name")
 						fmt.Println("- ", orgname)
 						fmt.Println("+ ", Orgs.Org.Name)
-						renameorg := exec.Command("cf", "rename-org", orgname,  Orgs.Org.Name)
+						renameorg := exec.Command("cf", "rename-org", orgname, Orgs.Org.Name)
 						err = renameorg.Run()
 						if err == nil {
 							//	fmt.Println(getorg, getorg.Stdout, getorg.Stderr)
 						} else {
 							fmt.Println("err", renameorg, renameorg.Stdout, renameorg.Stderr)
 						}
-
-						//OrgGuidPull = orgdetailsguid.Resources[0].GUID
-						// Update State file
-						// Moved Below
-						////type OrgState struct {
-						////	OldName string `yaml:"OldName"`
-						////	NewName string `yaml:"NewName"`
-						////	OrgGuid    string `yaml:"OrgGuid"`
-						////}
-
-						//spath := cpath+"/"+clustername+"-state/"
-						////values := OrgState{OldName: Orgs.Org.Name, NewName: Orgs.Org.Name, OrgGuid: OrgGuidPull}
-
-						////var templates *template.Template
-						////var allFiles []string
-
-						////if err != nil {
-						////fmt.Println(err)
-						////}
-
-						////filename := "OrgGuid.tmpl"
-						////fullPath := spath+"OrgGuid.tmpl"
-						////if strings.HasSuffix(filename, ".tmpl") {
-						////allFiles = append(allFiles, fullPath)
-						////}
-
-						//fmt.Println(allFiles)
-						////templates, err = template.ParseFiles(allFiles...)
-						////if err != nil {
-						////fmt.Println(err)
-						////}
-
-						////s1 := templates.Lookup("OrgGuid.tmpl")
-						////f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
-						////if err != nil {
-						////	panic(err)
-						////}
-
-						////err = s1.Execute(f, values)
-						////defer f.Close() // don't forget to close the file when finished.
-						////if err != nil {
-						////panic(err)
-						////}
 					}
 
 					//Checking if Quota has changed
 					var getquotaName *exec.Cmd
 					quotaguid := orgdetailsguid.Resources[0].Relationships.Quota.Data.GUID
 					if ostype == "windows" {
-						path := "\""+"/v3/organization_quotas?guids="+quotaguid+"\""
-						getquotaName = exec.Command("powershell", "-command","cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
+						path := "\"" + "/v3/organization_quotas?guids=" + quotaguid + "\""
+						getquotaName = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
 					} else {
-						path := "/v3/organization_quotas?guids="+quotaguid
+						path := "/v3/organization_quotas?guids=" + quotaguid
 						getquotaName = exec.Command("cf", "curl", path, "--output", "CreateOrUpdateOrgs_quotaname.json")
 					}
 					err := getquotaName.Run()
@@ -705,7 +660,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 
 						fmt.Println("Updating Org quota")
 						SetQuota := exec.Command("cf", "set-quota", Orgs.Org.Name, QuotaName)
-						if _, err := SetQuota.Output(); err != nil{
+						if _, err := SetQuota.Output(); err != nil {
 							fmt.Println("command: ", SetQuota)
 							fmt.Println("Err: ", SetQuota.Stdout, err)
 						} else {
@@ -728,7 +683,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					createorg := exec.Command("cf", "create-org", Orgs.Org.Name)
 					fmt.Println("Creating Org")
 					fmt.Println("+", Orgs.Org.Name)
-					if _, err := createorg.Output(); err != nil{
+					if _, err := createorg.Output(); err != nil {
 						fmt.Println("command: ", createorg)
 						fmt.Println("Err: ", createorg.Stdout, err)
 					} else {
@@ -737,11 +692,11 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					}
 					attachquota := exec.Command("cf", "set-quota", Orgs.Org.Name, QuotaName)
 					fmt.Println("Attaching Quota")
-					if QuotaName == ""{
+					if QuotaName == "" {
 						QuotaName = "default"
 					}
 					fmt.Println("+", QuotaName)
-					if _, err := attachquota.Output(); err != nil{
+					if _, err := attachquota.Output(); err != nil {
 						fmt.Println("command: ", attachquota)
 						fmt.Println("Err: ", attachquota.Stdout, err)
 					} else {
@@ -763,7 +718,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					type OrgState struct {
 						OldName string `yaml:"OldName"`
 						NewName string `yaml:"NewName"`
-						OrgGuid    string `yaml:"OrgGuid"`
+						OrgGuid string `yaml:"OrgGuid"`
 					}
 
 					//spath := cpath+"/"+clustername+"-state/"
@@ -777,7 +732,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					}
 
 					filename := "OrgGuid.tmpl"
-					fullPath := spath+"OrgGuid.tmpl"
+					fullPath := spath + "OrgGuid.tmpl"
 					if strings.HasSuffix(filename, ".tmpl") {
 						allFiles = append(allFiles, fullPath)
 					}
@@ -789,7 +744,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					}
 
 					s1 := templates.Lookup("OrgGuid.tmpl")
-					f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
+					f, err := os.Create(spath + Orgs.Org.Name + "_OrgState.yml")
 					if err != nil {
 						panic(err)
 					}
@@ -800,15 +755,14 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 						panic(err)
 					}
 
-
 				} else if OrgStateGuidLen == 0 && OrgStateNameLen != 0 {
 
-				} else if  OrgStateGuidLen == 0 && OrgStateNameLen == 0{
+				} else if OrgStateGuidLen == 0 && OrgStateNameLen == 0 {
 
 					type OrgState struct {
 						OldName string `yaml:"OldName"`
 						NewName string `yaml:"NewName"`
-						OrgGuid    string `yaml:"OrgGuid"`
+						OrgGuid string `yaml:"OrgGuid"`
 					}
 
 					//spath := cpath+"/"+clustername+"-state/"
@@ -822,7 +776,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					}
 
 					filename := "OrgGuid.tmpl"
-					fullPath := spath+"OrgGuid.tmpl"
+					fullPath := spath + "OrgGuid.tmpl"
 					if strings.HasSuffix(filename, ".tmpl") {
 						allFiles = append(allFiles, fullPath)
 					}
@@ -834,7 +788,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 					}
 
 					s1 := templates.Lookup("OrgGuid.tmpl")
-					f, err := os.Create(spath+Orgs.Org.Name+"_OrgState.yml")
+					f, err := os.Create(spath + Orgs.Org.Name + "_OrgState.yml")
 					if err != nil {
 						panic(err)
 					}
@@ -856,7 +810,7 @@ func CreateOrUpdateOrgs(clustername string, cpath string, ostype string) error {
 		}
 	}
 	results := exec.Command("cf", "orgs")
-	if _, err := results.Output(); err != nil{
+	if _, err := results.Output(); err != nil {
 		fmt.Println("command: ", results)
 		fmt.Println("Err: ", results.Stdout, err)
 	} else {

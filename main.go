@@ -364,13 +364,13 @@ func main() {
 		createorupdateorgs.CreateOrUpdateOrgs(ClusterName, cpath, ostype)
 		GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
 
-	} else if operation == "enable-services-access" {
+	} else if operation == "enable-service-access" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)
 		createorupdateserviceaccess.CreateOrUpdateServiceAccess(ClusterName, cpath, ostype)
 		//GitPush(ClusterName, ostype, cpath, sshkey, gitbranch)
-	} else if operation == "audit-services-access" {
+	} else if operation == "audit-service-access" {
 
 		fmt.Printf("ClusterName: %v\n", ClusterName)
 		SetupConnection(ClusterName, pwd, cpath, sshkey, ostype, gitrepo, gitbranch)

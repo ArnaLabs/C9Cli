@@ -222,13 +222,13 @@ type Quotalist struct {
 		AppInstanceLimit     string `yaml:"app_instance_limit"`
 		ServiceInstanceLimit string `yaml:"service_instance_limit"`
 		ServiceAccess        struct {
-			MySQL             []string `yaml:"MySQL"`
-			Shared_Redis      []string `yaml:"Shared_Redis"`
-			OnDemand_Redis    []string `yaml:"Ondemand_Redis"`
+			MySQL []string `yaml:"MySQL"`
+			//Shared_Redis      []string `yaml:"Shared_Redis"`
+			OnDemand_Redis    []string `yaml:"OnDemand_Redis"`
 			OnDemand_RabbitMQ []string `yaml:"OnDemand_RabbitMQ"`
-			Scheduler         []string `yaml:"Scheduler"`
-			ConfigServer      []string `yaml:"ConfigServer"`
-			ServiceRegistry   []string `yaml:"ServiceRegistry"`
+			//Scheduler         []string `yaml:"Scheduler"`
+			//ConfigServer      []string `yaml:"ConfigServer"`
+			//ServiceRegistry   []string `yaml:"ServiceRegistry"`
 		} `yaml:"ServiceAccess"`
 	} `yaml:"quota"`
 	Audit              string `yaml:"Audit"`
@@ -361,7 +361,7 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 	var ListYml string
 	var LenList int
 	var list List
-	var gitlist GitList
+	//var gitlist GitList
 
 	QuotaYml := cpath + "/" + clustername + "/Quota.yml"
 	fileQuotaYml, err := ioutil.ReadFile(QuotaYml)
@@ -369,6 +369,16 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 		fmt.Println(err)
 	}
 	err = yaml.Unmarshal([]byte(fileQuotaYml), &Quotas)
+	if err != nil {
+		panic(err)
+	}
+
+	ConfigFile := cpath + "/" + clustername + "/config.yml"
+	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = yaml.Unmarshal([]byte(fileConfigYml), &InitClusterConfigVals)
 	if err != nil {
 		panic(err)
 	}
@@ -391,11 +401,11 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 		if err != nil {
 			fmt.Println(err)
 		}
-		err = yaml.Unmarshal([]byte(fileOrgYml), &gitlist)
+		err = yaml.Unmarshal([]byte(fileOrgYml), &GitOrgList)
 		if err != nil {
 			panic(err)
 		}
-		LenList = len(gitlist.OrgList)
+		LenList = len(GitOrgList.OrgList)
 		//fmt.Println("123")
 	}
 
@@ -406,9 +416,6 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 
 		var count, totalcount int
 
-		fmt.Println(" ")
-		fmt.Println("Quota: ", GitOrgList.OrgList[i].Quota)
-		fmt.Println("Org: ", GitOrgList.OrgList[i].Name)
 		var ProtectedOrgs ProtectedList
 		ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
 		fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
@@ -432,30 +439,41 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 
 		if totalcount == 0 {
 
+			// pulling from quota yml
+
 			for p := 0; p < LenQuota; p++ {
+
 				ServiceAccessAudit := Quotas.ServiceAccessAudit
+
+				// checking if quota name from quota yml to gitrepo org quota
+				// check if passes
 				if strings.Trim(Quotas.Quota[p].Name, "") == strings.Trim(GitOrgList.OrgList[i].Quota, "") {
 
-					fmt.Println("MySql Plans to validate: ", Quotas.Quota[p].ServiceAccess.MySQL)
-					fmt.Println("Redis On-demand Plans to validate: ", Quotas.Quota[p].ServiceAccess.OnDemand_Redis)
-					fmt.Println("RabbitMQ Plans to validate: ", Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ)
-					fmt.Println("Redis Shared Plans to validate: ", Quotas.Quota[p].ServiceAccess.Shared_Redis)
-					fmt.Println("Scheduler Plans to validate: ", Quotas.Quota[p].ServiceAccess.Scheduler)
-					fmt.Println("Config Server Plans to validate: ", Quotas.Quota[p].ServiceAccess.ConfigServer)
-					fmt.Println("Service Registry Plans to validate: ", Quotas.Quota[p].ServiceAccess.ServiceRegistry)
+					//fmt.Println("part 1")
+					//fmt.Println("Org from GitOrgList: ", GitOrgList.OrgList[i].Name)
+					//fmt.Println("Quota from GitOrgList: ", GitOrgList.OrgList[i].Quota)
+					//fmt.Println("Quota from QuotaLists: ", 	Quotas.Quota[p].Name)
+
+					fmt.Println(" ")
+					fmt.Println("MySql Plans to validate for quota: ", Quotas.Quota[p].ServiceAccess.MySQL, Quotas.Quota[p].Name)
+					fmt.Println("Redis On-demand Plans to validate for quota: ", Quotas.Quota[p].ServiceAccess.OnDemand_Redis, Quotas.Quota[p].Name)
+					fmt.Println("RabbitMQ Plans to validate for quota: ", Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ, Quotas.Quota[p].Name)
+
+					fmt.Println(" ")
 					fmt.Println("Validating MySQL Plans")
+					fmt.Println(" ")
 
 					// pulling service details
 
 					LenMysql := len(Quotas.Quota[p].ServiceAccess.MySQL)
-					for ms := 0; ms < LenMysql; LenMysql++ {
+					for ms := 0; ms < LenMysql; ms++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "service_broker_names=dedicated-mysql-broker" + "\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "&service_broker_names=dedicated-mysql-broker" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "service_broker_names=dedicated-mysql-broker"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "&service_broker_names=dedicated-mysql-broker"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -467,14 +485,15 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 							if err != nil {
 								fmt.Println(err)
 							}
+							// pull details from serviceplan - quota/mysql broker
 							var ServiceJson ServiceListJSON
 							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
 								panic(err)
 							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
+							fmt.Println("MySQL Service Plan & Quota: ", ServiceJson.Resources[0].Name, " & ", Quotas.Quota[p].Name)
+							//fmt.Println("Service Guid: ", ServiceJson.Resources[0].GUID)
 
+							// using service-plan guid to pull visibility
 							var getservicevisibility *exec.Cmd
 							if ostype == "windows" {
 								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
@@ -484,142 +503,186 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
 							}
 
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
+							if len(ServiceJson.Resources) == 0 {
+
+								fmt.Println("Ondemand MySql plan '" + Quotas.Quota[p].ServiceAccess.MySQL[ms] + "' doesn't exist")
+								fmt.Println("Please correct the plan in Quota, skipping audit")
+								break
 							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
+								if _, err := getservicevisibility.Output(); err != nil {
+									fmt.Println("command: ", getservicevisibility)
+									fmt.Println("Err: ", getservicevisibility.Stdout, err)
+								} else {
+									fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
+									if err != nil {
+										fmt.Println(err)
 									}
 
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
+									var ServiceVisibilityJson ServiceVisibilityAccess
+									if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
+										panic(err)
+									}
+									// From service-visibility pulling list org binded to this ServicePlans
+									//fmt.Println("")
 
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
+									fmt.Println("Orgs binded to the MySQL Service-plan: ", ServiceJson.Resources[0].Name)
+									orglen := len(ServiceVisibilityJson.Organizations)
+									for i := 0; i < orglen; i++ {
+										fmt.Println(" - " + ServiceVisibilityJson.Organizations[i].Name)
+									}
 
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
+									for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
 
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
+										fmt.Println("")
+										fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										//	fmt.Println("Org Guid binded to service: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
 
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
+										var count, totalcount int
+										//fmt.Println(" ")
+										//fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										for p := 0; p < LenProtectedOrgs; p++ {
+											//	fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
+											if ProtectedOrgs.Org[p] == ServiceVisibilityJson.Organizations[listorgs].Name {
+												count = 1
+											} else {
+												count = 0
 											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
+											totalcount = totalcount + count
+										}
+										if totalcount == 0 {
+											var getorgdets *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+												path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
+												getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+												path := "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID
+												getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
+											if _, err := getorgdets.Output(); err != nil {
+												//fmt.Println("command: ", getorgdets)
+												fmt.Println("Err: ", getorgdets.Stdout, err)
 											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+												//fmt.Println("command: ", getorgdets)
+												filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparingvalue.json")
 												if err != nil {
 													fmt.Println(err)
 												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+												var getquotaguid quotaguid
+												if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
 													panic(err)
 												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total MySql Plans accessble: ", totallist)
+												// Pulling Quota from Quota GUID
+												//fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
 
-												for list := 0; list < totallist; list++ {
+												var getqutadets *exec.Cmd
+												if ostype == "windows" {
+													path := "\"" + "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
+													getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												} else {
+													path := "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID
+													getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												}
 
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.MySQL[ms] {
-														count = 1
-													} else {
-														count = 0
+												if _, err := getqutadets.Output(); err != nil {
+													//fmt.Println("command: ", getqutadets)
+													fmt.Println("Err: ", getqutadets.Stdout, err)
+												} else {
+													//fmt.Println("command: ", getqutadets)
+													filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
+													if err != nil {
+														fmt.Println(err)
 													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
 
-														if ServiceAccessAudit == "list" {
+													var getquotaguidval guidval
+													if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
+														panic(err)
+													}
+													//fmt.Println("Quota Name pulled from org guid: ", getquotaguidval.Name)
+													/////
 
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
+													var pullseracclist *exec.Cmd
 
-														} else if ServiceAccessAudit == "delete" {
+													if ostype == "windows" {
+														path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker" + "\""
+														pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+													} else {
+														path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=dedicated-mysql-broker"
+														pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+													}
 
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.mysql"), Quotas.Quota[p].ServiceAccess.MySQL[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
+													if _, err := pullseracclist.Output(); err != nil {
+														fmt.Println("command: ", pullseracclist)
+														fmt.Println("Err: ", pullseracclist.Stdout, err)
+													} else {
+														filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+														if err != nil {
+															fmt.Println(err)
 														}
 
-													} else {
+														var getacclist pullserviceaccesslistjsin
+														if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+															panic(err)
+														}
+														totallist := len(getacclist.Resources)
+														totalacclist := len(Quotas.Quota[p].ServiceAccess.MySQL)
+
+														//fmt.Println("Total MySql Plans Org has access: ", totallist)
+														//fmt.Println("Total MySql Plans Org should have access: ", totalacclist)
+
+														for list := 0; list < totallist; list++ {
+															var totalcount int
+															var count int
+															for list2 := 0; list2 < totalacclist; list2++ {
+																if strings.Trim(getacclist.Resources[list].Name, "") == strings.Trim(Quotas.Quota[p].ServiceAccess.MySQL[list2], "") {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 1", getacclist.Resources[list].Name)
+																	//fmt.Println("part 1", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 1
+																} else {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 2", getacclist.Resources[list].Name)
+																	//fmt.Println("part 2", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 0
+																}
+																totalcount = totalcount + count
+															}
+															//	fmt.Println(totalcount)
+															if totalcount == 0 {
+																//fmt.Println(ServiceAccessAudit)
+																if ServiceAccessAudit == "list" {
+																	fmt.Println("plan access to be revoked manually for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+																	//fmt.Println(" ")
+																} else if ServiceAccessAudit == "delete" {
+																	fmt.Println("plan access getting revoked for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+
+																	var getserviceguid *exec.Cmd
+																	if ostype == "windows" {
+																		//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
+																		getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.mysql"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	} else {
+																		//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
+																		getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.mysql"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	}
+																	err = getserviceguid.Run()
+																	if err == nil {
+																	} else {
+																		fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+																	}
+																} else {
+																	fmt.Println("please provide valid input for ServiceAccessAudit flag")
+																}
+															} else {
+
+																totalcount = 0
+															}
+
+														}
 
 													}
 												}
 											}
+										} else {
+											fmt.Println(ServiceVisibilityJson.Organizations[listorgs].Name + " is a protected Org")
 										}
 									}
 								}
@@ -627,15 +690,19 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 						}
 					}
 
-					LenRedisOnDemand := len(Quotas.Quota[p].ServiceAccess.OnDemand_Redis)
-					for ms := 0; ms < LenRedisOnDemand; LenRedisOnDemand++ {
+					fmt.Println(" ")
+					fmt.Println("Validating Redis OnDemand Plans")
+					fmt.Println(" ")
+
+					LenRedis := len(Quotas.Quota[p].ServiceAccess.OnDemand_Redis)
+					for ms := 0; ms < LenRedis; ms++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "service_broker_names=redis-odb" + "\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "&service_broker_names=redis-odb" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "service_broker_names=redis-odb"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "&service_broker_names=redis-odb"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -647,159 +714,201 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 							if err != nil {
 								fmt.Println(err)
 							}
+							// pull details from serviceplan - quota/mysql broker
 							var ServiceJson ServiceListJSON
 							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
 								panic(err)
 							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
+							if len(ServiceJson.Resources) == 0 {
 
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
+								fmt.Println("Ondemand Redis plan '" + Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] + "' doesn't exist")
+								fmt.Println("Please correct the plan in Quota, skipping audit")
+								break
 							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
 
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
+								fmt.Println("Redis Service Plan & Quota: ", ServiceJson.Resources[0].Name, " & ", Quotas.Quota[p].Name)
+								var getservicevisibility *exec.Cmd
+								if ostype == "windows" {
+									path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
+									getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
+								} else {
+									path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
+									getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
 								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
+								if _, err := getservicevisibility.Output(); err != nil {
+									fmt.Println("command: ", getservicevisibility)
+									fmt.Println("Err: ", getservicevisibility.Stdout, err)
+								} else {
+									fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
+									if err != nil {
+										fmt.Println(err)
 									}
 
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
+									var ServiceVisibilityJson ServiceVisibilityAccess
+									if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
+										panic(err)
+									}
+									// From service-visibility pulling list org binded to this ServicePlans
+									//fmt.Println("")
 
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
+									fmt.Println("Orgs binded to the Redis Ondemand Service-plan: ", ServiceJson.Resources[0].Name)
+									orglen := len(ServiceVisibilityJson.Organizations)
+									for i := 0; i < orglen; i++ {
+										fmt.Println(" - " + ServiceVisibilityJson.Organizations[i].Name)
+									}
 
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
+									for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
 
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
+										fmt.Println("")
+										fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										//	fmt.Println("Org Guid binded to service: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
 
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
+										var count, totalcount int
+										//fmt.Println(" ")
+										//fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										for p := 0; p < LenProtectedOrgs; p++ {
+											//	fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
+											if ProtectedOrgs.Org[p] == ServiceVisibilityJson.Organizations[listorgs].Name {
+												count = 1
+											} else {
+												count = 0
 											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
+											totalcount = totalcount + count
+										}
+										if totalcount == 0 {
+											var getorgdets *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+												path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
+												getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+												path := "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID
+												getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
+											if _, err := getorgdets.Output(); err != nil {
+												//fmt.Println("command: ", getorgdets)
+												fmt.Println("Err: ", getorgdets.Stdout, err)
 											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+												//fmt.Println("command: ", getorgdets)
+												filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparingvalue.json")
 												if err != nil {
 													fmt.Println(err)
 												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+												var getquotaguid quotaguid
+												if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
 													panic(err)
 												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Ondemand Plans accessble: ", totallist)
+												// Pulling Quota from Quota GUID
+												//fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
 
-												for list := 0; list < totallist; list++ {
+												var getqutadets *exec.Cmd
+												if ostype == "windows" {
+													path := "\"" + "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
+													getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												} else {
+													path := "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID
+													getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												}
 
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms] {
-														count = 1
-													} else {
-														count = 0
+												if _, err := getqutadets.Output(); err != nil {
+													//fmt.Println("command: ", getqutadets)
+													fmt.Println("Err: ", getqutadets.Stdout, err)
+												} else {
+													//fmt.Println("command: ", getqutadets)
+													filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
+													if err != nil {
+														fmt.Println(err)
 													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
 
-														if ServiceAccessAudit == "list" {
+													var getquotaguidval guidval
+													if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
+														panic(err)
+													}
+													//fmt.Println("Quota Name pulled from org guid: ", getquotaguidval.Name)
+													/////
 
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
+													var pullseracclist *exec.Cmd
 
-														} else if ServiceAccessAudit == "delete" {
+													if ostype == "windows" {
+														path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb" + "\""
+														pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+													} else {
+														path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=redis-odb"
+														pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+													}
 
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.redis"), Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.redis"), Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
+													if _, err := pullseracclist.Output(); err != nil {
+														fmt.Println("command: ", pullseracclist)
+														fmt.Println("Err: ", pullseracclist.Stdout, err)
+													} else {
+														filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+														if err != nil {
+															fmt.Println(err)
 														}
 
-													} else {
+														var getacclist pullserviceaccesslistjsin
+														if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+															panic(err)
+														}
+														totallist := len(getacclist.Resources)
+														totalacclist := len(Quotas.Quota[p].ServiceAccess.OnDemand_Redis)
+
+														//fmt.Println("Total MySql Plans Org has access: ", totallist)
+														//fmt.Println("Total MySql Plans Org should have access: ", totalacclist)
+
+														for list := 0; list < totallist; list++ {
+															var totalcount int
+															var count int
+															for list2 := 0; list2 < totalacclist; list2++ {
+																if strings.Trim(getacclist.Resources[list].Name, "") == strings.Trim(Quotas.Quota[p].ServiceAccess.OnDemand_Redis[list2], "") {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 1", getacclist.Resources[list].Name)
+																	//fmt.Println("part 1", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 1
+																} else {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 2", getacclist.Resources[list].Name)
+																	//fmt.Println("part 2", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 0
+																}
+																totalcount = totalcount + count
+															}
+															//	fmt.Println(totalcount)
+															if totalcount == 0 {
+																//fmt.Println(ServiceAccessAudit)
+																if ServiceAccessAudit == "list" {
+																	fmt.Println("plan access to be revoked manually for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+																	//fmt.Println(" ")
+																} else if ServiceAccessAudit == "delete" {
+																	fmt.Println("plan access getting revoked for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+
+																	var getserviceguid *exec.Cmd
+																	if ostype == "windows" {
+																		//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
+																		getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.redis"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	} else {
+																		//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
+																		getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.redis"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	}
+																	err = getserviceguid.Run()
+																	if err == nil {
+																	} else {
+																		fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+																	}
+																} else {
+																	fmt.Println("please provide valid input for ServiceAccessAudit flag")
+																}
+															} else {
+
+																totalcount = 0
+															}
+
+														}
 
 													}
 												}
 											}
+										} else {
+											fmt.Println(ServiceVisibilityJson.Organizations[listorgs].Name + " is a protected Org")
 										}
 									}
 								}
@@ -807,15 +916,19 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 						}
 					}
 
-					LenRedisShared := len(Quotas.Quota[p].ServiceAccess.Shared_Redis)
-					for ms := 0; ms < LenRedisShared; LenRedisShared++ {
+					fmt.Println(" ")
+					fmt.Println("Validating RabbitMQ OnDemand Plans")
+					fmt.Println(" ")
+
+					LenRabbitMQ := len(Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ)
+					for ms := 0; ms < LenRabbitMQ; ms++ {
 
 						var getserviceguid *exec.Cmd
 						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] + "service_broker_names=p-redis" + "\""
+							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "&service_broker_names=rabbitmq-odb" + "\""
 							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
 						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] + "service_broker_names=p-redis"
+							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "&service_broker_names=rabbitmq-odb"
 							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
 						}
 
@@ -827,159 +940,201 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 							if err != nil {
 								fmt.Println(err)
 							}
+							// pull details from serviceplan - quota/mysql broker
 							var ServiceJson ServiceListJSON
 							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
 								panic(err)
 							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
+							if len(ServiceJson.Resources) == 0 {
 
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
+								fmt.Println("Ondemand RabbitMQ plan '" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "' doesn't exist")
+								fmt.Println("Please correct the plan in Quota, skipping audit")
+								break
 							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
 
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
+								fmt.Println("Redis Service Plan & Quota: ", ServiceJson.Resources[0].Name, " & ", Quotas.Quota[p].Name)
+								var getservicevisibility *exec.Cmd
+								if ostype == "windows" {
+									path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
+									getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
+								} else {
+									path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
+									getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
 								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
+								if _, err := getservicevisibility.Output(); err != nil {
+									fmt.Println("command: ", getservicevisibility)
+									fmt.Println("Err: ", getservicevisibility.Stdout, err)
+								} else {
+									fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
+									if err != nil {
+										fmt.Println(err)
 									}
 
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
+									var ServiceVisibilityJson ServiceVisibilityAccess
+									if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
+										panic(err)
+									}
+									// From service-visibility pulling list org binded to this ServicePlans
+									//fmt.Println("")
 
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
+									fmt.Println("Orgs binded to the RabbitMQ Ondemand Service-plan: ", ServiceJson.Resources[0].Name)
+									orglen := len(ServiceVisibilityJson.Organizations)
+									for i := 0; i < orglen; i++ {
+										fmt.Println(" - " + ServiceVisibilityJson.Organizations[i].Name)
+									}
 
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
+									for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
 
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
+										fmt.Println("")
+										fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										//	fmt.Println("Org Guid binded to service: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
 
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
+										var count, totalcount int
+										//fmt.Println(" ")
+										//fmt.Println("Org: ", ServiceVisibilityJson.Organizations[listorgs].Name)
+										for p := 0; p < LenProtectedOrgs; p++ {
+											//	fmt.Println("Protected Org: ", ProtectedOrgs.Org[p], ",", list.OrgList[i])
+											if ProtectedOrgs.Org[p] == ServiceVisibilityJson.Organizations[listorgs].Name {
+												count = 1
+											} else {
+												count = 0
 											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
+											totalcount = totalcount + count
+										}
+										if totalcount == 0 {
+											var getorgdets *exec.Cmd
 											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=p-redis" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+												path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
+												getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=p-redis"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+												path := "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID
+												getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
 											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
+											if _, err := getorgdets.Output(); err != nil {
+												//fmt.Println("command: ", getorgdets)
+												fmt.Println("Err: ", getorgdets.Stdout, err)
 											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+												//fmt.Println("command: ", getorgdets)
+												filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparingvalue.json")
 												if err != nil {
 													fmt.Println(err)
 												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+												var getquotaguid quotaguid
+												if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
 													panic(err)
 												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Shared Plans accessble: ", totallist)
+												// Pulling Quota from Quota GUID
+												//fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
 
-												for list := 0; list < totallist; list++ {
+												var getqutadets *exec.Cmd
+												if ostype == "windows" {
+													path := "\"" + "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
+													getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												} else {
+													path := "/v3/organization_quotas/" + getquotaguid.Relationships.Quota.Data.GUID
+													getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
+												}
 
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.Shared_Redis[ms] {
-														count = 1
-													} else {
-														count = 0
+												if _, err := getqutadets.Output(); err != nil {
+													//fmt.Println("command: ", getqutadets)
+													fmt.Println("Err: ", getqutadets.Stdout, err)
+												} else {
+													//fmt.Println("command: ", getqutadets)
+													filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
+													if err != nil {
+														fmt.Println(err)
 													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
 
-														if ServiceAccessAudit == "list" {
+													var getquotaguidval guidval
+													if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
+														panic(err)
+													}
+													//fmt.Println("Quota Name pulled from org guid: ", getquotaguidval.Name)
+													/////
 
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
+													var pullseracclist *exec.Cmd
 
-														} else if ServiceAccessAudit == "delete" {
+													if ostype == "windows" {
+														path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb" + "\""
+														pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
+													} else {
+														path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb"
+														pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
+													}
 
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p-redis"), Quotas.Quota[p].ServiceAccess.Shared_Redis[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p-redis"), Quotas.Quota[p].ServiceAccess.Shared_Redis[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
+													if _, err := pullseracclist.Output(); err != nil {
+														fmt.Println("command: ", pullseracclist)
+														fmt.Println("Err: ", pullseracclist.Stdout, err)
+													} else {
+														filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
+														if err != nil {
+															fmt.Println(err)
 														}
 
-													} else {
+														var getacclist pullserviceaccesslistjsin
+														if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
+															panic(err)
+														}
+														totallist := len(getacclist.Resources)
+														totalacclist := len(Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ)
+
+														//fmt.Println("Total MySql Plans Org has access: ", totallist)
+														//fmt.Println("Total MySql Plans Org should have access: ", totalacclist)
+
+														for list := 0; list < totallist; list++ {
+															var totalcount int
+															var count int
+															for list2 := 0; list2 < totalacclist; list2++ {
+																if strings.Trim(getacclist.Resources[list].Name, "") == strings.Trim(Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[list2], "") {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 1", getacclist.Resources[list].Name)
+																	//fmt.Println("part 1", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 1
+																} else {
+																	//fmt.Println("Hi1")
+																	//fmt.Println("part 2", getacclist.Resources[list].Name)
+																	//fmt.Println("part 2", Quotas.Quota[p].ServiceAccess.MySQL[list2])
+																	count = 0
+																}
+																totalcount = totalcount + count
+															}
+															//	fmt.Println(totalcount)
+															if totalcount == 0 {
+																//fmt.Println(ServiceAccessAudit)
+																if ServiceAccessAudit == "list" {
+																	fmt.Println("plan access to be revoked manually for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+																	//fmt.Println(" ")
+																} else if ServiceAccessAudit == "delete" {
+																	fmt.Println("plan access getting revoked for org: ", getacclist.Resources[list].Name, GitOrgList.OrgList[i].Name)
+
+																	var getserviceguid *exec.Cmd
+																	if ostype == "windows" {
+																		//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
+																		getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.rabbitmq"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	} else {
+																		//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
+																		getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.rabbitmq"), "-p", getacclist.Resources[list].Name, "-o", GitOrgList.OrgList[i].Name)
+																	}
+																	err = getserviceguid.Run()
+																	if err == nil {
+																	} else {
+																		fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+																	}
+																} else {
+																	fmt.Println("please provide valid input for ServiceAccessAudit flag")
+																}
+															} else {
+
+																totalcount = 0
+															}
+
+														}
 
 													}
 												}
 											}
+										} else {
+											fmt.Println(ServiceVisibilityJson.Organizations[listorgs].Name + " is a protected Org")
 										}
 									}
 								}
@@ -987,730 +1142,23 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 						}
 					}
 
-					LenRabbitMq := len(Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ)
-					for ms := 0; ms < LenRabbitMq; LenRabbitMq++ {
-
-						var getserviceguid *exec.Cmd
-						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "service_broker_names=rabbitmq-odb" + "\""
-							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
-						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] + "service_broker_names=rabbitmq-odb"
-							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
-						}
-
-						if _, err := getserviceguid.Output(); err != nil {
-							fmt.Println("command: ", getserviceguid)
-							fmt.Println("Err: ", getserviceguid.Stdout, err)
-						} else {
-							fileServiceJson, err := ioutil.ReadFile("Delete_services.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							var ServiceJson ServiceListJSON
-							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
-								panic(err)
-							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
-
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
-							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
-
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
-									}
-
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
-
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
-
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
-
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
-
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
-											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
-											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
-											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=rabbitmq-odb"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
-											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
-											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
-												if err != nil {
-													fmt.Println(err)
-												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
-													panic(err)
-												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Shared Plans accessble: ", totallist)
-
-												for list := 0; list < totallist; list++ {
-
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms] {
-														count = 1
-													} else {
-														count = 0
-													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
-
-														if ServiceAccessAudit == "list" {
-
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
-
-														} else if ServiceAccessAudit == "delete" {
-
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.rabbitmq"), Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.rabbitmq"), Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
-														}
-
-													} else {
-
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					Scheduler := len(Quotas.Quota[p].ServiceAccess.Scheduler)
-					for ms := 0; ms < Scheduler; Scheduler++ {
-
-						var getserviceguid *exec.Cmd
-						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Scheduler[ms] + "service_broker_names=scheduler-for-pcf" + "\""
-							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
-						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.Scheduler[ms] + "service_broker_names=scheduler-for-pcf"
-							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
-						}
-
-						if _, err := getserviceguid.Output(); err != nil {
-							fmt.Println("command: ", getserviceguid)
-							fmt.Println("Err: ", getserviceguid.Stdout, err)
-						} else {
-							fileServiceJson, err := ioutil.ReadFile("Delete_services.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							var ServiceJson ServiceListJSON
-							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
-								panic(err)
-							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
-
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
-							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
-
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
-									}
-
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
-
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
-
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
-
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
-
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
-											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
-											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scheduler-for-pcf" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
-											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scheduler-for-pcf"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
-											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
-											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
-												if err != nil {
-													fmt.Println(err)
-												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
-													panic(err)
-												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Shared Plans accessble: ", totallist)
-
-												for list := 0; list < totallist; list++ {
-
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.Scheduler[ms] {
-														count = 1
-													} else {
-														count = 0
-													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
-
-														if ServiceAccessAudit == "list" {
-
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
-
-														} else if ServiceAccessAudit == "delete" {
-
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("scheduler-for-pcf"), Quotas.Quota[p].ServiceAccess.Scheduler[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("scheduler-for-pcf"), Quotas.Quota[p].ServiceAccess.Scheduler[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
-														}
-
-													} else {
-
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					lenConfigServer := len(Quotas.Quota[p].ServiceAccess.ConfigServer)
-					for ms := 0; ms < lenConfigServer; lenConfigServer++ {
-
-						var getserviceguid *exec.Cmd
-						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ConfigServer[ms] + "service_broker_names=scs-service-broker" + "\""
-							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
-						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ConfigServer[ms] + "service_broker_names=scs-service-broker"
-							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
-						}
-
-						if _, err := getserviceguid.Output(); err != nil {
-							fmt.Println("command: ", getserviceguid)
-							fmt.Println("Err: ", getserviceguid.Stdout, err)
-						} else {
-							fileServiceJson, err := ioutil.ReadFile("Delete_services.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							var ServiceJson ServiceListJSON
-							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
-								panic(err)
-							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
-
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
-							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
-
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
-									}
-
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
-
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
-
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
-
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
-
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
-											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
-											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
-											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
-											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
-											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
-												if err != nil {
-													fmt.Println(err)
-												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
-													panic(err)
-												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Shared Plans accessble: ", totallist)
-
-												for list := 0; list < totallist; list++ {
-
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.ConfigServer[ms] {
-														count = 1
-													} else {
-														count = 0
-													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
-
-														if ServiceAccessAudit == "list" {
-
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
-
-														} else if ServiceAccessAudit == "delete" {
-
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.config-server"), Quotas.Quota[p].ServiceAccess.ConfigServer[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.config-server"), Quotas.Quota[p].ServiceAccess.ConfigServer[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
-														}
-
-													} else {
-
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-
-					lenserviceregistry := len(Quotas.Quota[p].ServiceAccess.ServiceRegistry)
-					for ms := 0; ms < lenserviceregistry; lenserviceregistry++ {
-
-						var getserviceguid *exec.Cmd
-						if ostype == "windows" {
-							path := "\"" + "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] + "service_broker_names=scs-service-broker" + "\""
-							getserviceguid = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "Delete_services.json")
-						} else {
-							path := "/v3/service_plans/?names=" + Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] + "service_broker_names=scs-service-broker"
-							getserviceguid = exec.Command("cf", "curl", path, "--output", "Delete_services.json")
-						}
-
-						if _, err := getserviceguid.Output(); err != nil {
-							fmt.Println("command: ", getserviceguid)
-							fmt.Println("Err: ", getserviceguid.Stdout, err)
-						} else {
-							fileServiceJson, err := ioutil.ReadFile("Delete_services.json")
-							if err != nil {
-								fmt.Println(err)
-							}
-							var ServiceJson ServiceListJSON
-							if err := json.Unmarshal(fileServiceJson, &ServiceJson); err != nil {
-								panic(err)
-							}
-							fmt.Println("Service Name: ", ServiceJson.Resources[0].Name)
-							fmt.Println("Broker Name: ", ServiceJson.Resources[0].BrokerCatalog.Metadata.DisplayName)
-							fmt.Println("Guid Name: ", ServiceJson.Resources[0].GUID)
-
-							var getservicevisibility *exec.Cmd
-							if ostype == "windows" {
-								path := "\"" + "/v3/service_plans/" + ServiceJson.Resources[0].GUID + "/visibility" + "\""
-								getservicevisibility = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "servicesvisibility.json")
-							} else {
-								path := "/v3/service_plans/?names=" + ServiceJson.Resources[0].GUID + "/visibility"
-								getservicevisibility = exec.Command("cf", "curl", path, "--output", "servicesvisibility.json")
-							}
-
-							if _, err := getservicevisibility.Output(); err != nil {
-								fmt.Println("command: ", getservicevisibility)
-								fmt.Println("Err: ", getservicevisibility.Stdout, err)
-							} else {
-								fileServiceVisibilityJson, err := ioutil.ReadFile("servicesvisibility.json")
-								if err != nil {
-									fmt.Println(err)
-								}
-
-								var ServiceVisibilityJson ServiceVisibilityAccess
-								if err := json.Unmarshal(fileServiceVisibilityJson, &ServiceVisibilityJson); err != nil {
-									panic(err)
-								}
-
-								for listorgs := 0; listorgs < len(ServiceVisibilityJson.Organizations); listorgs++ {
-									fmt.Println("Org Name: ", ServiceVisibilityJson.Organizations[listorgs].Name)
-									fmt.Println("Org Guid: ", ServiceVisibilityJson.Organizations[listorgs].GUID)
-
-									var getorgdets *exec.Cmd
-									if ostype == "windows" {
-										path := "\"" + "/v3/organizations/" + ServiceVisibilityJson.Organizations[listorgs].GUID + "\""
-										getorgdets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingvalue.json")
-									} else {
-										path := "/v3/organizations" + ServiceVisibilityJson.Organizations[listorgs].GUID
-										getorgdets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparing.json")
-									}
-
-									if _, err := getorgdets.Output(); err != nil {
-										fmt.Println("command: ", getorgdets)
-										fmt.Println("Err: ", getorgdets.Stdout, err)
-									} else {
-
-										filegetquotaquid, err := ioutil.ReadFile("quotadetailsforcomparing.json")
-										if err != nil {
-											fmt.Println(err)
-										}
-										var getquotaguid quotaguid
-										if err := json.Unmarshal(filegetquotaquid, &getquotaguid); err != nil {
-											panic(err)
-										}
-										fmt.Println("Quota Guid: ", getquotaguid.Relationships.Quota.Data.GUID)
-
-										var getqutadets *exec.Cmd
-										if ostype == "windows" {
-											path := "\"" + "/v3/organizations_quotas/" + getquotaguid.Relationships.Quota.Data.GUID + "\""
-											getqutadets = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										} else {
-											path := "/v3/organizations_quotas" + getquotaguid.Relationships.Quota.Data.GUID
-											getqutadets = exec.Command("cf", "curl", path, "--output", "quotadetailsforcomparingval.json")
-										}
-
-										if _, err := getqutadets.Output(); err != nil {
-											fmt.Println("command: ", getqutadets)
-											fmt.Println("Err: ", getqutadets.Stdout, err)
-										} else {
-
-											filegetquotaguidvalue, err := ioutil.ReadFile("quotadetailsforcomparingval.json")
-											if err != nil {
-												fmt.Println(err)
-											}
-
-											var getquotaguidval guidval
-											if err := json.Unmarshal(filegetquotaguidvalue, &getquotaguidval); err != nil {
-												panic(err)
-											}
-											fmt.Println("Quota Name: ", getquotaguidval.Name)
-
-											/////
-
-											var pullseracclist *exec.Cmd
-											if ostype == "windows" {
-												path := "\"" + "/v3/service_plans/?organization_guids=" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker" + "\""
-												pullseracclist = exec.Command("powershell", "-command", "cf", "curl", path, "--output", "getseracclist.json")
-											} else {
-												path := "/v3/organizations_quotas" + ServiceVisibilityJson.Organizations[listorgs].GUID + "&service_broker_names=scs-service-broker"
-												pullseracclist = exec.Command("cf", "curl", path, "--output", "getseracclist.json")
-											}
-
-											if _, err := pullseracclist.Output(); err != nil {
-												fmt.Println("command: ", pullseracclist)
-												fmt.Println("Err: ", pullseracclist.Stdout, err)
-											} else {
-
-												filegetseraccdets, err := ioutil.ReadFile("getseracclist.json")
-												if err != nil {
-													fmt.Println(err)
-												}
-
-												var getacclist pullserviceaccesslistjsin
-												if err := json.Unmarshal(filegetseraccdets, &getacclist); err != nil {
-													panic(err)
-												}
-												totallist := len(getacclist.Resources)
-												fmt.Println("Total Redis Shared Plans accessble: ", totallist)
-
-												for list := 0; list < totallist; list++ {
-
-													if getacclist.Resources[list].Name == Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms] {
-														count = 1
-													} else {
-														count = 0
-													}
-													totalcount = totalcount + count
-													if totalcount == 0 {
-
-														if ServiceAccessAudit == "list" {
-
-															fmt.Println("plan access to be revoked manually: ", getacclist.Resources[list].Name)
-
-														} else if ServiceAccessAudit == "delete" {
-
-															var getserviceguid *exec.Cmd
-															if ostype == "windows" {
-																//path := "\""+"/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[ms]+"service_broker_names=dedicated-mysql-broker"+"\""
-																getserviceguid = exec.Command("powershell", "-command", "cf", "disable-service-access", strings.TrimSpace("p.service-registry"), Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms], GitOrgList.OrgList[i].Name)
-															} else {
-																//path := "/v3/service_plans/?names="+Quotas.Quota[p].ServiceAccess.MySQL[0]+"service_broker_names=dedicated-mysql-broker"
-																getserviceguid = exec.Command("cf", "disable-service-access", strings.TrimSpace("p.service-registry"), Quotas.Quota[p].ServiceAccess.ServiceRegistry[ms], GitOrgList.OrgList[i].Name)
-															}
-															err = getserviceguid.Run()
-															if err == nil {
-															} else {
-																fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
-															}
-
-														} else {
-
-															fmt.Println("please provide valid input for ServiceAccessAudit flag")
-
-														}
-
-													} else {
-
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					//Pulled SI Guid
 				} else {
-					fmt.Println("Quota not found in Quota.yml file")
-				}
 
+					//fmt.Println("part 2")
+					//fmt.Println("Org from GitOrgList: ", GitOrgList.OrgList[i].Name)
+					//fmt.Println("Quota from GitOrgList: ", GitOrgList.OrgList[i].Quota)
+					//fmt.Println("Quota from QuotaLists: ", 	Quotas.Quota[p].Name)
+
+					// checking if quota name from quota yml to gitrepo org quota
+					// if failed
+
+					//fmt.Println("")
+					//fmt.Println("Org : ", GitOrgList.OrgList[i].Name)
+					//fmt.Println("Quota GIT : ", GitOrgList.OrgList[i].Quota)
+					//fmt.Println("Quota Quota yml: ", Quotas.Quota[p].Name)
+					//fmt.Println("Quota is not binded to org in Quota.yml file")
+					//fmt.Println("")
+				}
 			}
 		}
 	}
