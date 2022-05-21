@@ -763,6 +763,8 @@ func DeleteorauditServiceAccess(clustername string, cpath string, ostype string)
 														}
 														err = getserviceguid.Run()
 														if err == nil {
+															fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+
 														} else {
 															fmt.Println("err", getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 														}

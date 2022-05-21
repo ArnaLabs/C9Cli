@@ -269,7 +269,8 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 							//fmt.Println(err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 							//fmt.Println(Quotas.Quota[p].ServiceAccess.MySQL[ms], "Plan exist")
 						} else {
-							fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+							fmt.Println("Invalid plan: ", Quotas.Quota[p].ServiceAccess.MySQL[ms])
+							//fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 						}
 					}
 
@@ -290,7 +291,9 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 							//fmt.Println(err,getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 							//fmt.Println("Plan exist")
 						} else {
-							fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+							fmt.Println("Invalid plan: ", Quotas.Quota[p].ServiceAccess.OnDemand_Redis[ro])
+
+							//fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 						}
 					}
 
@@ -330,7 +333,8 @@ func CreateOrUpdateServiceAccess(clustername string, cpath string, ostype string
 							//fmt.Println("Plan exist")
 							//fmt.Println(err,getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 						} else {
-							fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
+							fmt.Println("Invalid plan: ", Quotas.Quota[p].ServiceAccess.OnDemand_RabbitMQ[rb])
+							//fmt.Println("err", err, getserviceguid, getserviceguid.Stdout, getserviceguid.Stderr)
 						}
 					}
 
