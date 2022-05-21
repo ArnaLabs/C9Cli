@@ -324,9 +324,9 @@ type ASGListJson struct {
 
 type Quotalist struct {
 	Quota []struct {
-		Name        string `yaml:"Name"`
-		MemoryLimit string `yaml:"memory_limit"`
-		AllowPaidPlans       bool `yaml:"allow_paid_plans"`
+		Name                 string `yaml:"Name"`
+		MemoryLimit          string `yaml:"memory_limit"`
+		AllowPaidPlans       bool   `yaml:"allow_paid_plans"`
 		AppInstanceLimit     string `yaml:"app_instance_limit"`
 		ServiceInstanceLimit string `yaml:"service_instance_limit"`
 	} `yaml:"quota"`
@@ -334,23 +334,23 @@ type Quotalist struct {
 }
 type List struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
+		Name  string `yaml:"Name"`
 		Quota string `yaml:"Quota"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type GitList struct {
 	OrgList []struct {
-		Name string `yaml:"Name"`
-		Repo string `yaml:"Repo"`
-		Quota string `yaml:"Quota"`
+		Name   string `yaml:"Name"`
+		Repo   string `yaml:"Repo"`
+		Quota  string `yaml:"Quota"`
 		Branch string `yaml:"Branch"`
 	} `yaml:"OrgList"`
 	Audit string `yaml:"Audit"`
 }
 type Orglist struct {
 	Org struct {
-		Name     string `yaml:"Name"`
+		Name string `yaml:"Name"`
 		//Quota    string `yaml:"Quota"`
 		OrgUsers struct {
 			LDAP struct {
@@ -369,7 +369,7 @@ type Orglist struct {
 		Spaces []struct {
 			Name         string `yaml:"Name"`
 			IsolationSeg string `yaml:"IsolationSeg"`
-			ASG string `yaml:"ASG"`
+			ASG          string `yaml:"ASG"`
 			SpaceUsers   struct {
 				LDAP struct {
 					SpaceManagers   []string `yaml:"SpaceManagers"`
@@ -389,35 +389,35 @@ type Orglist struct {
 			} `yaml:"SpaceUsers"`
 		} `yaml:"Spaces"`
 	} `yaml:"Org"`
-	SpaceAudit string `yaml:"SpaceAudit"`
-	UserAudit string `yaml:"UserAudit"`
-	ASGAudit string `yaml:"ASGAudit"`
+	SpaceAudit     string `yaml:"SpaceAudit"`
+	UserAudit      string `yaml:"UserAudit"`
+	ASGAudit       string `yaml:"ASGAudit"`
 	IsolationAudit string `yaml:"IsolationAudit"`
 }
 type ProtectedList struct {
-	Org   []string `yaml:"Org"`
-	Quota []string `yaml:"quota"`
+	Org                         []string `yaml:"Org"`
+	Quota                       []string `yaml:"quota"`
 	DefaultRunningSecurityGroup string   `yaml:"DefaultRunningSecurityGroup"`
 }
 type InitClusterConfigVals struct {
 	ClusterDetails struct {
-		EndPoint  string `yaml:"EndPoint"`
-		User      string `yaml:"User"`
-		Org       string `yaml:"Org"`
-		Space     string `yaml:"Space"`
-		EnableASG bool   `yaml:"EnableASG"`
-		EnableGitSubTree bool `yaml:"EnableGitSubTree"`
-		GitHost string `yaml:"GitHost"`
-		SetOrgAuditor bool	`yaml:"SetOrgAuditor"`
-		SetOrgManager bool	`yaml:"SetOrgManager"`
-		SetSpaceAuditor bool	`yaml:"SetSpaceAuditor"`
-		SetSpaceManager bool	`yaml:"SetSpaceManager"`
-		SetSpaceDeveloper bool	`yaml:"SetSpaceDeveloper"`
-		EnableSpaceAudit bool `yaml:"EnableSpaceAudit"`
-		EnableUserAudit bool `yaml:"EnableUserAudit"`
-		EnableASGAudit bool `yaml:"EnableASGAudit"`
-		EnableIsolationAudit bool `yaml:"EnableIsolationAudit"`
-		SSOProvider string `yaml:"SSOProvider"`
+		EndPoint             string `yaml:"EndPoint"`
+		User                 string `yaml:"User"`
+		Org                  string `yaml:"Org"`
+		Space                string `yaml:"Space"`
+		EnableASG            bool   `yaml:"EnableASG"`
+		EnableGitSubTree     bool   `yaml:"EnableGitSubTree"`
+		GitHost              string `yaml:"GitHost"`
+		SetOrgAuditor        bool   `yaml:"SetOrgAuditor"`
+		SetOrgManager        bool   `yaml:"SetOrgManager"`
+		SetSpaceAuditor      bool   `yaml:"SetSpaceAuditor"`
+		SetSpaceManager      bool   `yaml:"SetSpaceManager"`
+		SetSpaceDeveloper    bool   `yaml:"SetSpaceDeveloper"`
+		EnableSpaceAudit     bool   `yaml:"EnableSpaceAudit"`
+		EnableUserAudit      bool   `yaml:"EnableUserAudit"`
+		EnableASGAudit       bool   `yaml:"EnableASGAudit"`
+		EnableIsolationAudit bool   `yaml:"EnableIsolationAudit"`
+		SSOProvider          string `yaml:"SSOProvider"`
 	} `yaml:"ClusterDetails"`
 }
 type OrgStateYaml struct {
@@ -429,8 +429,8 @@ type OrgStateYaml struct {
 }
 type SpaceStateYaml struct {
 	SpaceState struct {
-		Org     string `yaml:"Org"`
-		OrgGuid string `yaml:"OrgGuid"`
+		Org          string `yaml:"Org"`
+		OrgGuid      string `yaml:"OrgGuid"`
 		OldSpaceName string `yaml:"OldSpaceName"`
 		NewSpaceName string `yaml:"NewSpaceName"`
 		SpaceGuid    string `yaml:"SpaceGuid"`
@@ -444,8 +444,8 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 	var gitlist GitList
 	var InitClusterConfigVals InitClusterConfigVals
 	var ListYml, Audit string
-	var  LenList int
-	ConfigFile := cpath+"/"+clustername+"/config.yml"
+	var LenList int
+	ConfigFile := cpath + "/" + clustername + "/config.yml"
 	fileConfigYml, err := ioutil.ReadFile(ConfigFile)
 	if err != nil {
 		fmt.Println(err)
@@ -456,7 +456,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		panic(err)
 	}
 	if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
-		ListYml = cpath+"/"+clustername+"/OrgsList.yml"
+		ListYml = cpath + "/" + clustername + "/OrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -471,9 +471,8 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 			Audit = "list"
 		}
 
-
 	} else {
-		ListYml = cpath+"/"+clustername+"/GitOrgsList.yml"
+		ListYml = cpath + "/" + clustername + "/GitOrgsList.yml"
 		fileOrgYml, err := ioutil.ReadFile(ListYml)
 		if err != nil {
 			fmt.Println(err)
@@ -489,7 +488,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		}
 	}
 
-	ProtectedOrgsYml := cpath+"/"+clustername+"/ProtectedResources.yml"
+	ProtectedOrgsYml := cpath + "/" + clustername + "/ProtectedResources.yml"
 	fileProtectedYml, err := ioutil.ReadFile(ProtectedOrgsYml)
 	if err != nil {
 		fmt.Println(err)
@@ -500,7 +499,6 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		panic(err)
 	}
 	LenProtectedOrgs := len(ProtectedOrgs.Org)
-
 	getorgs := exec.Command("cf", "curl", "/v3/organizations", "--output", "DeleteorAuditOrgs_listorgs.json")
 
 	if _, err := getorgs.Output(); err == nil {
@@ -547,7 +545,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 
 					for q := 0; q < LenList; q++ {
 						var OrgName string
-						if 	InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
+						if InitClusterConfigVals.ClusterDetails.EnableGitSubTree != true {
 							OrgName = list.OrgList[q].Name
 						} else {
 							OrgName = gitlist.OrgList[q].Name
@@ -586,7 +584,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 								fmt.Println("DELETE!DELETE!")
 								fmt.Println("Renaming Org: ", body.Resources[i].Name)
 								result, _ := regexp.MatchString("_tobedeleted", body.Resources[i].Name)
-								if result == true{
+								if result == true {
 									fmt.Println("Org already renamed")
 								} else {
 									rename := exec.Command("cf", "rename-org", body.Resources[i].Name, body.Resources[i].Name+"_tobedeleted")
@@ -624,7 +622,7 @@ func DeleteorAuditOrgs(clustername string, cpath string) error {
 		fmt.Println("Err: ", getorgs.Stderr)
 	}
 	results := exec.Command("cf", "orgs")
-	if _, err := results.Output(); err != nil{
+	if _, err := results.Output(); err != nil {
 		fmt.Println("command: ", results)
 		fmt.Println("Err: ", results.Stdout, err)
 	} else {
